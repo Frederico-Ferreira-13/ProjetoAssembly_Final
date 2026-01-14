@@ -1,0 +1,26 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.settingsModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Editar o meu Perfil";
+}
+
+<main class="container">
+    <h2>Editar o Meu Perfil</h2>
+    <form id="editProfileForm">
+        <div class="perfil-upload">
+            <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande">
+            <label for="fileInput" class="btn">Alterar Foto</label>
+            <input type="file" id="fileInput" style="display:none" accept="image/*">
+        </div>
+
+        <label>Nome de Utilizador:</label>
+        <input type="text" id="editName" value="Frederico">
+
+        <label>Email:</label>
+        <input type="email" id="editEmail" value="exemplo@email.com">
+
+        <button type="submit" class="btn-guardar">Guardar Alterações</button>
+        <a href="/Perfil" style="text-align:center; display:block; margin-top:10px;">Cancelar</a>
+    </form>
+</main>

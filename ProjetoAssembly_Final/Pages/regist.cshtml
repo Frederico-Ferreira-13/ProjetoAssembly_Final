@@ -1,0 +1,46 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.registModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta - Receitas do Frederico</title>
+    <link rel="stylesheet" href="~/css/styles.css">
+</head>
+<body class="Login-page">
+    <div class="login-container">
+        <form id="registerForm" method="post">
+            <h1 style="text-align: center;">Criar Conta</h1>
+
+            <div asp-validation-summary="All" style="color: #dc3545; font-size: 0.9em; list-style: none; padding: 0;"></div>
+
+            <div class="input-group">
+                <label for="reg-username">Nome de Utilizador</label>
+                <input asp-for="UserName" type="text" id="reg-username" required placeholder="Ex: frederico_chef">
+            </div>
+
+            <div class="input-group">
+                <label for="reg-email">E-mail</label>
+                <input asp-for="Email" type="email" id="reg-email" required placeholder="exemplo@email.com">
+            </div>
+
+            <div class="input-group">
+                <label for="reg-password">Palavra-passe</label>
+                <input asp-for="Password" type="password" id="reg-password" required placeholder="********">
+            </div>
+
+            <button type="submit">Registar</button>
+
+            <p class="signup-link">Já tem conta? <a href="/Login">Faça login aqui</a></p>
+            <p class="signup-link"><a href="/" style="color: #666; font-weight: normal;">Voltar à Home</a></p>
+        </form>
+    </div>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

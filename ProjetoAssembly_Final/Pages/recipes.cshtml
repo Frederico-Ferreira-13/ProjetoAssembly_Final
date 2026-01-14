@@ -1,0 +1,77 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.recipesModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Explorar Receitas";
+}
+
+<main class="container">
+    <section class="Categorias-home" style="padding-top: 40px;">
+        <h2 class="section-title">Explorar Receitas</h2>
+
+        <div class="grid-categorias">
+            <a asp-page="/receitas" asp-route-categoryId="1" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
+                <span>Sopas</span>
+            </a>
+            <a asp-page="/receitas" asp-route-categoryId="2" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
+                <span>Carne</span>
+            </a>
+            <a asp-page="/receitas" asp-route-categoryId="3" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
+                <span>peixe</span>
+            </a>
+            <a asp-page="/receitas" asp-route-categoryId="4" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
+                <span>Sobremesas</span>
+            </a>
+            <a asp-page="/receitas" class="cat-card" style="background-color: #f8f9fa;">
+                <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
+                <span>Todas</span>
+            </a>
+        </div>
+    </section>
+
+    <hr class="dropdown-divider">
+
+    <section class="destaques-home">
+        <div id="container-receitas" class="grid-receitas">
+            @if (Model.ListRecipes != null && Model.ListRecipes.Any())
+            {
+                @foreach (var receita in Model.ListRecipes)
+                {
+                    <article class="receitas-card">
+                        <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+
+                        <div class="card-info">
+                            <h3>@receita.Title</h3>
+
+                            <p>
+                                <i class="fa-solid fa-gauge-high"></i>
+                                @(receita.DifficultyId == 1 ? "Fácil" : receita.DifficultyId == 2 ? "Média" : "Difícil")
+                                |
+                                <i class="fa-regular fa-clock"></i>
+                                @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min
+                            </p>
+
+
+
+                            <a asp-page="/visualizarReceita" asp-route-id="@receita.RecipesId" class="btn">
+                                Ver Receita
+                            </a>
+                        </div>
+                    </article>
+                }
+            }
+            else
+            {
+                <div class="aviso-vazio" style="grid-column: 1/-1; text-align: center; padding: 50px">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: #ccc;"></i>
+                    <p style="margin-top: 15px;">Ainda não temos receitas nesta categoria.</p>
+                    <a asp-page="/receitas" asp-route-categoryId="" class="btn-principal">Ver todas as receitas</a>
+                </div>
+            }
+        </div>
+    </section>
+</main>

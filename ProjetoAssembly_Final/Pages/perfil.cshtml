@@ -1,0 +1,37 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.perfilModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "O Meu Perfil";
+}
+
+<main class="container">
+    <section class="perfil-header">
+        <div class="perfil-btn-topo">
+            <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
+            <div>
+                <h1>Olá, Frederico!</h1>
+                <p>Membro desde: Janeiro de 2026</p>
+                <a href="/EditorPerfil" class="btn-editar-perfil" style="text-decoration:none; display:inline-block;">Editar Dados</a>
+            </div>
+        </div>
+    </section>
+
+    <hr class="separator">
+
+    <section class="minhas-receitas">
+        <h2><i class="fa-solid fa-utensils"></i> As Minhas Receitas</h2>
+        <div class="grid-receitas">
+            <div class="receitas-card">
+                <img src="~/img/bacalhau.jpg" alt="Bacalhau">
+                <div class="card-info">
+                    <h3>Bacalhau à Brás</h3>
+                    <div class="acoes-perfil">
+                        <a href="/EditarReceita?id=1" class="btn-gestao editar"><i class="fa-solid fa-pen"></i> Editar</a>
+                        <button onclick="confirmarEliminar(1)" class="btn-gestao eliminar"><i class="fa-solid fa-trash"></i> Apagar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

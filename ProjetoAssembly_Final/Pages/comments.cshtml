@@ -1,0 +1,20 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.commentsModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Deixe os Seus Comentários";
+}
+
+<main class="container">
+    <h1>Comentários e Avaliações</h1>
+    <section class="comentarios-form">
+        <form id="formComentario">
+            <input type="text" name="nome" required placeholder="O seu nome">
+            <select name="rating">
+                <option value="5">⭐⭐⭐⭐⭐</option>
+            </select>
+            <textarea name="mensagem" rows="4" required placeholder="O que achou?"></textarea>
+            <button type="submit" class="btn-publicar">Publicar Comentário</button>
+        </form>
+    </section>
+</main>

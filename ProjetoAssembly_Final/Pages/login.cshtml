@@ -1,0 +1,43 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.loginModel
+@{
+    ViewData["Title"] = "Login - Receitas do Frederico";
+}
+
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body class="Login-page">
+    <div class="login-container">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 15px; font-weight: bold;"></div>
+
+        <form method="post">
+            <h1>Entrar</h1>
+
+            <div class="input-group">
+                <label for="Username">Utilizador</label>
+                <input asp-for="Input.UserName" type="text" required placeholder="O seu nome de Utilizador" />
+                <span asp-validation-for="Input.UserName" class="text-danger"></span>
+            </div>
+
+            <div class="input-group">
+                <label for="Password">Palavra-passe</label>
+                <input asp-for="Input.Password" type="password" required>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit">Entrar</button>
+
+            <p class="signup-link">Não tem conta? <a href="/Registo">Registe-se aqui</a></p>
+            <p class="signup-link"><a href="/">Voltar à Home</a></p>
+        </form>
+    </div>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

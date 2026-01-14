@@ -1,0 +1,87 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.view_recipesModel
+@{
+    Layout = "_layout";
+    ViewData["Title"] = Model.Recipe?.Title;
+}
+
+<main class="container">
+    <section class="detalhe_receita" style="padding-top: 40px;">
+        <h1 class="section-title">@Model.Recipe?.Title</h1>
+
+        <div class="row" style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <div class="col" style="flex: 1; min-width: 300px;">
+                <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : "Model.Recipe.ImageUrl")
+                     alt="@Model.Recipe?.Title"
+                     style="width: 100%; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+
+                <div class="recipe-meta-box" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                    <p><strong><i class="fa-solid fa-users"></i> Dose:</strong> @Model.Recipe?.Servings</p>
+                    <p><strong><i class="fa-regular fa-clock"></i> Tempo total:</strong> @(Model.Recipe?.PrepTimeMinutes + Model.Recipe?.CookTimeMinutes) min</p>
+                    <p><strong><i class="fa-solid fa-gauge-high"></i> Dificuldade:</strong> @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : "Média")</p>
+                </div>
+            </div>
+
+            <div class="col" style="flex: 2; min-width: 300px;">
+                <h3><i class="fa-solid fa-list-ul"></i> Ingredientes</h3>
+                <ul class="lista-ingredientes" style="list-style: none; padding: 0; margin-bottom: 30px;">
+                    @if (Model.Recipe?.Ingredients != null)
+                    {
+                        @foreach (var ing in Model.Recipe.Ingredients)
+                        {
+                            <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <i class="fa-solid fa-check" style="color: #28a745; margin-right: 10px;"></i>
+                                @ing.QuantityValue @ing.Unit de @(ing.Ingredient?.IngredientName ?? "Ingrediente")
+                            </li>
+                        }
+                    }
+                </ul>
+
+                <h3><i class="fa-solid fa-mitten"></i> Modo de Preparação</h3>
+                <div style="line-height: 1.6; color: #444; white-space: pre-line;">
+                    @Model.Recipe?.Instructions
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="separator"></div>
+
+    <section class="seccao-comentarios">
+        <h2>Comentários e Avaliações</h2>
+
+        <div class="comentarios-form">
+            <form id="formComentario" method="post">
+                <input type="hidden" name="receitaId" value="@Model.Recipe?.RecipesId">
+
+                <input type="text" name="nome" required placeholder="O seu nome">
+
+                <div class="star-rating">
+                    <label>Sua nota:</label>
+                    <select name="rating">
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                    </select>
+                </div>
+
+                <textarea name="mensagem" rows="4" required placeholder="O que achou desta receita específica?"></textarea>
+
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <button type="submit" class="btn-publicar">Publicar Comentário</button>
+                }
+                else
+                {
+                    <p><i>Faça <a asp-page="/Login">login</a> para comentar.</i></p>
+                }
+
+            </form>
+        </div>
+
+        <div id="container-comentarios">
+        </div>
+    </section>
+</main>

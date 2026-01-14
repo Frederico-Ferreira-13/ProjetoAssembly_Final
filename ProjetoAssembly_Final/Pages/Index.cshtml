@@ -1,0 +1,87 @@
+﻿@page
+@model ProjectoAssembly_Final.Pages.IndexModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Home Page";
+}
+
+<header class="hero">
+    <div class="hero-content">
+        <h1>Descubra o sabor de cozinhar em casa</h1>
+        <p>As melhores iguarias, desde sopas reconfortantes a sobremesas irresistíveis.</p>
+        <a href="#categorias" class="btn-principal">Explorar Categorias</a>
+    </div>
+</header>
+
+<main class="container">
+    <section id="categorias" class="categorias-home">
+        <h2 class="section-title">O que lhe apetece hoje?</h2>
+        <div class="grid-categorias">
+            <a asp-page="/Receitas" asp-route-categoryId="1" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
+                <span>Sopas</span>
+            </a>
+            <a asp-page="/Receitas" asp-route-categoryId="2" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
+                <span>Carne</span>
+            </a>
+            <a asp-page="/Receitas" asp-route-categoryId="3" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
+                <span>Peixe</span>
+            </a>
+            <a asp-page="/Receitas" asp-route-categoryId="4" class="cat-card">
+                <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
+                <span>Sobremesas</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="slider-container">
+        <h2 class="section-title">Destaques da Semana</h2>
+        <div class="slideshow-wrapper">
+            <div class="mySlides fade">
+                <img src="img/bacalhau.jpg" alt="Bacalhau à Brás">
+                <div class="slide-badge">Tradicional</div>
+                <div class="slide-text">Bacalhau à Brás</div>
+            </div>
+            <div class="mySlides fade">
+                <img src="img/sopa.jpg" alt="Sopa de Legumes">
+                <div class="slide-badge">Saudável</div>
+                <div class="slide-text">Sopa de Legumes - Saudável e Caseira</div>
+            </div>
+            <div class="mySlides fade">
+                <img src="img/arroz-de-pato.jpg" alt="Arroz de Pato">
+                <div class="slide-badge">Saudável</div>
+                <div class="slide-text"> Arroz de Pato</div>
+            </div>
+            <div class="mySlides fade">
+                <img src="img/arroz-doce.jpg" alt="Arroz Doce">
+                <div class="slide-badge">Saudável</div>
+                <div class="slide-text"> Arroz Doce</div>
+            </div>
+
+            <button class="prev" onclick="plusDivs(-1)">&#10094;</button>
+            <button class="next" onclick="plusDivs(1)">&#10095;</button>
+        </div>
+    </section>
+
+    <section class="destaques-home">
+        <h2 class="section-title">Receitas Recentes</h2>
+        <div id="container-receitas" class="grid-receitas">
+            @if (Model.ListaReceitas != null)
+            {
+                @foreach (var receita in Model.ListaReceitas.Take(4)) // Mostra apenas as 4 primeiras
+                {
+                    <article class="receitas-card">
+                        <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+                        <div class="card-info">
+                            <h3>@receita.Title</h3>
+                            <p>Dificuldade: @(receita.DifficultyId == 1 ? "Fácil" : "Média") | @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min</p>
+                            <a asp-page="/visualizarReceita" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+</main>

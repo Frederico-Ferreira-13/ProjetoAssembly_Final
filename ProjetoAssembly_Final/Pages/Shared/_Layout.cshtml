@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Receitas do Frederico</title>
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="container-nav">
+            <div class="logo">
+                <a asp-page="/Index" style="text-decoration:none; color:inherit;">
+                    👨‍🍳 Frederico<span style="color:#28a745;">Receitas</span>
+                </a>
+            </div>
+
+            <ul>
+                <li><a asp-page="/Index">Home Page</a></li>
+                <li><a asp-page="/recipes">Receitas</a></li>
+
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <li><a asp-page="/create-recipe">Criar Receitas</a></li>
+                    <li><a asp-page="/Favoritos">Favoritos</a></li>
+                }
+
+                <li><a asp-page="/contacts">Contactos</a></li>
+            </ul>
+
+            <div class="search-box">
+                <form action="/recipes" method="get">
+                    <input type="text" name="search" placeholder="Procurar Receita...">
+                    <button type="submit"><i class="fa fa-search"></i></button>
+                </form>
+            </div>
+
+            <div class="perfil-menu">
+                <button class="perfil-btn" onclick="toggleMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                    <img src="~/img/user.icon.png" alt="Perfil" class="perfil-img-nav" />
+                </button>
+                <ul id="dropdown-perfil" class="perfil-dropdown">
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li><a asp-page="/perfil"><i class="fa-solid fa-user"></i> O Meu Perfil</a></li>
+                        <li><a asp-page="/Favoritos"><i class="fa-solid fa-heart"></i> Favoritos</a></li>
+                        <li><a asp-page="/logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-page="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                        <li><a asp-page="/regist"><i class="fa-solid fa-user-plus"></i> Registar</a></li>
+                    }
+                    <li class="dropdown-divider"><hr></li>
+                    <li><a href="https://linkedin.com/in/frederico-ferreira-31834249/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a></li>
+                    <li><a href="https://github.com/Frederico-Ferreira-13" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    @RenderBody()
+
+    <footer>
+        <p>&copy; 2026 Frederico - Trabalho Académico - Assembly.</p>
+    </footer>
+
+    <script src="~/js/script.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

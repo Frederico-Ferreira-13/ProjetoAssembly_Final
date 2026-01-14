@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Contracts/Contracts.csproj" />
+  <Project Path="Core/Core.csproj" />
+  <Project Path="ProjetoAssembly_Final/ProjetoAssembly_Final.csproj" />
+  <Project Path="Repo/Repo.csproj" />
+  <Project Path="Service/Service.csproj" />
+</Solution>
