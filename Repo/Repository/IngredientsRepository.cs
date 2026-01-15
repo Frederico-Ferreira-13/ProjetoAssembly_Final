@@ -9,7 +9,7 @@ namespace Repo.Repository
 {
     public class IngredientsRepository : Repository<Ingredients>, IIngredientsRepository
     {
-
+        protected override string PrimaryKeyName => "IngredientsId";
         public IngredientsRepository() : base("Ingredients") { }
 
         protected override Ingredients MapFromReader(SqlDataReader reader)
@@ -116,7 +116,7 @@ namespace Repo.Repository
 
         public async Task<bool> IsIngredientUnique(string ingredientUnique, int? excludeId = null)
         {
-            string sql = $"SELECT COUNT(Id) FROM {_tableName} WHERE IngredientName = @IngredientName  AND IsActive = 1";
+            string sql = $"SELECT COUNT(IngredientsId) FROM {_tableName} WHERE IngredientName = @IngredientName  AND IsActive = 1";
 
             SqlParameter paramName = new SqlParameter("@IngredientName", ingredientUnique);
             List<SqlParameter> parameters = new List<SqlParameter> { paramName };

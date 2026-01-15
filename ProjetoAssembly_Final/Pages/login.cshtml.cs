@@ -43,6 +43,8 @@ namespace ProjetoAssembly_Final.Pages
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.UsersRoleId.ToString())
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -55,6 +57,12 @@ namespace ProjetoAssembly_Final.Pages
 
             ModelState.AddModelError(string.Empty, "Utilizador ou palavra-passe incorreto.");
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostLogoutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToPage("/Index");
         }
 
         public void OnGet()

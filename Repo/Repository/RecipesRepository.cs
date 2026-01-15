@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class RecipesRepository : Repository<Recipes>, IRecipesRepository
     {
+        protected override string PrimaryKeyName => "RecipesId";
         public RecipesRepository() : base("Recipes")
         {
         }
@@ -72,8 +73,10 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(Recipes entity)
         {
-            return $"UPDATE {_tableName} SET ..., DifficultyId = @DifficultyId, LastUpdatedAt = GETDATE() " + // ✅ CORRIGIDO
-                $"WHERE RecipesId = @RecipesId";
+            return $"UPDATE {_tableName} SET Title = @Title, Instructions = @Instructions, " +
+               $"PrepTimeMinutes = @PrepTimeMinutes, CookTimeMinutes = @CookTimeMinutes, " +
+               $"Servings = @Servings, CategoriesId = @CategoriesId, DifficultyId = @DifficultyId, " +
+               $"LastUpdatedAt = GETDATE() WHERE RecipesId = @RecipesId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Recipes entity)
@@ -97,7 +100,8 @@ namespace Repo.Repository
             List<Recipes> recipes = new List<Recipes>();
 
             string sql = $@"
-                SELECT RecipesId, UserId, CategoriesId, DifficultyType, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, CreatedAt, LastUpdatedAt, IsActive
+                SELECT RecipesId, UserId, CategoriesId, DifficultyId, Title, Instructions, 
+                       PrepTimeMinutes, CookTimeMinutes, Servings, CreatedAt, LastUpdatedAt, IsActive
                 FROM {_tableName} 
                 WHERE UserId = @UserId AND IsActive = 1
                 ORDER BY CreatedAt DESC";

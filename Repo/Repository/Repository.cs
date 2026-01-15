@@ -23,6 +23,8 @@ namespace Repo.Repository
         protected abstract string BuildUpdateSql(TEntity entity);
         protected abstract SqlParameter[] GetUpdateParameters(TEntity entity);
 
+        protected abstract string PrimaryKeyName { get; }
+
         public async Task CreateAddAsync(TEntity entity)
         {
             string sql = BuildInsertSql(entity);
@@ -50,7 +52,7 @@ namespace Repo.Repository
 
         public async Task<TEntity?> ReadByIdAsync(int id)
         {
-            string sql = $"SELECT * FROM {_tableName} Where {_tableName}Id = @Id AND IsActive = 1";
+            string sql = $"SELECT * FROM {_tableName} WHERE {PrimaryKeyName} = @Id AND IsActive = 1";
             SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@Id", id) };
 
             try
@@ -115,7 +117,7 @@ namespace Repo.Repository
 
         public async Task RemoveAsync(TEntity entity)
         {
-            string sql = $"UPDATE {_tableName} SET IsActive = 0, LastUpdatedAt = GETDATE() WHERE {_tableName}Id = @Id";
+            string sql = $"UPDATE {_tableName} SET IsActive = 0, LastUpdatedAt = GETDATE() WHERE {PrimaryKeyName} = @Id";
             SqlParameter paramId = new SqlParameter("@Id", entity.GetId());
 
             try

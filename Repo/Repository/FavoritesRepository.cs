@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class FavoritesRepository : Repository<Favorites>, IFavoritesRepository
     {
+        protected override string PrimaryKeyName => "FavoritesId";
         public FavoritesRepository() : base("Favorites")
         {
         }
@@ -79,7 +80,7 @@ namespace Repo.Repository
             SqlParameter[] paramsList =
             {
                 new SqlParameter("@UserId", userId),
-                new SqlParameter("@RecipeId", recipeId)
+                new SqlParameter("@RecipesId", recipeId)
             };
 
             var result = await SQL.ExecuteScalarAsync(sql, paramsList);

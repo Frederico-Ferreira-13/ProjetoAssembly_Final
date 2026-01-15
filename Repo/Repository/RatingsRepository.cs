@@ -10,11 +10,12 @@ namespace Repo.Repository
 {
     public class RatingsRepository : Repository<Ratings>, IRatingRepository
     {
+        protected override string PrimaryKeyName => "RantingsId";
         public RatingsRepository() : base("Ratings") { }
 
         protected override Ratings MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("RatingId"));
+            int id = reader.GetInt32(reader.GetOrdinal("RatingsId"));
             DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
 
             bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
@@ -54,7 +55,7 @@ namespace Repo.Repository
         protected override string BuildUpdateSql(Ratings entity)
         {
             return $"UPDATE {_tableName} SET RatingValue = @RatingValue" +
-                   $"WHERE RatingId = @Id";
+                   $"WHERE RatingsId = @Id";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Ratings entity)
@@ -102,7 +103,7 @@ namespace Repo.Repository
         {
             List<Ratings> ratings = new List<Ratings>();
 
-            string sql = $@"SELECT Id, RecipesId, UserId, RatingValue, CreatedAt, IsActive
+            string sql = $@"SELECT RatingsId, RecipesId, UserId, RatingValue, CreatedAt, IsActive
                     FROM {_tableName}
                     WHERE RecipesId = @RecipeId AND IsActive = 1
                     ORDER BY CreatedAt DESC";

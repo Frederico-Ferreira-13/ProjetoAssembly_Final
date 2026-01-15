@@ -8,13 +8,11 @@ namespace ProjetoAssembly_Final.Pages
 {
     public class registModel : PageModel
     {
-        private readonly IUsersRepository _usersRepository;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IUsersService _usersService;       
 
-        public registModel(IUsersRepository usersRepository, IPasswordHasher passwordHasher)
+        public registModel(IUsersService usersService)
         {
-            _usersRepository = usersRepository;
-            _passwordHasher = passwordHasher;
+            _usersService = usersService;
         }
 
         [BindProperty]
@@ -31,39 +29,38 @@ namespace ProjetoAssembly_Final.Pages
                 return Page();
             }
 
-            string salt = _passwordHasher.GenerateSalt();
-            var hashResult = _passwordHasher.HashPassword(Password, salt);
-
-            if (!hashResult.IsSuccessful)
-            {
-                ModelState.AddModelError(string.Empty, "Erro ao processar password.");
-                return Page();
-            }
-
-            int roleIdParaAtribuir = (Email.ToLower() == "fredericocrf87@hotmail.com") ? 2 : 1;
-
-            bool aprovadoAutomatico = (roleIdParaAtribuir == 2);
-
             try
             {
-                var newUser = new Users(
+                var dummyHash = new string('0', 60);
+                var dummySalt = new string('0', 16);
+
+                var newUserRequest = new Users(
                     UserName,
                     Email,
-                    hashResult.Value.Hash,
-                    salt,
-                    usersRoleId: roleIdParaAtribuir,
-                    isApproved: aprovadoAutomatico,
+                    dummyHash,
+                    dummySalt,
+                    usersRoleId: 1,
+                    isApproved: false,
                     accountId: 1
                 );
 
-                await _usersRepository.CreateAddAsync(newUser);
-                return RedirectToPage("/login");
+                
+                var result = await _usersService.RegisterUserAsync(newUserRequest, Password);
+
+                if (result.IsSuccessful)
+                {
+                    return RedirectToPage("/Login");
+                }
+
+                ModelState.AddModelError(string.Empty, result.Error.Message);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, "Error ao registar: " + ex.Message);
-                return Page();
+               
+                ModelState.AddModelError(string.Empty, ex.Message);
             }
+
+            return Page();
         }
     }
 }

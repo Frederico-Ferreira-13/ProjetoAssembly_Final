@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class DifficultyRepository : Repository<Difficulty>, IDifficultyRepository
     {
+        protected override string PrimaryKeyName => "DifficultyId";
         public DifficultyRepository() : base("Difficulty")
         {
         }

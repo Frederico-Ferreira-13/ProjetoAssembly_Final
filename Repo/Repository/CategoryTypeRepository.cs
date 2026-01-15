@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class CategoryTypeRepository : Repository<CategoryType>, ICategoryTypeRepository
     {
+        protected override string PrimaryKeyName => "CategoryTypeId";
         public CategoryTypeRepository() : base("CategoryType") { }
 
         protected override CategoryType MapFromReader(SqlDataReader reader)

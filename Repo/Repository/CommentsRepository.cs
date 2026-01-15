@@ -10,6 +10,7 @@ namespace Repo.Repository
 {
     public class CommentsRepository : Repository<Comments>, ICommentsRepository
     {
+        protected override string PrimaryKeyName => "CommentsId";
         public CommentsRepository() : base("Comments")
         {
         }
@@ -65,8 +66,8 @@ namespace Repo.Repository
             {
                 new SqlParameter("@RecipesId", entity.RecipesId),
                 new SqlParameter("@UserId", entity.UserId),
-                new SqlParameter("@CommentText", SqlDbType.NVarChar, 4000) { Value = commentTextValue },
-                new SqlParameter("@OriginalComment", SqlDbType.NVarChar, 4000) {Value = originalCommentValue },
+                new SqlParameter("@CommentText", SqlDbType.NVarChar, 500) { Value = commentTextValue },
+                new SqlParameter("@OriginalComment", SqlDbType.NVarChar, 500) {Value = originalCommentValue },
                 new SqlParameter("@IsDeleted", entity.IsDeleted),
                 new SqlParameter("@IsEdited", entity.IsEdited)
             };

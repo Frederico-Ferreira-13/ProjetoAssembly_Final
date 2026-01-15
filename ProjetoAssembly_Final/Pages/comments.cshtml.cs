@@ -50,21 +50,16 @@ namespace ProjetoAssembly_Final.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null || !int.TryParse(claim.Value, out int userId))
+            {
+                return RedirectToPage("/Login");
+            }
+
             if (!ModelState.IsValid)
             {
                 return Page();
-            }
-
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (claim == null || string.IsNullOrEmpty(claim.Value))
-            {
-                return RedirectToPage("/Login");
-            }
-
-            if (!int.TryParse(claim.Value, out int userId))
-            {
-                return RedirectToPage("/Login");
-            }
+            }            
 
             try
             {

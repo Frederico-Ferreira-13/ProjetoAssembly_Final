@@ -2,6 +2,7 @@
 using Core.Model;
 using Microsoft.Data.SqlClient;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,9 +10,14 @@ namespace Repo.Repository
 {
     public class UsersRepository : Repository<Users>, IUsersRepository
     {
+        private const string SelectColumns = "UserId, UserName, Email, PasswordHash, Salt, " +
+            "IsApproved, UsersRoleId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
+
         public UsersRepository() : base("Users")
         {
         }
+
+        protected override string PrimaryKeyName => "UserId";
 
         protected override Users MapFromReader(SqlDataReader reader)
         {
@@ -51,6 +57,12 @@ namespace Repo.Repository
             );
         }
 
+        protected override string BuildInsertSql(Users model)
+        {
+            return $"INSERT INTO {_tableName} (UserName, Email, PasswordHash, Salt, UsersRoleId, IsApproved, AccountId, CreatedAt, IsActive) " +
+                    $"VALUES (@UserName, @Email, @PasswordHash, @Salt, @UsersRoleId, @IsApproved, @AccountId, GETDATE(), 1)";
+        }
+
         protected override SqlParameter[] GetInsertParameters(Users model)
         {
             return new SqlParameter[]
@@ -65,6 +77,13 @@ namespace Repo.Repository
             };
         }
 
+        protected override string BuildUpdateSql(Users model)
+        {
+            return $"UPDATE {_tableName} SET UserName = @UserName, Email = @Email, PasswordHash = @PasswordHash, " +
+                   $"Salt = @Salt, UsersRoleId = @UsersRoleId, IsApproved = @IsApproved, AccountId = @AccountId, " +
+                   $"LastUpdatedAt = GETDATE(), IsActive = @IsActive WHERE UserId = @Id";
+        }
+
         protected override SqlParameter[] GetUpdateParameters(Users model)
         {
             List<SqlParameter> parameters = new List<SqlParameter>(GetInsertParameters(model));
@@ -75,186 +94,61 @@ namespace Repo.Repository
             return parameters.ToArray();
         }
 
-        protected override string BuildInsertSql(Users model)
-        {
-            return $"INSERT INTO {_tableName} (UserName, Email, PasswordHash, Salt, UsersRoleId, IsApproved, AccountId, CreatedAt, IsActive) " +
-                    $"VALUES (@UserName, @Email, @PasswordHash, @Salt, @UsersRoleId, @IsApproved, @AccountId, GETDATE(), 1)";
-        }
-
-        protected override string BuildUpdateSql(Users model)
-        {
-            return $"UPDATE {_tableName} SET UserName = @UserName, Email = @Email, PasswordHash = @PasswordHash, " +
-                   $"Salt = @Salt, UsersRoleId = @UsersRoleId, IsApproved = @IsApproved, AccountId = @AccountId, LastUpdatedAt = GETDATE(), IsActive = @IsActive " +
-                   $"WHERE UserId = @Id";
-        }
-
-        private const string SelectColumns = "UserId, UserName, Email, PasswordHash, Salt, IsApproved, UsersRoleId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
-
         public async Task<bool> ExistsByIdAsync(int id)
         {
             string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserId = @Id AND IsActive = 1";
-
-            SqlParameter paramId = new SqlParameter("@Id", id);
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramId))
-                {
-                    if (reader.Read())
-                    {
-                        // Ler o resultado da contagem
-                        return reader.GetInt32(0) > 0;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nErro SQL no Repositório ExistsByIdAsync: {ex.Message}");
-                throw;
-            }
-
-            return false;
+            object? result = await SQL.ExecuteScalarAsync(sql, new SqlParameter("@Id", id));
+            return result != null && Convert.ToInt32(result) > 0;
         }
+
         public async Task<Users?> GetByEmailAsync(string email)
         {
             string sql = $"SELECT {SelectColumns} FROM {_tableName} WHERE Email = @Email AND IsActive = 1";
-
-            SqlParameter paramEmail = new SqlParameter("@Email", email);
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramEmail))
-                {
-                    if (reader.Read())
-                    {
-                        return MapFromReader(reader);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nErro SQL no Repositório GetByEmail: {ex.Message}");
-                throw;
-            }
-            return null;
-        }
-
-        public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
-        {
-            List<SqlParameter> parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@Email", email)
-            };
-
-            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE Email = @Email AND IsActive = 1";
-
-            if (excludeId.HasValue)
-            {
-                sql += $" AND UserId != @ExcludeId";
-                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
-            }
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters.ToArray()))
-                {
-                    if (reader.Read())
-                    {
-                        return reader.GetInt32(0) > 0;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nErro SQL no Repositório ExistsByEmail: {ex.Message}");
-                throw;
-            }
-
-            return false;
-        }
-
-        public async Task<bool> ExistsByUserNameAsync(string userName, int? excludeId = null)
-        {
-            List<SqlParameter> parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@UserName", userName)
-            };
-
-            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserName = @UserName AND IsActive = 1";
-
-            if (excludeId.HasValue)
-            {
-                sql += $" AND UserId != @ExcludeId";
-                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
-            }
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters.ToArray()))
-                {
-                    if (reader.Read())
-                    {
-                        return reader.GetInt32(0) > 0;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nErro SQL no Repositório ExistsByUserName: {ex.Message}");
-                throw;
-            }
-
-            return false;
-        }
-
-        public async Task<List<Users>> GetByApprovalStatusAsync(bool isApproved)
-        {
-            List<Users> users = new List<Users>();
-
-            string sql = $"SELECT * FROM {_tableName} WHERE IsApproved = @IsApproved AND IsActive = 1";
-            SqlParameter paramApproved = new SqlParameter("@IsApproved", isApproved);
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramApproved))
-                {
-                    while (reader.Read())
-                    {
-                        users.Add(MapFromReader(reader));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nErro SQL no Repositório GetByApprovalStatus: {ex.Message}");
-                throw;
-            }
-
-            return users;
+            return await ExecuteSingleAsync(sql, new SqlParameter("@Email", email));
         }
 
         public async Task<Users?> GetUserByUserNameAsync(string userName)
         {
             string sql = $"SELECT {SelectColumns} FROM {_tableName} WHERE UserName = @UserName AND IsActive = 1";
+            return await ExecuteSingleAsync(sql, new SqlParameter("@UserName", userName));
+        }
 
-            SqlParameter paramUserName = new SqlParameter("@UserName", userName);
+        public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
+        {
+            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE Email = @Email AND IsActive = 1";
+            var parameters = new List<SqlParameter> { new SqlParameter("@Email", email) };
 
-            try
+            if (excludeId.HasValue)
             {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramUserName))
-                {
-                    if (reader.Read())
-                    {
-                        return MapFromReader(reader);
-                    }
-                }
+                sql += " AND UserId != @ExcludeId";
+                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
-            catch (Exception ex)
+
+            object? result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            return result != null && Convert.ToInt32(result) > 0;
+        }
+
+        public async Task<bool> ExistsByUserNameAsync(string userName, int? excludeId = null)
+        {
+            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserName = @UserName AND IsActive = 1";
+            var parameters = new List<SqlParameter> { new SqlParameter("@UserName", userName) };
+
+            if (excludeId.HasValue)
             {
-                Console.WriteLine($"\nErro SQL no Repositório GetUserByUserNameAsync: {ex.Message}");
-                throw;
+                sql += " AND UserId != @ExcludeId";
+                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
-            return null;
+
+            object? result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            return result != null && Convert.ToInt32(result) > 0;
+        }
+
+        public async Task<List<Users>> GetByApprovalStatusAsync(bool isApproved)
+        {
+            string sql = $"SELECT {SelectColumns} FROM {_tableName} WHERE IsApproved = @IsApproved AND IsActive = 1";
+            var result = await ExecuteListAsync(sql, new SqlParameter("@IsApproved", isApproved));
+                        
+            return result.ToList();
         }
     }
 }

@@ -5,20 +5,52 @@
     ViewData["Title"] = "Contactos";
 }
 
-<main class="container">
-    <section id="contact">
+<link rel="stylesheet" href="~/css/contacts.css"/>
+
+<main class="container">   
+    <div class="contact-header">
         <h1>Contactos</h1>
-        <div class="contact-container">
-            <div class="contact-card">
-                <div class="contact-icon">📞</div>
-                <h3>Telefone</h3>
-                <a href="tel:916781293" class="btn">916 781 293</a>
-            </div>
-            <div class="contact-card">
-                <div class="contact-icon">✉️</div>
-                <h3>E-mail</h3>
-                <a href="mailto:fredericocrf87@hotmail.com" class="btn">Enviar E-mail</a>
-            </div>
+        <p>Tem alguma dúvida ou sugestão? Estamos aqui para ajudar!</p>                
+    </div>
+
+    <div class="contact-info-cards">               
+        <div class="contact-card"> 
+            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+            <h3>Telefone</h3>
+            <p>Segunda a Sexta, 9h às 18h</p>
+            <a href="tel:916781293" class="btn-contact-action">916 781 293</a>
         </div>
-    </section>
+
+        <div class="contact-card">
+            <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+            <h3>E-mail</h3>
+            <p>Respondemos em 24h</p>
+            <a href="malito:fredericocrf87@hotmail.com" class="btn-contact-action">Enviar E-mail</a>
+        </div>
+    </div>
+               
+    <div class="contact-form-wrapper">
+        <h3>Envie-nos uma mensagem</h3>      
+
+        <form method="post" class="custom-form">
+            <div class="form-group">
+                <label asp-for="Nome">Nome</label>
+                <input asp-for="Nome" placeholder="O seu nome..." required />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">E-mail</label>
+                <input asp-for="Email" type="email" placeholder="exemplo@email.com" required />
+            </div>
+            <div class="form-group">
+                <label asp-for="Mensagem">Mensagem</label>
+                <textarea asp-for="Mensagem" placeholder="Em que podemos ajudar?" required></textarea>
+            </div>
+
+            <button type="submit" class="btn-send">
+                <span>Enviar Mensagem</span>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
 </main>

@@ -10,23 +10,23 @@
         <h2 class="section-title">Explorar Receitas</h2>
 
         <div class="grid-categorias">
-            <a asp-page="/receitas" asp-route-categoryId="1" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>Sopas</span>
             </a>
-            <a asp-page="/receitas" asp-route-categoryId="2" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>Carne</span>
             </a>
-            <a asp-page="/receitas" asp-route-categoryId="3" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
-                <span>peixe</span>
+                <span>Peixe</span>
             </a>
-            <a asp-page="/receitas" asp-route-categoryId="4" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>Sobremesas</span>
             </a>
-            <a asp-page="/receitas" class="cat-card" style="background-color: #f8f9fa;">
+            <a asp-page="/recipes" class="cat-card" style="background-color: #f8f9fa;">
                 <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
                 <span>Todas</span>
             </a>
@@ -57,7 +57,7 @@
 
 
 
-                            <a asp-page="/visualizarReceita" asp-route-id="@receita.RecipesId" class="btn">
+                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">
                                 Ver Receita
                             </a>
                         </div>
@@ -69,7 +69,7 @@
                 <div class="aviso-vazio" style="grid-column: 1/-1; text-align: center; padding: 50px">
                     <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: #ccc;"></i>
                     <p style="margin-top: 15px;">Ainda não temos receitas nesta categoria.</p>
-                    <a asp-page="/receitas" asp-route-categoryId="" class="btn-principal">Ver todas as receitas</a>
+                    <a asp-page="/recipes" asp-route-categoryId="" class="btn-principal">Ver todas as receitas</a>
                 </div>
             }
         </div>

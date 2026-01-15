@@ -1,20 +1,34 @@
-﻿@page
+﻿@page "{RecipeId:int?}"
 @model ProjetoAssembly_Final.Pages.commentsModel
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Deixe os Seus Comentários";
+    ViewData["Title"] = "Comentários";
 }
 
 <main class="container">
-    <h1>Comentários e Avaliações</h1>
-    <section class="comentarios-form">
-        <form id="formComentario">
-            <input type="text" name="nome" required placeholder="O seu nome">
-            <select name="rating">
-                <option value="5">⭐⭐⭐⭐⭐</option>
-            </select>
-            <textarea name="mensagem" rows="4" required placeholder="O que achou?"></textarea>
-            <button type="submit" class="btn-publicar">Publicar Comentário</button>
+    <h1>Comentários da Receita</h1>
+
+    <div class=comentarios-lista">
+        @foreach(var c in Model.ListComments)
+        {
+            <div class="comment-card" style="border-bottom: 1px solid #ddd; padding: 10px">
+                <p><strong>Utilizador #@c.UserId</strong> <small>@c.CreatedAt.ToLocalTime()</small></p>
+                <p>@c.CommentText</p>
+            </div>
+        }
+    </div>
+
+    <section class="comentarios-form" style="margin-top: 30px">
+        <h3>Deixe a sua opinião</h3>
+        <form method="post">
+            <input type="hidden" asp-for="RecipeId" />           
+
+            <div class="form-groupd">
+                <textarea asp-for="Message" class="form-control" placeholder="O que achou desta receita?"></textarea>
+                <span asp-validation-for="Message" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-publicar">Publicar Comentário</button>              
         </form>
     </section>
 </main>

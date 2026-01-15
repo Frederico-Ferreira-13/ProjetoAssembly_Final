@@ -1,0 +1,248 @@
+PROJECTO_ASSEMBLY
+
+Neste projeto utilizo uma flisofia de Design DDD (Domain-Driven Disign) sendo um projeto pequeno e académico, a ideia central desta filosofia é criar um software que resolva problemas
+complexos de forma eficaz, a estrutura e a linguagem de código devem refletir de forma rigorsa o mundo real do negócio que o software serve.
+
+3 Pilares essenciais.
+ 
+1º Foco no Domínio: Concentra-se em aprender profundamente o domínio do negócio(ex: regras sobre "Receitas" e "Ingredientes") antes de começar a codificar.
+
+2º Linguagem Ubíqua (Ubiquitous Language): As class, métodos, e variáveis no código C# devem ter os mesmos nomes e significados que os termos usados no dia-a-dia do negócio
+   (ex: a class Recipe e o método chama-se ApproveRecipe, e não UpdateTable).
+
+3º Modelos Ricos: Criar entidades com comportamento (lógica de negócio) e não apenas dados (propriedades).
+ - Modelo Pobre (Anémico): Uma class é só dados (Recipe.Title = "Bolo"). A lógica de validação está noutra classe.
+ - Modelo Rico (DDD): A lógica está na Entidade (Recipe.Approve() ). A Entidade protege o seu estado.
+
+Embora o DDD tenha sido criado para sistemas complexos, os seus príncipios são ideiais para projetos académicos ou pequenos porque forçam a praticar a melhor organização 
+e design de código.
+
+ - Melhor Estrutura: Força a separar claramente o que é a Lógica de Negócio (Core/Domain) do que são Detalhes Técnicos (Repo/Infrastructure). Isto é um requisito
+                     de boas práticas em design de software.
+
+ - Comunicação Clara: Ao usar a Linguagem Ubiqua, torna-se mais fácil de ler, manter e explicar (ou seja, é mais fácil de apresentar).
+
+ - Testabilidade: O isolamento do Core torna os testes unitários da lógica de negócio(Recipe e Account) muito mais fáceis de escrever e implementar.
+
+ - Coerência: Garante que as regras de negócio importantes (como obrigatoriedade de um ingrediente na Receita) são centralizadas na própria Entidade, e não dispersas
+              pelos serviços.
+
+ O DDD não obriga a usar microsserviços, mas obriga-nos a escrever código organizado, estável e fiel.
+
+ 
+SOA (Arquetetura Orientada a Serviços)
+
+É um paradigma arquitetónico que define um método de desenvolvimento de sistemas distribuidos, onde as funcionalidades da aplicação são fornecidas como serviços
+discretos e reutilizáveis.
+
+3 Pilares
+
+1. Serviço: É uma unidade autónoma, auto-suficiente e francamente acoplada. Cada Serviço realiza uma tarefa de negócio especifica (ex: Serviço de inventário, 
+            Serviço de Pagamentos). -> Foco Principal - Funcionalidade encapsulada.
+
+2 Contrato de Serviço: É a interface formal que o serviço expõe ao mundo (geralmentevia API REST, SOAP ou gRPC). Define o que o serviço faz e quais
+                       os dados que espera/devolve. --> Foco Principal - Interoperabilidade. É o "acrodo" (contrato) de como comunicar.
+
+3. Reutilização: Os serviços devem ser genéricos o suficiente para serem usados por múltiplos consumidores (ex: O mesmo Serviço de inventário é usado pela Loja Online
+                 e pela App de vendas internas).
+
+ Comparamos com a Arquitetura tradicional (monolitica), se a loja online e o sistema de vendas precisam de calcular impostos, a lógica é codificada em dois lugares 
+ diferentes.
+
+Numa Arquitetura SOA, existe um único Serviço de Impostos, e ambos o consomem através do seu contrato (Interface)
+
+A Evolução: Microsserviços
+
+ O SOA, é vista como uma evolução moderna do SOA. Remove o ESB central, tornando cada serviço mais autónomo (com a sua própria base de dados) 
+ e a comunicação mais leve (principalmente HTTP/REST ou gRPC), o que lhes permite ser deployados e escalados de forma completamente independente.
+
+
+
+CÓDIGO RESULT
+
+Principal função eliminar o uso de exceções (throw) para tornar o código mais seguro, previsivel e fácil de testar.
+
+Conceito principal
+
+Em vez de lançar um valor caso de sucesso ou lancçar uma excepção em caso de falha, o padrão Result faz com que o método sempre devolva um objecto Result.
+
+Estado de Operação:
+ - Sucesso: Contém o valor esperado (Value) e flag IsSuccessful = true.
+ - Falha: Contém detalhes da falha, como um código de erro (ErrorCode), uma mensagem (Message) e, opcionalmente, erros de validação (ValidationErrors), com flag
+          IsSuccessful = false.
+
+Desta forma forçamos o método a ligar explicitamente com os resultados de sucesso e falha, 
+em vez de depender de bolocos try-catch que são mais lentos e desorganizam a lógica de negócio.
+
+Componentes e Funcionalidades
+
+O código Result (incluindo Result<T> e ErrorCodes) é composto por três partes:
+
+1º Class Result (Non-Generic)
+
+Propriedades
+ - IsSuccessful (bool): Indica se a operação foi concluída com êxito.
+ - ErrorCode (string): Chave de erro padronizada (ex: "Aut.Unauthorized", "NotFound").
+ - Message (string): Uma descrição amigável ou técnica do resultado.
+ - ValidationErrors (Dictionary): Usado para devolver erros de validação por campo (model state errors).
+
+Métodos Estáticos:
+ - Result.Success(): Cria um objecto Result que representa sucesso.
+ - Result.Failure(): Cra um objeto Result que representa falha, obrigando a fornecer um ErrorCode.
+
+
+2º Class Result<T> (Generic)
+
+Para operações que devolvam um valor em caso de sucesso (ex: Read ou Create):
+
+Propriedade:
+ - Value (T?): O valor real devolvido em caso de sucesso.
+
+Métodos Estáticos:
+
+ - Result<T>.Success(T value): Cria um objecto Result<T> com o valor bem-sucedido.
+ - Result<T>.Failure(): Cria um objecto Result<T> de falha (o value será default<T>, tipicamente null).
+
+3º Class ErrorCodes
+
+Conunto constantes de string padronizadas.
+
+. Função: Garante que todas as falhas na aplicação são referenciadas através de um código consistente e legível. O que facilita a localização de erros e a sua
+          conversão para códigos de status HTTP adequados (ex: NotFound -> 404, AuthUnauthorized -> 401, AlreadyExists -> 409 Conflict).
+
+Este padrão está frequentemente associado ao paradigma de Programação Funcional (FP) e é uma forma mais controlada de tratar erros de domínio na POO.
+
+A importância do Mapeamento
+
+O mapeamento é importante no desenvolvimento de aplicações por camadas por 3 razões principais:
+
+1º Separação de Preocupações:
+ - A sua entidade Core.Model.Account, etc é um objeto de domínio. Ele deve conter apenas a lógica de negócio e dos dados tal como estão na base de dados.
+ - O AppService.DTOs.Account.ReadAccountDTO é um objeto de transferência de dados. Ele define exatamente a estrutura de dados que a API vai expor ao exterior(cliente,
+   web, mobile, etc.)
+ 
+2º Segurança e Proteção de Dados
+ - As emtidades de domínio contêm dados sensiveis (passwords hashed, campos internos de auditoria, etc) que não devem ser expostos na API. O DTO de leitura
+   funciona como um filtro, garantindo que apenas os campos seguros e relevantes são expostos.
+
+3º Transformação e projeção:
+ - Permite transformar dados e concatenar campos.
+ - No mapemaneto projetamos dados realacionais, para o objeto princiapl.
+
+CreateMap -> Cria um mapa de conversão do Tipo A para o Tipo B, O Tipo A é a entidade Category e o B é o ReadCategoryDTO.
+ForMember -> Define uma regra de mapeamento personalizada para uma propriedade do objeto de destino. É a regra que diz como preencher
+             a propriedade CategoryTypeDisplayName.
+
+dest (Destination) -> O objetoDestino (DTO). A propriedade que está a ser preenchida. dest.CategoryTypeDisplayName.
+
+src(Source) -> O objeto Fonte (Entidade). A partir do qual o dado é lido. src.Type (a propriedade Enum na Entidade)
+
+opt (Options) -> Opções de mapeamento para esta propriedade especifica. Usado para chamar o método MapFrom() (diz de onde vem o valor).
+
+O ForCtorParam (Mapemaneto para Construtores)
+
+ É usado quando o AutoMapper precisa de preencher os valores de uma entidade que usa um construtor com parâmetros em vez de setters públicos.
+  - ForCtorParam(...): Diz ao AutoMapper para mapear o valor para um parâmetro do construtor da entidade, garantido que as regras de validação do construtor são 
+                       respeitadas.
+  
+  - nameof(Category.CategoryName): Garante que o nome do parâmetro do construtor está correto, usando o nome da propriedade da entidade para evitar erros de escrita.
+
+
+MediatR
+
+O MediatR é uma biblioteca do .NET que implementa o padrão Mediator (Mediador) e simplifica a implementação do padrão CQRS (Command Query Responsability Segragation).
+
+O MediatR serve como um despachante de mensagens ou um barramento de comunicação interno que desacopla o envio de uma ação (Comando ou Consulta) da sua execução.
+
+Finalidade
+
+1. Desacoplamento (O Padrão Mediator)
+ - Remove a necessidade de uma classe (o remetente) ter uma referência direta para a class que executa a lógica (o recetor).
+ - Em ves de o Controller chamar um serviço diretamente (_userService.GetUser(id)), ele envia uma mensagem através do MediatR
+   (_mediator.Send(query)). O MediatR sabe qual é a class responsável por esta mensagem (o Handle) e enacminha-a.
+
+ - O benefício é que o Controller só precisa de uma dependência (IMediator), simplicando a sua estrutura e tornando o código mais fácil de testar e manter.
+
+2. Implementação CQRS Simplificada
+
+ - Comandos (IRequest<T>): Usado para modificações (CreateRecipeCommand, UpdateUserCommand).
+ - Consultas(IRequest<T>): Usado apenas para obter dados (GetRecipeByIdQuery, ListAllUsersQuery)
+ - Handlers (IRequestHandler<TRequest, TResponse): São as class que contêm a lógica e o que MediatR executa.
+
+3 Pipeline de Comportamento (Behaviors)
+ O MediatR permite criar uma cadeia de processamento (um pipeline) que envolve o comando ou consulta antes de chegar ao seu Handler principal.
+
+útil para:
+ - Validação: Executar validadores de DTO(ex: FluentValidation) e devolver um BadRequest antes de tocar no Handler.
+ - Logging: Registar (log) o tempo de execução de cada pedido.
+ - Transações: Gerir transações de base de dados para garantir que um Comando é atómico. 
+ - Autorização: Verificação permissões de utilizador.
+
+MAPPING
+
+Estando a utilizar a library do AutoMapper, o Mapping serve para traduzir dados entre diferentes camadas do software(Apresentação,
+Aplicação e Domínio) 
+
+1. Desacoplamento de Camadas (Decoupling)
+ . Separação: O mapping impede que as Entidades do Domínio(Core.) sejam expostas diretamente à camada de apresentação (Controladores/APIs) ou à camada de Repositório.
+ . Significado: Isto Significa que podemos alterar a estrtura da base de dados (que afeta as Entidades) sem quebrarmos o contrado da API (os DTOs) ou vice_versa.
+                As camadas de Domínio e Persistência ficam desacopladas.
+ 
+2. Segurança e Controlo de Exposição de Dados (Security)
+ . Prevenção de Ataques Over-Posting: UM DTO de Criação só contém os campos que o utilizador deve enviar. UM DTO de leitura só contém os campos que o utilizador deve ver.
+ . Exemplo: Se o Account tivesse um campo de ScretHash, este nunca apereciaria no ReadAccountDTO, garantindo que não é exposto acidentalmente numa resposta API.
+
+3. Simplificação do Código (Boilerplate Reduction)
+   . O AutoMapper automatiza a conmversão de propriedades com o mesmo nome entre objectos, o que reduz drasticamente o código boilepart manula. isto torna o código
+     de serviço muito mais conciso e fácil de manter.
+
+1. Classes de Domínio
+ Propósito: Contém a lógica de negócio e o estado. Representam a verdade única e coerente do sistema. 
+ Foco: Garantir a intgegridade do Domínio. Ondem o construtor da Account e o método UpdateDetails contém validações.
+
+2. DTOs - Data Transfer Objectos
+ . Propósito: São objectos burros (sem lógica de negócio), usados exclusivamente para transferir dados através dos limites de uma camada(Controller e o Service, ou o
+              Service e o cliente externo).
+ . Foco: Contrato de Serviço/API. Eles definem exatamente o que entra (Input DTOs) e o que sai (Output DTOs)
+
+3. Interfaces de Serviço
+   . Propósito: Define o contrato das operações de negócio que o Serviço de Aplicação suporta.
+   . Foco: Abastração. Permite que qualquer parte do código dependa apenas da interface, não da implementação concreta.
+
+4. Interfaces de Repositório
+   . Propósito: Define o contrato para a interação com a persistência de dados (CRUD).
+   . Foco: Abastração da Persistência. Permite, se precisarmos de mudar de SQL Server para MongoDB, só tenha de reescrever a implementação do Repositório, mantendo o
+           Serviço de Aplicação inalterado.          
+
+
+
+CQRS (Command Query Responsability Segregation)
+
+Command e CommandHandler (Escrita)
+
+ Porque devemos usar?
+  . Seperação de preocupações (Single Responsability Principle): Cada Command e CommandHandler lida com uma única transação de negócio. Isto vai tornar o código muito
+    mais fácil de navegar, entender e, crucialmente, de testar. Por exemplo o CreateRecipeCommandHandler só tem de saber criar receitas, e não se preocupa com a visualização
+    ou pesquisa.
+  . Gestão Transacional Robusta: O CommandHandler é o local perfeito para gerir a Unidade de Trabalho (IUnitOfWork) e garantir que todas as alterações à base de dados
+    para a dada ação (ex: criar receita, registar logs, notificar utilizadores) são feitas de forma atómica.
+  . Extensibilidade (Pipelining/Decorators): O CQRS facilita a adição de comportamentes cross-cutting como validação, autenticação ou caching através de pipelines 
+    de processamento, sem pluir a lógica de negócio principal dentro do handler. 
+
+Query e QueryHandler (Leitura)
+
+Porque devemos usar
+
+. Otimização de Performance: Como a leitura e a escrita estão separadas, podemos otimizar as consultas de leitura (Queries) sem nos preocuparmos com a lógica de escrita. Por exemplo,
+  pode usar SQL otimização para reporting (ex: uma join complexa para obter todas as estatísticas da receita) sem afetar a performance do código que insere a receita.
+. Modelos de leitura Diferentes: As Queries permitem usar DTOs de Leitura que são construídas especificamente para o ecrã/relatório em questão. Não precisa de carregar
+  a entidade completa do Domínio se apenas precisar do titulo e da foto. Isto é muito mais eficiente.
+. Flexibilidade na Fonte de Dados: Se a performence da leitura se tornar um problema pode facilmente mover Queries para uma fonte de dados diferentes (uma base de dados
+  NoSQL, um cache Redis, etc.) sem alterar o seu CommandHandlers ou a lógica de negócio principal.
+
+Resumindo, isto permite:
+ 1. Altamente Manutenível: É fácil localizar onde a lógica de negócio reside e onde o acesso a dados está otimizado.
+ 2. Seguro e Robusto: As regras de negócio são aplicadas de forma consistente pelos CommandHandlers.
+ 3. Escalável (na Leitura): O modelo de Query permite que o site seja otimizado para lidar com a vasta maioria do tráfego web (que é de leitura), demonstrando um design
+    pronto para a produção.
+

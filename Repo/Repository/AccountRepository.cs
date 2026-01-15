@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class AccountRepository : Repository<Account>, IAccountRepository
     {
+        protected override string PrimaryKeyName => "AccountId";
         public AccountRepository() : base("Account")
         {
         }

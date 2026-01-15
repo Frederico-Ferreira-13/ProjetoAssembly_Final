@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class UserRoleRepository : Repository<UsersRole>, IUserRoleReposiotry
     {
+        protected override string PrimaryKeyName => "UsersRoleId";
         public UserRoleRepository() : base("UsersRole")
         {
         }
@@ -37,7 +38,7 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(UsersRole entity)
         {
-            return $"UPDATE {_tableName} SET RoleName = @RoleName WHERE UserRoleId = @UserRoleId";
+            return $"UPDATE {_tableName} SET RoleName = @RoleName WHERE UsersRoleId = @Id";
         }
 
         protected override SqlParameter[] GetUpdateParameters(UsersRole entity)
@@ -45,7 +46,7 @@ namespace Repo.Repository
             return new SqlParameter[]
             {
                 new SqlParameter("@RoleName", entity.RoleName),
-                new SqlParameter("@UserRoleId", entity.GetId())
+                new SqlParameter("@Id", entity.GetId())
             };
         }
 

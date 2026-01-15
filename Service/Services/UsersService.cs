@@ -46,15 +46,18 @@ namespace Service.Services
                 if (!hashResult.IsSuccessful)
                 {
                     return Result<Users>.Failure(hashResult.Error);
-                }              
+                }
+
+                var roleId = (newUser.Email.ToLower() == "fredericocrf87@hotmail.com") ? 2 : 1;
+                var aproved = (roleId == 2);
 
                 var userToSave = new Users(
                     userName: newUser.UserName,
                     email: newUser.Email,
                     passwordHash: hashResult.Value.Hash,
                     salt: salt,
-                    usersRoleId: 1,
-                    isApproved: false,
+                    usersRoleId: roleId,
+                    isApproved: aproved,
                     accountId: newUser.AccountId
                 );
 
@@ -216,7 +219,7 @@ namespace Service.Services
         public async Task<Result> DeactivateUserAsync(int userId)
         {
             var user = await _unitOfWork.Users.ReadByIdAsync(userId);
-            if (user == null)
+            if (user != null)
             {
                 user.Deactivate();
                 await _unitOfWork.Users.UpdateAsync(user);

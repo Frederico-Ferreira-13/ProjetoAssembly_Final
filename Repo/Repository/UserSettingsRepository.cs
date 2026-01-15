@@ -13,12 +13,12 @@ namespace Repo.Repository
         {
         }
 
+        protected override string PrimaryKeyName => "UserSettingId";
+
         protected override UserSettings MapFromReader(SqlDataReader reader)
         {
             int id = reader.GetInt32(reader.GetOrdinal("UserSettingId"));
-
             bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-
             int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
             string theme = reader.GetString(reader.GetOrdinal("Theme"));
             string language = reader.GetString(reader.GetOrdinal("Language"));
@@ -36,8 +36,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(UserSettings entity)
         {
-            return $"INSERT INTO {_tableName} (UserId, Theme, Language, ReceiveNotifications, CreatedAt, IsActive) " +
-                $"VALUES (@UserId, @Theme, @Language, @ReceiveNotifications, GETDATE(), 1)";
+            return $"INSERT INTO {_tableName} (UserId, Theme, Language, ReceiveNotifications, IsActive) " +
+                   $"VALUES (@UserId, @Theme, @Language, @ReceiveNotifications, 1)";
         }
 
         protected override SqlParameter[] GetInsertParameters(UserSettings entity)
@@ -53,8 +53,9 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(UserSettings entity)
         {
-            return $"UPDATE {_tableName} SET Theme = @Theme, Language = @Language, ReceiveNotifications = @ReceiveNotifications, LastUpdatedAt = GETDATE() " +
-                $"WHERE UserSettingId = @Id";
+            return $"UPDATE {_tableName} SET Theme = @Theme, Language = @Language, " +
+                   $"ReceiveNotifications = @ReceiveNotifications, LastUpdatedAt = GETDATE() " +
+                   $"WHERE UserSettingId = @Id";
         }
 
         protected override SqlParameter[] GetUpdateParameters(UserSettings entity)

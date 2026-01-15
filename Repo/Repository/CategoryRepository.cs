@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
+        protected override string PrimaryKeyName => "CategoryId";
         public CategoryRepository() : base("Category")
         {
         }

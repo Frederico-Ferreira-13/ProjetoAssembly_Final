@@ -17,19 +17,19 @@
     <section id="categorias" class="categorias-home">
         <h2 class="section-title">O que lhe apetece hoje?</h2>
         <div class="grid-categorias">
-            <a asp-page="/Receitas" asp-route-categoryId="1" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>Sopas</span>
             </a>
-            <a asp-page="/Receitas" asp-route-categoryId="2" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>Carne</span>
             </a>
-            <a asp-page="/Receitas" asp-route-categoryId="3" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>Peixe</span>
             </a>
-            <a asp-page="/Receitas" asp-route-categoryId="4" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>Sobremesas</span>
             </a>
@@ -77,7 +77,7 @@
                         <div class="card-info">
                             <h3>@receita.Title</h3>
                             <p>Dificuldade: @(receita.DifficultyId == 1 ? "Fácil" : "Média") | @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min</p>
-                            <a asp-page="/visualizarReceita" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
+                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
                         </div>
                     </article>
                 }

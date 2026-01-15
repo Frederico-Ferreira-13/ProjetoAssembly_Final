@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "{id:int}"
 @model ProjetoAssembly_Final.Pages.view_recipesModel
 @{
     Layout = "_layout";
@@ -11,7 +11,7 @@
 
         <div class="row" style="display: flex; gap: 30px; flex-wrap: wrap;">
             <div class="col" style="flex: 1; min-width: 300px;">
-                <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : "Model.Recipe.ImageUrl")
+                <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)"
                      alt="@Model.Recipe?.Title"
                      style="width: 100%; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 

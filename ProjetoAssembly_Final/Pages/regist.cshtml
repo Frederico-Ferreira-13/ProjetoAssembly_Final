@@ -2,45 +2,50 @@
 @model ProjetoAssembly_Final.Pages.registModel
 @{
     Layout = null;
+    ViewData["Title"] = "Criar Conta - Receitas do Frederico";
 }
 
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Conta - Receitas do Frederico</title>
-    <link rel="stylesheet" href="~/css/styles.css">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/regist.css">
 </head>
 <body class="Login-page">
     <div class="login-container">
         <form id="registerForm" method="post">
-            <h1 style="text-align: center;">Criar Conta</h1>
+            <h1>Criar Conta</h1>
 
-            <div asp-validation-summary="All" style="color: #dc3545; font-size: 0.9em; list-style: none; padding: 0;"></div>
+            <div asp-validation-summary="All" style="color: #ff6b6b; font-size: 0.9em; list-style: none; padding: 0; font-weight: bold;"></div>
 
             <div class="input-group">
-                <label for="reg-username">Nome de Utilizador</label>
-                <input asp-for="UserName" type="text" id="reg-username" required placeholder="Ex: frederico_chef">
+                <label asp-for="UserName">Nome de Utilizador</label>
+                <input asp-for="UserName" type="text" required placeholder="Ex: frederico_chef">
+                <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
 
             <div class="input-group">
-                <label for="reg-email">E-mail</label>
-                <input asp-for="Email" type="email" id="reg-email" required placeholder="exemplo@email.com">
+                <label asp-for="Email">E-mail</label>
+                <input asp-for="Email" type="email" required placeholder="exemplo@email.com">
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="input-group">
-                <label for="reg-password">Palavra-passe</label>
-                <input asp-for="Password" type="password" id="reg-password" required placeholder="********">
+                <label asp-for="Password">Palavra-passe</label>
+                <input asp-for="Password" type="password" required placeholder="********">
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
             <button type="submit">Registar</button>
 
-            <p class="signup-link">Já tem conta? <a href="/Login">Faça login aqui</a></p>
-            <p class="signup-link"><a href="/" style="color: #666; font-weight: normal;">Voltar à Home</a></p>
+            <div class="signup-link">
+                <p>Já tem conta? <a href="/Login">Faça login aqui</a></p>
+                <p><a href="/" style="color: #ffffff; opacity: 0.8; font-weight: normal;">Voltar à HomePage</a></p>
+            </div>           
         </form>
     </div>
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
 </body>
 </html>

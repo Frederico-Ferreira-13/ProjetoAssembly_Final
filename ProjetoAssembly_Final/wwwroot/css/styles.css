@@ -55,22 +55,26 @@ nav ul {
     padding: 0;
 }
 
-    nav ul li a {
-        color: white;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 0.95em;
-        transition: 0.3s;
-    }
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95em;
+    transition: 0.3s;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
 
-        nav ul li a:hover, nav ul li.active a {
-            color: #28a745;
-        }
+nav ul li a:hover, nav ul li.active a {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1)
+}
 
-    nav ul li.active a {
-        border-bottom: 3px solid #28a745;
-        padding-bottom: 8px;
-    }
+nav ul li.active a {
+    color: #28a745 !important;
+    border-bottom: 3px solid #28a745;        
+    padding-bottom: 5px;
+}
 
 /* --- 3 MENU DE PERFIL --- */
 .perfil-menu {
@@ -557,36 +561,6 @@ nav ul {
     color: #888;
 }
 
-/* --- 8 CONTACTOS --- */
-.contact-container {
-    display: flex;
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.contact-card {
-    flex: 1;
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    border: 1px solid #eee;
-}
-
-.contact-icon {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-}
-
-.social-links a {
-    transition: transform 0.3s ease;
-    display: inline-block;
-}
-
-    .social-links a:hover {
-        transform: scale(1.2);
-    }
-
 /* --- 9 FORMULÁRIOS, BOTÕES E INPUTS --- */
 form {
     display: flex;
@@ -656,50 +630,6 @@ button, .btn {
         background-color: #c82333;
     }
 
-/* --- 10 PÁGINA DE LOGIN/REGISTO E RODAPÉ --- */
-.Login-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f0f2f5 0%, #c2e9fb 100%);
-    margin: 0;
-}
-
-.login-container {
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    width: 90%;
-    max-width: 400px;
-}
-
-.signup-link {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.9em;
-}
-
-    .signup-link a {
-        color: #28a745;
-        font-weight: bold;
-        text-decoration: none;
-    }
-
-footer {
-    text-align: center;
-    padding: 40px;
-    background: #333;
-    color: white;
-    margin-top: 50px;
-}
-
-label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-}
 
 /* --- 11 PÁGINA DE PERFIL E GESTÃO DE CONTEÚDO --- */
 /* Header e informações do Utilizador */

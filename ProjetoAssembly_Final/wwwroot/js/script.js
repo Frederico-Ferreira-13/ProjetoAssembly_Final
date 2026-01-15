@@ -92,11 +92,12 @@ function showDivs(n) {
     x[slideIndex - 1].style.display = "block";
 }
 
-function toggleFavorito(id) {
+function toggleFavorito(event, id) {
     const btn = event.currentTarget;
     const icon = btn.querySelector('i');
     icon.classList.toggle('fa-regular');
     icon.classList.toggle('fa-solid');
     icon.style.color = icon.classList.contains('fa-solid') ? '#e4405f' : '';
+
     console.log("Receita favorita:", id);
 }

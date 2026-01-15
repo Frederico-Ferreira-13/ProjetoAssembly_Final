@@ -22,19 +22,29 @@ namespace ProjetoAssembly_Final.Pages
         public async Task OnGetAsync()
         {
             var result = await _recipesService.GetAllRecipesAsync();
+            var temporaria = new List<Recipes>();
 
             if (result.IsSuccessful && result.Value != null)
             {
-                if(CategoryId.HasValue && CategoryId.Value > 0)
-                {
-                    ListRecipes = result.Value
-                        .Where(r => r.CategoriesId == CategoryId.Value)
-                        .ToList();
-                }
-                else
-                {
-                    ListRecipes = result.Value;
-                }                    
+                temporaria.AddRange(result.Value);
+            }
+
+            var sopa = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Casseira", "...", 10, 25, "4 Pessoas", DateTime.Now, null, true);
+            sopa.SetImageUrl("sopa.jpg");
+
+            var carne = Recipes.Reconstitute(2, 1, 2, 2, "Arroz de Pato Tradicional", "...", 20, 50, "6 Pessoas", DateTime.Now, null, true);
+            carne.SetImageUrl("arroz-de-pato.jpg");
+
+            temporaria.Add(sopa);
+            temporaria.Add(carne);
+
+            if (CategoryId.HasValue && CategoryId > 0)
+            {
+                ListRecipes = temporaria.Where(r => r.CategoriesId == CategoryId.Value).ToList();
+            }
+            else
+            {
+                ListRecipes = temporaria;
             }
         }
     }

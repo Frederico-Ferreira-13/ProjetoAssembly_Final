@@ -9,6 +9,7 @@ namespace Repo.Repository
 {
     public class IngredientsRecipsRepository : Repository<IngredientsRecips>, IIngredientsRecipsRepository
     {
+        protected override string PrimaryKeyName => "IngredientsRecipesId";
         public IngredientsRecipsRepository() : base("IngredientsRecipes") { }
 
         protected override IngredientsRecips MapFromReader(SqlDataReader reader)
@@ -110,7 +111,7 @@ namespace Repo.Repository
         public async Task<bool> IsIngredientUsedInRecipeAsync(int recipeId, int ingredientId)
         {
             string sql = $@"
-                    SELECT COUNT(Id)
+                    SELECT COUNT(IngredientsRecipsId)
                     FROM {_tableName}
                     WHERE RecipesId = @RecipesId AND IngredientsId = @IngredientsId AND IsActive = 1";
 
