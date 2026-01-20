@@ -63,7 +63,7 @@ namespace ProjetoAssembly_Final.Pages
 
             try
             {
-                var newComments = new Comments(userId, RecipeId, Message);
+                var newComments = new Comments(RecipeId, userId, Message, Rating);
 
                 var result = await _commentsService.CreateCommentsAsync(newComments);
 

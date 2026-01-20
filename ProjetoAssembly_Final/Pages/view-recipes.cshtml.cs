@@ -15,6 +15,16 @@ namespace ProjetoAssembly_Final.Pages
         }
 
         public Recipes Recipe { get; private set; } = default!;
+        public List<Comments> ListComments { get; set; }
+
+        [BindProperty]
+        public string Message { get; set; }
+
+        [BindProperty]
+        public int Rating { get; set; }
+
+        [BindProperty]
+        public int RecipeId { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {

@@ -1,0 +1,93 @@
+﻿/* --- GRID E Filtros --- */
+.grid-receitas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 20px;
+    align-items: stretch;
+}
+
+/* --- Card Individual --- */
+.receitas-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;    
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+}
+
+.receitas-card:hover {
+    transform: translateY(-5px);    
+}
+
+.card-img-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.card-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.card-info {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-info h3 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #333;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.8em;
+}
+
+/* --- BADGES (Dificuldade e Tempo) --- */
+.recipe-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;    
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.card-info .btn {
+    margin-top: auto;
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.card-info .btn:hover {
+    background-color: #218838;
+}
+
+.badge-dif {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.dif-facil { background: #e8f5e9; color: #2e7d32; }
+.dif-media { background: #fff3e0; color: #ef6c00; }
+.dif-dificil { background: #ffebee; color: #c62828; }

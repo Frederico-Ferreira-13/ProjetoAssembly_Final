@@ -5,28 +5,30 @@
     ViewData["Title"] = "Explorar Receitas";
 }
 
+<link rel="stylesheet" href="~/css/recipe.css" />
+
 <main class="container">
     <section class="Categorias-home" style="padding-top: 40px;">
         <h2 class="section-title">Explorar Receitas</h2>
 
         <div class="grid-categorias">
-            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card @(Request.Query["categoryId"] == "1" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>Sopas</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card @(Request.Query["categoryId"] == "2" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>Carne</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card @(Request.Query["categoryId"] == "3" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>Peixe</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card @(Request.Query["categoryId"] == "4" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>Sobremesas</span>
             </a>
-            <a asp-page="/recipes" class="cat-card" style="background-color: #f8f9fa;">
+            <a asp-page="/recipes" class="cat-card @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")" style="background-color: #f8f9fa;">
                 <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
                 <span>Todas</span>
             </a>
@@ -42,18 +44,25 @@
                 @foreach (var receita in Model.ListRecipes)
                 {
                     <article class="receitas-card">
-                        <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+                        <div class="card-img-container">
+                            <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+                        </div>                      
 
                         <div class="card-info">
                             <h3>@receita.Title</h3>
 
-                            <p>
-                                <i class="fa-solid fa-gauge-high"></i>
-                                @(receita.DifficultyId == 1 ? "Fácil" : receita.DifficultyId == 2 ? "Média" : "Difícil")
-                                |
-                                <i class="fa-regular fa-clock"></i>
-                                @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min
-                            </p>
+                            <div class="recipe-meta">
+                                @{
+                                    var difClass = receita.DifficultyId == 1 ? "dif-facil" : (receita.DifficultyId == 2 ? "dif-media" : "dif-dificil");
+                                    var difLabel = receita.DifficultyId == 1 ? "Fácil" : (receita.DifficultyId == 2 ? "Média" : "Difícil");
+                                }
+                                <span class="badge-dif @difClass">@difLabel</span>
+
+                                <span>
+                                    <i class="fa-regular fa-clock"></i>
+                                    @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min
+                                </span>
+                            </div>                         
 
 
 

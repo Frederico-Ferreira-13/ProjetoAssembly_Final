@@ -15,6 +15,8 @@ namespace Core.Model
         public int RecipesId { get; protected set; }
         public int UserId { get; protected set; }
 
+        public int Rating {  get; protected set; }
+
         public string? CommentText { get; protected set; }
         public bool IsDeleted { get; protected set; } = false;
         public bool IsEdited { get; protected set; } = false;
@@ -32,48 +34,42 @@ namespace Core.Model
             this.IsActive = true;
         }
 
-        public Comments(int recipesId, int userId, [NotNull] string commentText)
+        public Comments(int recipesId, int userId, [NotNull] string commentText, int rating)
         {
             ValidateFks(recipesId, userId);
             ValidateCommentText(commentText);
 
             this.CommentsId = default;
             this.IsActive = true;
-
-            RecipesId = recipesId;
-            UserId = userId;
-            CommentText = commentText;
-
+            this.RecipesId = recipesId;
+            this.UserId = userId;
+            this.CommentText = commentText;
+            this.Rating = rating;
             this.CreatedAt = DateTime.UtcNow;
-
-            IsDeleted = false;
-            IsEdited = false;
-            OriginalComment = commentText;
+            this.IsDeleted = false;
+            this.IsEdited = false;
+            this.OriginalComment = commentText;
         }
 
-        private Comments(int id, bool isActive, int recipesId, int userId, string? commentText,
-            DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted,
-            string? originalComment)
-        {
-            this.CommentsId = id; ;
-            this.IsActive = isActive;
-
-            RecipesId = recipesId;
-            UserId = userId;
-            CommentText = commentText;
-
-            this.CreatedAt = createdAt;
-            this.LastUpdatedAt = lastUpdatedAt;
-
-            IsEdited = isEdited;
-            IsDeleted = isDeleted;
-            OriginalComment = originalComment;
-        }
-
-        public static Comments Reconstitute(int id, bool isActive, int recipesId, int userId, string? commentText,
+        private Comments(int id, bool isActive, int recipesId, int userId, int rating, string? commentText,
             DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
         {
-            return new Comments(id, isActive, recipesId, userId, commentText, createdAt, lastUpdatedAt,
+            this.CommentsId = default;
+            this.IsActive = true;
+            this.RecipesId = recipesId;
+            this.UserId = userId;
+            this.CommentText = commentText;
+            this.Rating = rating;
+            this.CreatedAt = DateTime.UtcNow;
+            this.IsDeleted = false;
+            this.IsEdited = false;
+            this.OriginalComment = commentText;
+        }
+
+        public static Comments Reconstitute(int id, bool isActive, int recipesId, int userId, int rating, string? commentText,
+            DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
+        {
+            return new Comments(id, isActive, recipesId, userId, rating, commentText, createdAt, lastUpdatedAt,
                         isEdited, isDeleted, originalComment);
         }
 

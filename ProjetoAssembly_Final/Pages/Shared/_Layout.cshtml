@@ -17,27 +17,33 @@
             </div>
 
             <ul>
-                <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")">
+                @{var currentPage = ViewContext.RouteData.Values["page"]?.ToString(); }
+                
+                <li class="@(currentPage == "/Index" ? "active" : "")">
                     <a asp-page="/Index">Home Page</a>
                 </li>
-                <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/recipes" ? "active" : "")">
+                <li class="@(currentPage == "/recipes" ? "active" : "")">
                     <a asp-page="/recipes">Receitas</a>
                 </li>
 
                 @if(User.Identity?.IsAuthenticated ?? false)
                 {
-                    <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/create-recipe" ? "active" : "")">
+                    <li class="@(currentPage == "/create-recipe" ? "active" : "")">
                         <a asp-page="/create-recipe">Criar Receitas</a>
                     </li>
-                    <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Favoritos" ? "active" : "")">
+                    <li class="@(currentPage == "/Favoritos" ? "active" : "")">
                         <a asp-page="/Favoritos">Favoritos</a>
                     </li>
                 }                
 
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
-                    <li><a asp-page="/create-recipe">Criar Receitas</a></li>
-                    <li><a asp-page="/Favoritos">Favoritos</a></li>
+                    <li class="@(currentPage =="/create-recipe" ? "active" : "")">
+                        <a asp-page="/create-recipe">Criar Receitas</a>
+                    </li>
+                    <li class="@(currentPage == "/create-recipe" ? "active" : "")">
+                        <a asp-page="/Favoritos">Favoritos</a>
+                    </li>
                 }                
             </ul>
 
@@ -66,9 +72,7 @@
                         <li><a asp-page="/regist"><i class="fa-solid fa-user-plus"></i> Registar</a></li>
                     }
                     <li class="dropdown-divider"><hr></li>
-
                     <li><a asp-page="/contacts"><i class="fa-solid fa-envelope"></i> Contactos</a></li>
-
                     <li><a href="https://linkedin.com/in/frederico-ferreira-31834249/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a></li>
                     <li><a href="https://github.com/Frederico-Ferreira-13" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a></li>
                 </ul>
@@ -76,7 +80,9 @@
         </div>
     </nav>
 
-    @RenderBody()
+    <main>
+        @RenderBody()
+    </main>    
 
     <footer>
         <p>&copy; 2026 Frederico - Trabalho Académico - Assembly.</p>

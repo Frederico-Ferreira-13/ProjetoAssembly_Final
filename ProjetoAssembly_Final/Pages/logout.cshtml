@@ -1,0 +1,38 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.logoutModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Sair do Sistema";
+}
+
+<link rel="stylesheet" href="~/css/logout.css" asp-append-version="true" />
+
+<div class="logout-wrapper">
+    <div class="content-box login-container">
+        <h1>Até breve!</h1>
+        <p>Tens a certeza que pretendes terminar a sessão?</p>
+
+        <div class="logout-actions">
+            <form method="post">
+                <button type="submit" class="logoutButton">
+                    <div class="icon-container">
+                        <svg class="doorway" viewBox="0 0 100 100">
+                            <path d="M20,90 V10 H80 V90" fill="none" stroke="currentColor" stroke-width="4" />
+                        </svg>
+                        <svg class="door" viewBox="0 0 100 100">
+                            <rect x="20" y="10" width="60" height="80" fill="currentColor" />
+                            <circle cx="70" cy="50" r="3" fill="white" />
+                        </svg>
+                    </div>
+                    <span class="button-text">Terminar Sessão</span>
+                </button>
+            </form>
+
+            <div class="voltar-container">
+                <a asp-page="/Index" class="btn-cancelar"> 
+                    <i class="fa-solid fa-arrow-left"></i>Voltar ao Início</a>
+            </div>            
+        </div>
+    </div>
+</div>
+    

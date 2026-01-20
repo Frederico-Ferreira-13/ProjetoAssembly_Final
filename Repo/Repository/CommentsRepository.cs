@@ -29,6 +29,7 @@ namespace Repo.Repository
 
             int recipesId = reader.GetInt32(reader.GetOrdinal("RecipesId"));
             int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
+            int rating = reader.GetInt32(reader.GetOrdinal("Rating"));
 
             string? commentText = reader.IsDBNull(reader.GetOrdinal("CommentText")) ? null : reader.GetString(reader.GetOrdinal("CommentText"));
             string? originalComments = reader.IsDBNull(reader.GetOrdinal("OriginalComment")) ? null : reader.GetString(reader.GetOrdinal("OriginalComment"));
@@ -41,6 +42,7 @@ namespace Repo.Repository
                 isActive,
                 recipesId,
                 userId,
+                rating,
                 commentText,
                 createdAt,
                 lastUpdatedAt,

@@ -82,6 +82,7 @@ namespace Service.Services
                 var commentsToCreate = new Comments(
                     recipesId: newComment.RecipesId,
                     userId: currentUserId,
+                    rating: newComment.Rating,
                     commentText: newComment.CommentText!
                 );
 
