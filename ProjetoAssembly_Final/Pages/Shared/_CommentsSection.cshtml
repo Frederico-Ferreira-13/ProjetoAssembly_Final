@@ -1,0 +1,76 @@
+﻿@model ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel
+
+<div class="comments-section-wrapper">
+    <div id="container-comentarios" class="comentarios-lista">
+        @if (Model.ListComments != null && Model.ListComments.Any())
+        {
+            @foreach (var c in Model.ListComments)
+            {
+                <article class="comentario-card">
+                    <div class="comment-user-info">
+                        <div class="user-avatar-circle"><i class="fa-solid fa-user"></i></div>
+                        <div class="user-details">
+                            <strong class="user-id">Utilizador #@c.UserId</strong>
+                            <div class="stars-display">
+                                @for (int i = 0; i < c.Rating; i++)
+                                {
+                                    <i class="fa-solid fa-star checked"></i>
+                                }
+                                @for (int i = c.Rating; i < 5; i++)
+                                {
+                                    <i class="fa-regular fa-star"></i>
+                                }
+                            </div>
+                        </div>
+                        <time class="comment-date">@c.CreatedAt.ToString("dd/MM/yyyy")</time>
+                    </div>
+                    <div class="comentario-content">
+                        <p class="comment-text">@c.CommentText</p>
+                    </div>
+                </article>
+            }
+        }
+        else
+        {
+            <div class="aviso-vazio">
+                <i class="fa-regular fa-comment-dots"></i>
+                <p>Ainda não há comentários. Seja o primeiro a comentar!</p>
+            </div>
+        }
+    </div>
+
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <section class="comentarios-form-section">
+            <div class="comentarios-form">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Deixe a sua opinião</h3>
+                <form method="post">
+                    <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
+                    <div class="rating-input-group">
+                        <label>A sua avaliação</label>
+                        <div class="star-rating-control">
+                            @for(int i = 5; i >= 1; i--)
+                            {
+                                <input type="radio" id="star-@i" name="Rating" value="@i" required />
+                                <label for="star-@i" title="@i estrelas">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <textarea name="Message" class="form-control-modern" rows="4" 
+                                  placeholder="O que achou desta receita?"></textarea>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn-publicar">
+                            <i class="fa-solid fa-paper-plane"></i>Publicar Comentário
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    }    
+</div>

@@ -5,6 +5,8 @@
     ViewData["Title"] = "Home Page";
 }
 
+<link rel="stylesheet" href="~/css/index.css" />
+
 <header class="hero">
     <div class="hero-content">
         <h1>Descubra o sabor de cozinhar em casa</h1>
@@ -76,8 +78,8 @@
                         <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
                         <div class="card-info">
                             <h3>@receita.Title</h3>
-                            <p>Dificuldade: @(receita.DifficultyId == 1 ? "Fácil" : "Média") | @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min</p>
-                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
+                            <p>Dificuldade: @(receita.DifficultyId == 1 ? "Fácil" : "Média") | @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</p>
+                            <a href="/view_recipes/@receita.RecipesId" class="btn">Ver Receita</a>
                         </div>
                     </article>
                 }

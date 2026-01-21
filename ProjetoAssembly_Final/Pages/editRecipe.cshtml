@@ -1,0 +1,111 @@
+﻿@page "{id:int}"
+@model ProjetoAssembly_Final.Pages.editRecipeModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Editar Receita";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/editRecipe.css" asp-append-version="true" />
+}
+<main class="container">   
+    <div class="edit-recipe-container">
+        <div class="edit-card">
+            <header class="edit-header">
+                <h2><i class="fa-solid fa-pen-to-square"></i>Editar Receita</h2>
+                <p style="color: #b2bec3;">Altera os detalhes da tua deliciosa criação.</p>
+            </header>
+
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Input.RecipesId" />
+
+                <div class="form-grid">
+                    <div class="form-group-custom">
+                        <label asp-for="Input.Title"><i class="fa-solid fa-heading"></i> Titulo da Receita</label>
+                        <input asp-for="Input.Title" class="form-input-custom" placeholder="Ex: Arroz de Pato à Antiga" />
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label asp-for="Input.CategoriesId"><i class="fa-solid fa-tag"></i> Categoria</label>
+                        <select asp-for="Input.CategoriesId" class="form-input-custom">
+                            <option value="1">Entradas/Sopa</option>
+                            <option value="2">Pato Principal</option>
+                            <option value="3">Sobremesas</option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-group-custom">
+                        <label asp-for="Input.DifficultyId"><i class="fa-solid fa-gauge-high"></i> Dificuldade</label>
+                        <select asp-for="Input.DifficultyId" class="form-input-custom">
+                            <option value="1">Fácil</option>
+                            <option value="2">Médio</option>
+                            <option value="3">Difícil</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label asp-for="Input.PrepTimeMinutes"><i class="fa-regular fa-clock"></i> Tempo de Preparação (min)</label>
+                        <input asp-for="Input.PrepTimeMinutes" type="number" class="form-input-custom" />
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label asp-for="Input.Servings"><i class="fa-solid fa-users"></i> Doses</label>
+                        <input asp-for="Input.Servings" class="form-input-custom" />
+                    </div>
+
+                    <div class="form-group-custom full-width">
+                        <label style="font-size: 1.1rem; color: #2d3436; margin-bottom: 15px;">
+                            <i class="fa-solid fa-basket-shopping"></i> Ingredientes
+                        </label>
+                        <div id="lista-ingredientes">
+                            @if(Model.Input.Ingredients != null && Model.Input.Ingredients.Any())
+                                {
+                                    foreach(var item in Model.Input.Ingredients)
+                                    {
+                                        <div class="ingrediente-linha">
+                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
+                                            <input type="text" name="Unit[]" value="@item.Unit" placeholder="Unid." class="form-input-custom unit" required />
+                                            <input type="text" name="IngredientName[]" value="@item.Ingredient?.IngredientName" placeholder="Nome do Ingrediente" class="form-input-custom" required />
+                                            <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="ingrediente-linha">
+                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
+                                        <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" required />
+                                        <input type="text" name="IngredientName[]" placeholder="Nome do Ingrediente" class="form-input-custom" required />
+                                    </div>
+                                }
+                        </div>
+                        <button type="button" id="btn-add-ingrediente" class="btn-secondary">
+                            <i class="fa-solid fa-plus"></i> Adicionar Ingrediente
+                        </button>
+                    </div>
+
+                    <div class="form-group-custom full-width">
+                        <label asp-for="Input.Instructions"><i class="fa-solid fa-utensils"> Modo de Preparação</i></label>
+                        <textarea asp-for="Input.Instructions" class="form-input-custom textarea-custom"></textarea>
+                    </div>
+                </div>
+
+                <div class="edit-actions">
+                    <a href="/view_recipes/@Model.Input.RecipesId" class="btn-cancel">Cancelar</a>
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Alterações
+                    </button>
+                </div>                       
+            </form>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/ingredientes.js"></script>
+}
+

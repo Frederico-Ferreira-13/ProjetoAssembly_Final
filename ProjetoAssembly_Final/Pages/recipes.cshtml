@@ -5,10 +5,12 @@
     ViewData["Title"] = "Explorar Receitas";
 }
 
-<link rel="stylesheet" href="~/css/recipe.css" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/recipe.css" asp-append-version="true" />
+}
 
-<main class="container">
-    <section class="Categorias-home" style="padding-top: 40px;">
+<div class="container-main">
+    <section class="Categorias-home">
         <h2 class="section-title">Explorar Receitas</h2>
 
         <div class="grid-categorias">
@@ -35,7 +37,7 @@
         </div>
     </section>
 
-    <hr class="dropdown-divider">
+    <hr class="separator">
 
     <section class="destaques-home">
         <div id="container-receitas" class="grid-receitas">
@@ -45,10 +47,18 @@
                 {
                     <article class="receitas-card">
                         <div class="card-img-container">
+                            <button class="btn-fav" onclick="event.preventDefault(); toggleFavorite(this, @receita.RecipesId">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+
                             <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
                         </div>                      
 
                         <div class="card-info">
+                            <span class="card-popularity">
+                                <i class="fa-solid fa-heart"></i> @(receita.FavoriteCount ?? 0) favoritos
+                            </span>
+
                             <h3>@receita.Title</h3>
 
                             <div class="recipe-meta">
@@ -62,11 +72,9 @@
                                     <i class="fa-regular fa-clock"></i>
                                     @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min
                                 </span>
-                            </div>                         
-
-
-
-                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">
+                            </div>
+                            
+                            <a href="/view_recipes/@receita.RecipesId" class="btn">
                                 Ver Receita
                             </a>
                         </div>
@@ -83,4 +91,4 @@
             }
         </div>
     </section>
-</main>
+</div>

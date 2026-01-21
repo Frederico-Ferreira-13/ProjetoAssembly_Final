@@ -25,6 +25,9 @@ namespace Core.Model
         public string Servings { get; protected set; }
         public string? ImageUrl { get; protected set; }
 
+        public int FavoriteCount { get; set; } = 0;
+        public bool IsFavorite { get; set; } = false;
+
         public DateTime CreatedAt { get; protected set; }
         public DateTime? LastUpdatedAt { get; protected set; }
 
@@ -91,9 +94,11 @@ namespace Core.Model
         public static Recipes Reconstitute(int id, int userId, int categoriesId, int difficultyId, string title, string instructions,
                                          int prepTimeMinutes, int cookTimeMinutes, string servings,
                                          DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
-        {
-            return new Recipes(id, isActive, userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes, cookTimeMinutes, servings,
+        {            
+            var recipe = new Recipes(id, isActive, userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes, cookTimeMinutes, servings,
                                createdAt, lastUpdatedAt);
+
+            return recipe;
         }
 
         public void ChangeDifficulty(int newDifficultyId)

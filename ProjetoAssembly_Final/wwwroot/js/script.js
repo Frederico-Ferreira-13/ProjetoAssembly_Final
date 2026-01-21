@@ -14,25 +14,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 2. ADICIONAR DINAMICAMENTE INGREDIENTES (Página Criar Receita) ---
     const btnAdd = document.getElementById('btn-add-ingrediente');
-    const lista = document.getElementById('lista-ingrediente');
+    const lista = document.getElementById('lista-ingredientes');
 
     if (btnAdd && lista) {
         btnAdd.addEventListener('click', () => {
             const linha = document.createElement('div');
             linha.className = 'ingrediente-linha';
-            linha.style.display = 'flex';
-            linha.style.gap = '10px';
-            linha.style.marginBottom = '10px';
-
             linha.innerHTML = `
-                <input type="number" name="QuantityValue[]" placeholder="Qtd" step="0.01" style="width: 70px;">
-                <input type="text" name="Unit[]" placeholder="Unid." style="width: 80px;">
-                <input type="text" name="IngredientName[]" placeholder="Ingrediente" style="flex: 1;">
-                <button type="button" class="btn-remover" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">X</button>
+                <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
+                <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" required />
+                <input type="text" name="IngredientName[]" placeholder="Nome do Ingrediente" class="form-input-custom" required />
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             `;
 
             lista.appendChild(linha);
-            linha.querySelector('.btn-remover').onclick = () => linha.remove();
+            linha.querySelector('.btn-remover').onclick = () => {
+                linha.remove();
+            }
         });
     }
 
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleMenu() {
     const menu = document.getElementById("dropdown-perfil");
     if (menu) {
-        menu.classList.TOGGLE("show");
+        menu.classList.toggle("show");
     }
 }
 
@@ -73,7 +73,7 @@ window.onclick = function (event) {
     if (!event.target.closest('.perfil-menu')) {
         const dropdown = document.getElementById("dropdown-perfil");
         if (dropdown && dropdown.classList.contains('show')) {
-            dropdown.classsList.remove('show');
+            dropdown.classList.remove('show');
         }
     }
 }
@@ -98,6 +98,5 @@ function toggleFavorito(event, id) {
     icon.classList.toggle('fa-regular');
     icon.classList.toggle('fa-solid');
     icon.style.color = icon.classList.contains('fa-solid') ? '#e4405f' : '';
-
     console.log("Receita favorita:", id);
 }

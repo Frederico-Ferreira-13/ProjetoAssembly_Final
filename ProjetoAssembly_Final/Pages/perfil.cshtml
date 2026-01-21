@@ -5,33 +5,64 @@
     ViewData["Title"] = "O Meu Perfil";
 }
 
-<main class="container">
+@section Styles {
+    <link rel="stylesheet" href="~/css/perfil.css" asp-append-version="true" />
+}
+
+<div class="container-perfil">
     <section class="perfil-header">
-        <div class="perfil-btn-topo">
+        <div class="perfil-flex">
             <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
-            <div>
+            <div class="info-user">
                 <h1>Olá, Frederico!</h1>
                 <p>Membro desde: Janeiro de 2026</p>
-                <a href="/EditorPerfil" class="btn-editar-perfil" style="text-decoration:none; display:inline-block;">Editar Dados</a>
+                <a asp-page="/perfilEdit" class="btn-principal" style="padding: 8px 20px;">
+                    <i class="fa-solid fa-user-gear"></i>Editar Dados
+                </a>
             </div>
         </div>
     </section>
 
-    <hr class="separator">
+    <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+        <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center;">
+            <h3 style="margin:0; color: #2ecc71;">1</h3>
+            <span style="font-size: 0.9rem; color: #7f8c8d;">Receita Criada</span>
+        </div>
+        <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center">
+            <h3 style="margin:0; color: #e74c3c;">0</h3>
+            <span style="font-size: 0.9rem; color: #7f8c8d;">Favoritos</span>
+        </div>
+    </div>
 
-    <section class="minhas-receitas">
-        <h2><i class="fa-solid fa-utensils"></i> As Minhas Receitas</h2>
-        <div class="grid-receitas">
-            <div class="receitas-card">
-                <img src="~/img/bacalhau.jpg" alt="Bacalhau">
-                <div class="card-info">
-                    <h3>Bacalhau à Brás</h3>
-                    <div class="acoes-perfil">
-                        <a href="/EditarReceita?id=1" class="btn-gestao editar"><i class="fa-solid fa-pen"></i> Editar</a>
-                        <button onclick="confirmarEliminar(1)" class="btn-gestao eliminar"><i class="fa-solid fa-trash"></i> Apagar</button>
-                    </div>
+    <h2 class="section-title" style="text-align: left;">
+        <i class="fa-solid fa-utensils"></i> As Minhas Receitas
+    </h2>    
+
+    <section class="grid-perfil">
+        <article class="receitas-card">
+            <img src="~/img/bacalhau.jpg" alt="Bacalhau à Brás">
+            <div class="card-info">
+                <h3>Bacalhau à Brás</h3>
+                <div class="acoes-perfil">
+                    <a href="/EditarReceita?id=3" class="btn-gestao editar">
+                        <i class="fa-solid fa-pen-to-square"></i>Editar
+                    </a>
+                    <button onclick="confirmarEliminar(3)" class="btn-gestao eliminar">
+                        <i class="fa-solid fa-trash"></i> Apagar
+                    </button>
                 </div>
             </div>
-        </div>
+        </article>
     </section>
-</main>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmarEliminar(id) {
+            if (confirm("Tem a certeza que deseja eliminar esta receita?")) {
+                console.log("Eliminar receita ID: " + id);
+                // Aqui podes chamar o backend via fetch futuramente
+            }
+        }
+    </script>
+}

@@ -3,6 +3,7 @@ using Core.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Repo.Repository;
 using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
@@ -12,11 +13,14 @@ namespace ProjetoAssembly_Final.Pages
     {        
         private readonly IRecipesRepository _recipesRepository;
         private readonly IIngredientsRepository _ingredientsRepository;
+        private readonly IIngredientsRecipsRepository _ingredientsRecipsRepository;
 
-        public create_recipeModel(IRecipesRepository recipesRepository, IIngredientsRepository ingredientsRepository)
+        public create_recipeModel(IRecipesRepository recipesRepository, IIngredientsRepository ingredientsRepository,
+            IIngredientsRecipsRepository ingredientsRecipsRepository)
         {
             _recipesRepository = recipesRepository;
             _ingredientsRepository = ingredientsRepository;
+            _ingredientsRecipsRepository = ingredientsRecipsRepository;
         }
         [BindProperty]
         public string Titulo { get; set; } = string.Empty;
@@ -39,7 +43,7 @@ namespace ProjetoAssembly_Final.Pages
         {
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string[] unit, string[] ingredientName)
         {
             if (!ModelState.IsValid)
             {
@@ -49,16 +53,15 @@ namespace ProjetoAssembly_Final.Pages
             try
             {
                 var userIdClaim = User.FindFirst("UserId")?.Value;
-                var userRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
 
                 if (string.IsNullOrEmpty(userIdClaim))
                 {
                     return RedirectToPage("/Login");
-                }
+                }                              
 
                 int userId = int.Parse(userIdClaim);
 
-                bool isApproved = (userRoleClaim == "2");
+                bool isApproved = (User.FindFirst(ClaimTypes.Role)?.Value == "2");
 
                 var newRecipe = new Recipes(
                     userId: userId,
@@ -66,20 +69,29 @@ namespace ProjetoAssembly_Final.Pages
                     difficultyId: DificuldadeSelecionada,
                     title: Titulo,
                     instructions: Descricao,
-                    prepTimeMinutes: 10,
-                    cookTimeMinutes: 10,
-                    servings: "2 pessoas",
+                    prepTimeMinutes: PrepTime,
+                    cookTimeMinutes: CookTime,
+                    servings: Doses,
                     isApproved: isApproved
                 );
 
                 await _recipesRepository.CreateAddAsync(newRecipe);
 
-                foreach (var ingredientsName in Ingredientes)
+                for (int i = 0; i < ingredientName.Length; i++)
                 {
-                    if (!string.IsNullOrWhiteSpace(ingredientsName))
+                    if (!string.IsNullOrWhiteSpace(ingredientName[i]))
                     {
-                        var ingredient = new Ingredients(ingredientsName.Trim(), newRecipe.RecipesId);
-                        await _ingredientsRepository.CreateAddAsync(ingredient);
+                        var ingredientBase = new Ingredients(ingredientName[i].Trim(), 1);
+                        await _ingredientsRepository.CreateAddAsync(ingredientBase);
+
+                        var relection = new IngredientsRecips(
+                            newRecipe.RecipesId,
+                            ingredientBase.IngredientsId,
+                            quantityValue[i],
+                            unit[i]
+                        );
+
+                        await _ingredientsRecipsRepository.CreateAddAsync(relection);
                     }
                 }
 
@@ -87,7 +99,7 @@ namespace ProjetoAssembly_Final.Pages
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Erro de guardar receita: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Erro: {ex.Message}");
                 return Page();
             }
         }

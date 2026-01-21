@@ -1,10 +1,59 @@
-﻿/* --- GRID E Filtros --- */
+﻿.container-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+
+/* --- GRID E Filtros --- */
+.grid-categorias {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.cat-card {
+    background: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.cat-card.active {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.cat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    color: #28a745;
+}
+
+.cat-card.active .cat-icon {
+    color: white;
+}
+
 .grid-receitas {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
-    padding: 20px;
-    align-items: stretch;
+    padding: 20px 0;
 }
 
 /* --- Card Individual --- */
@@ -13,28 +62,22 @@
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     display: flex;
-    flex-direction: column;    
+    flex-direction: column;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     height: 100%;
+    transition: 0.3s;
 }
 
-.receitas-card:hover {
-    transform: translateY(-5px);    
-}
 
 .card-img-container {
     width: 100%;
-    height: 200px;
-    overflow: hidden;
-    background-color: #f0f0f0;
+    height: 200px;    
 }
 
 .card-img-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    display: block;
+    object-fit: cover;    
 }
 
 .card-info {
@@ -42,6 +85,22 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+}
+
+.btn-card {
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: auto;
+    transition: 0.3s;
+}
+
+.btn-card:hover {
+    background-color: #218838;
 }
 
 .card-info h3 {
@@ -53,31 +112,6 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 2.8em;
-}
-
-/* --- BADGES (Dificuldade e Tempo) --- */
-.recipe-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;    
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-}
-
-.card-info .btn {
-    margin-top: auto;
-    background-color: #28a745;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.2s;
-}
-
-.card-info .btn:hover {
-    background-color: #218838;
 }
 
 .badge-dif {

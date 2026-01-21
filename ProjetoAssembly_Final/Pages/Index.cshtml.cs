@@ -2,6 +2,7 @@ using Contracts.Service;
 using Core.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Collections.Generic;
 
 namespace ProjectoAssembly_Final.Pages
 {
@@ -10,7 +11,7 @@ namespace ProjectoAssembly_Final.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IRecipesService _recipesService;
 
-        public IList<Recipes> ListaReceitas { get; set; } = new List<Recipes>();
+        public List<Recipes> ListaReceitas { get; set; } = new List<Recipes>();
 
         public IndexModel(ILogger<IndexModel> logger, IRecipesService recipesService)
         {
@@ -20,28 +21,35 @@ namespace ProjectoAssembly_Final.Pages
 
         public async Task OnGetAsync()
         {
-
             _logger.LogInformation("A carregar a página inicial...");
+            
+            ListaReceitas = new List<Recipes>();
 
-            var results = await _recipesService.GetAllRecipesAsync();
-
-            ListaReceitas.Clear();
-
-            if (results.IsSuccessful && results.Value != null)
+            try
             {
-                foreach(var r in results.Value)
+                var results = await _recipesService.GetAllRecipesAsync();
+                if (results != null && results.IsSuccessful && results.Value != null)
                 {
-                    ListaReceitas.Add(r);
+                    ListaReceitas.AddRange(results.Value);
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro crítico ao ligar à BD");
+            }
+            
+            AdicionarReceitasExemplo();
+        }
 
-            var sopa = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Casseira",
+        private void AdicionarReceitasExemplo()
+        {
+            var sopa = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Caseira",
                 "1. Descasque os legumes.\n2. Coza em água e sal. \n3. Triture com um fio de azeite.",
                 10, 25, "4 Pessoas", DateTime.Now, null, true);
             sopa.SetImageUrl("sopa.jpg");
 
             var carne = Recipes.Reconstitute(2, 1, 2, 2, "Arroz de Pato Tradicional",
-                "1. Coza o pato com enchidos.\n2. Refogue o arroz na gordura do pato.\n3. leve ao forno para dourar.",
+                "1. Coza o pato com enchidos.\n2. Refogue o arroz na gordura do pato.\n3. Leve ao forno para dourar.",
                 20, 50, "6 Pessoas", DateTime.Now, null, true);
             carne.SetImageUrl("arroz-de-pato.jpg");
 

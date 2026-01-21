@@ -1,63 +1,50 @@
 ﻿<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - Receitas do Frederico</title>
+    
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <nav>
         <div class="container-nav">
             <div class="logo">
-                <a asp-page="/Index" style="text-decoration:none; color:inherit;">
+                <a asp-page="/Index">
                     👨‍🍳 Frederico<span style="color:#28a745;">Receitas</span>
                 </a>
             </div>
 
-            <ul>
+            <ul class="nav-links">
                 @{var currentPage = ViewContext.RouteData.Values["page"]?.ToString(); }
                 
-                <li class="@(currentPage == "/Index" ? "active" : "")">
-                    <a asp-page="/Index">Home Page</a>
-                </li>
-                <li class="@(currentPage == "/recipes" ? "active" : "")">
-                    <a asp-page="/recipes">Receitas</a>
-                </li>
+                <li class="@(currentPage == "/Index" ? "active" : "")"><a asp-page="/Index">Home Page</a></li>
+                <li class="@(currentPage == "/recipes" ? "active" : "")"><a asp-page="/recipes">Receitas</a></li>
 
                 @if(User.Identity?.IsAuthenticated ?? false)
                 {
-                    <li class="@(currentPage == "/create-recipe" ? "active" : "")">
-                        <a asp-page="/create-recipe">Criar Receitas</a>
-                    </li>
-                    <li class="@(currentPage == "/Favoritos" ? "active" : "")">
-                        <a asp-page="/Favoritos">Favoritos</a>
-                    </li>
-                }                
-
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    <li class="@(currentPage =="/create-recipe" ? "active" : "")">
-                        <a asp-page="/create-recipe">Criar Receitas</a>
-                    </li>
-                    <li class="@(currentPage == "/create-recipe" ? "active" : "")">
-                        <a asp-page="/Favoritos">Favoritos</a>
-                    </li>
-                }                
+                    <li class="@(currentPage == "/create-recipe" ? "active" : "")"><a asp-page="/create-recipe">Criar Receitas</a></li>
+                    <li class="@(currentPage == "/Favoritos" ? "active" : "")"><a asp-page="/Favoritos">Favoritos</a></li>
+                }                             
             </ul>
 
             <div class="search-box">
-                <form action="/recipes" method="get">
-                    <input type="text" name="search" placeholder="Procurar Receita...">
-                    <button type="submit"><i class="fa fa-search"></i></button>
+                <form action="/recipes" method="get" style="display: flex; width: 100%; height: 100%;">
+                    <input type="text" name="search" class="search-input" placeholder="Procurar Receita...">
+                    <button type="submit" class="search-btn">
+                        <i class="fa fa-search"></i>
+                    </button>
                 </form>
             </div>
 
             <div class="perfil-menu">
                 <button class="perfil-btn" onclick="toggleMenu()">
                     <i class="fa-solid fa-bars"></i>
-                    <img src="~/img/user.icon.png" alt="Perfil" class="perfil-img-nav" />
+                    <img src="/img/user.icon.png" alt="Perfil" class="perfil-img-nav" />
                 </button>
                 <ul id="dropdown-perfil" class="perfil-dropdown">
                     @if (User.Identity?.IsAuthenticated ?? false)

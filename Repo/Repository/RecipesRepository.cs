@@ -148,5 +148,38 @@ namespace Repo.Repository
                 throw;
             }
         }
+
+        public async Task<IEnumerable<Recipes>> GetRecipesWithFavoritesAsync(int? currentUserId, int? categoryId)
+        {
+            var recipes = new List<Recipes>();
+            string sql = @"
+                SELECT r.*,
+                (SELECT COUNT(*) FROM Favorites f Where f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoritesCount,
+                CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId AND f.IsActive = 1)
+                    THEN 1 ELSE 0 END as IsFavorited
+                FROM Recipes r
+                WHERE (@CategoryId IS NULL OR r.CategoriesId = @CategoryId) AND r.IsActive = 1";
+
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
+                new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value)
+            };
+
+            using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
+            {
+                while (reader.Read())
+                {
+                    var recipe = MapFromReader(reader);
+
+                    // Preencher as propriedades extra
+                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoriteCount"));
+                    recipe.IsFavorited = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
+
+                    recipes.Add(recipe);
+                }
+            }
+            return recipes;
+        }
     }
 }

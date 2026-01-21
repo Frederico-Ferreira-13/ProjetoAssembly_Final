@@ -1,4 +1,4 @@
-﻿@page "{id:int}"
+﻿@page "/view_recipes/{id:int}"
 @model ProjetoAssembly_Final.Pages.view_recipesModel
 @{
     Layout = "_layout";
@@ -6,10 +6,20 @@
 }
 
 <link rel="stylesheet" href="~/css/recipe.css" />
+<link rel="stylesheet" href="~/css/comments.css" />
 
 <main class="container">
     <section class="detalhe_receita" style="padding-top: 40px;">
         <h1 class="section-title">@Model.Recipe?.Title</h1>
+
+        @if(User.Identity?.IsAuthenticated == true && Model.Recipe?.UserId == 1)
+        {
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-gestao editar" style="display: inline-flex; width: auto; padding: 10px 20px;">
+                    <i class="fa-solid fa-pen-to-square"></i> Editar a minha Receita
+                </a>
+            </div>
+        }
 
         <div class="row" style="display: flex; gap: 30px; flex-wrap: wrap;">
             <div class="col" style="flex: 1; min-width: 300px;">
@@ -57,72 +67,23 @@
     <section class="seccao-comentarios">
         <h2 class="section-title"><i class="fa-solid fa-comments"></i> Comentários e Avaliações</h2>
         
-        @if (User.Identity?.IsAuthenticated ?? false)
+        @if (!(User.Identity?.IsAuthenticated ?? false))
         {
-            <div class="comentarios-form-container">
-                <form method="post">
-                    <input type="hidden" name="receitaId" value="@Model.Recipe?.RecipesId">            
-
-                    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px;">
-                        <strong>A sua avaliação:</strong>
-                        <select name="rating" class="form-select-stars">
-                            <option value="5">⭐⭐⭐⭐⭐ (Incrível)</option>
-                            <option value="4">⭐⭐⭐⭐ (Muito bom)</option>
-                            <option value="3">⭐⭐⭐ (Bom)</option>
-                            <option value="2">⭐⭐ (Razoável)</option>
-                            <option value="1">⭐(Fraco)</option>
-                        </select>
-                    </div>
-
-                    <textarea name="mensagem" class="form-control-modern" rows="4" required 
-                            placeholder="Partilhe a sua experiÊncia com esta receita..."></textarea>
-
-                    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <button type="submit" class="btn-publicar">
-                            <i class="fa-solid fa-paper-plane"></i> Publicar Comentário</button>
-                    </div>
-                </form>
-            </div>
-        }
-        else
-        {
-            <div class="login-prompt-box">
+            <div class="login-prompt-box" style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; margin-bottom: 20px;">
                 <i class="fa-solid fa-lock" style="font-size: 2rem; color: #ccc; margin-bottom: 15px"></i>
                 <h4>Quer deixar a sua opinião?</h4>
-                <p>Apenas utilizadores registados podem comentar e avaliar as receitas.</p>
+                <p>Apenas utilizadores registados podem comentar.</p>
                 <div style="margin-top: 15px">
-                    <a asp-page="/Login" class="btn-principal" style="padding: 10px 25px;">Entrar</a>
-                    <a asp-page="/Register" class="btn-voltar" style="margin-left: 10px;">Criar conta</a>
+                    <a asp-page="/Login" class="btn btn-success">Entrar</a>
+                    <a asp-page="/Regist" class="btn btn-outline-secondary" style="margin-left: 10px;">Criar conta</a>
                 </div>
             </div>
-        }      
-
-        <div id="container-comentarios" class="comentarios-lista">
-            @if(Model.ListComments != null && Model.ListComments.Any())
-            {
-                @foreach (var c in Model.ListComments)
-                {
-                    <div class="comentario-card">
-                        <div class="comment-user-info">
-                            <div class="user-avatar-circle"><i class="fa-solid fa-user"></i>
-                            </div>
-                            <strong>Utilizador #@c.UserId</strong>
-                            <div class="stars-display">
-                                @for(int i=0; i<c.Rating; i++)
-                                {
-                                    <i class="fa-solid fa-star checked"></i>
-                                }
-                            </div>
-                        </div>
-                        <small class="comment-date">@c.CreatedAt.ToString("dd/MM/yyyy")</small>
-                    </div>
-                    <p class="comment-text">@c.CommentText</p>
-                }
-            }
-            else
-            {
-                <p class="text-muted text-center" style="margin-top: 20px;">Ainda não existem comentários para esta receita.</p>
-            }
-        </div>
+        }
+         
+        <partial name="_CommentsSection" model='new ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel { 
+            ListComments = Model.ListComments, 
+            RecipeId = Model.Recipe?.RecipesId ?? 0 
+        }' />
+        
     </section>
 </main>

@@ -1,0 +1,74 @@
+﻿/* --- SISTEMA DE FAVORITOS --- */
+
+/* Badge de popularidade no card*/
+.card-popularity {
+    font-size: 0.85em;
+    color: #e74c3c;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Botão de Favorito posicionado sobre a imagem */
+.btn-fav {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5;
+}
+
+.btn-fav:hover {
+    transform: scale(1.1);
+    background: #f8f9fa;
+}
+
+.btn-fav i {
+    font-size: 1.2rem;
+    color: #dc3545;
+    transition: 0.3s;
+}
+
+/* Estado ativo: Coração preenchido */
+.btn-fav i.fa-solid {
+    color: #dc3545;
+    animation: heartPop 0.3s ease-out;
+}
+
+/* Animação de "pulo" ao clicar */
+@keyframes heartPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Garantir que o card pai permite posicionamento absoluto */
+.receitas-card {
+    position: relative; /* Crucial para o .btn-fav funcionar */
+}
+
+/* Estilo para a grelha de favoritos */
+#container-favoritos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}

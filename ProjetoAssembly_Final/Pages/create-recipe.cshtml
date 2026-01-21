@@ -5,6 +5,10 @@
     ViewData["Title"] = "Crie a sua Receita";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/create-recipe.css" asp-append-version="true" />
+}
+
 <main class="container">
     <h1>Submeter Nova Receita</h1>
 
@@ -13,18 +17,18 @@
     <form method="post" enctype="multipart/form-data">
         <div class="input-group">
             <label asp-for="Titulo">Mome da Receita</label>
-            <input asp-for="Titulo" placeholder="Mínimo 5 Caracteres" required>
+            <input asp-for="Titulo" placeholder="Ex: Bacalhau à Brás Especial" required>
             <span asp-validation-for="Titulo" class="text-danger"></span>
         </div>
 
         <div class="input-group">
             <label asp-for="Descricao">Instruções de Preparação</label>
-            <textarea asp-for="Descricao" rows="5" placeholder="Mínimo 20 caracteres" required></textarea>
+            <textarea asp-for="Descricao" rows="5" placeholder="Descreva os passos detalhadamente..." required></textarea>
             <span asp-validation-for="Descricao" class="text-danger"></span>
         </div>
 
         <div class="row">
-            <div class="input-group">
+            <div class="input-group" style="flex: 1;">
                 <label asp-for="CategoriaSelecionada">Categoria</label>
                 <select asp-for="CategoriaSelecionada" required>
                     <option value="">Selecione..</option>
@@ -47,15 +51,17 @@
 
         <h3>Ingredientes</h3>
         <div id="lista-ingredientes">
-            <div class="ingrediente-linha">
-                <input type="text" name="Ingredientes" placeholder="Ex: 500g de Farinha" required>
+            <div class="ingrediente-linha" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="number" name="QuantityValue[]" placeholder="Qtd" step="0.01" style="width: 70px;">
+                <input type="text" name="Unit[]" placeholder="Unid." style="width: 80px;">
+                <input type="text" name="IngredientName[]" placeholder="Ingrediente" style="flex: 1;" required>
             </div>
         </div>
-        <button type="button" id="btn-add-ingrediente" class="btn-secondary">+ Adicionar Ingrediente</button>
+        <button type="button" id="btn-add-ingrediente">+ Adicionar Ingrediente</button>
 
         <div class="input-group">
             <label>Imagem da Receita</label>
-            <input type="file" name="RecipeImage">
+            <input type="file" name="RecipeImage" accept="image/*">
         </div>
 
         <button type="submit" class="btn-guardar">Guardar Receita</button>
@@ -63,5 +69,5 @@
 </main>
 
 @section Scripts {
-    <script src="~/js/ingredientes.js"></script>
+    <partial name="_ValidationScriptsPartial" /> <script src="~/js/ingredientes.js"></script>
 }
