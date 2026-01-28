@@ -4,6 +4,7 @@ using Core.Common;
 using Core.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Service.Services
@@ -13,13 +14,46 @@ namespace Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRecipesRepository _recipesRepository;
         private readonly ITokenService _tokenService;
+        private readonly IFavoritesRepository _favoritesRepository;
 
         public RecipeService(IUnitOfWork unitOfWork, IRecipesRepository recipesRepository,
-            ITokenService tokenService)
+            ITokenService tokenService, IFavoritesRepository favoritesRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _recipesRepository = recipesRepository ?? throw new ArgumentNullException(nameof(recipesRepository));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _favoritesRepository = favoritesRepository ?? throw new ArgumentNullException(nameof(favoritesRepository));
+        }
+
+        public async Task<Result<object>> ToggleFavoriteAsync(int recipeId, int userId)
+        {
+            var exists = await _recipesRepository.ExistsByIdAsync(recipeId);
+            if (!exists)
+            {
+                return Result<object>.Failure(Error.NotFound("Rec_01", "Receita não encontrada"));
+            }
+
+            var isFavorite = await _favoritesRepository.ExistsAsync(recipeId, userId);
+
+            if (isFavorite)
+            {
+                await _favoritesRepository.DeactivateFavoriteAsync(recipeId, userId);
+            }
+            else
+            {
+                var newFav = new Favorites(userId, recipeId);
+                await _favoritesRepository.CreateAddAsync(newFav);
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            var newCount = await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+
+            return Result<object>.Success(new
+            {
+                isFavorite = !isFavorite,
+                newCount = newCount
+            });
         }
 
         public async Task<bool> IsRecipeOwnerAsync(int recipeId)
@@ -216,6 +250,6 @@ namespace Service.Services
             await _unitOfWork.CommitAsync();
 
             return Result.Success("Receita eliminada com sucesso.");
-        }
+        }       
     }
 }

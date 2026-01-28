@@ -170,11 +170,11 @@ namespace Repo.Repository
             {
                 while (reader.Read())
                 {
-                    var recipe = MapFromReader(reader);
+                    var recipe = MapFromReader(reader); // Lê as colunas base
 
                     // Preencher as propriedades extra
                     recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoriteCount"));
-                    recipe.IsFavorited = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
+                    recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
 
                     recipes.Add(recipe);
                 }

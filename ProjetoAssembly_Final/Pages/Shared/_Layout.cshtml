@@ -11,6 +11,10 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
+
+    @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+    @Html.AntiForgeryToken()
+
     <nav>
         <div class="container-nav">
             <div class="logo">

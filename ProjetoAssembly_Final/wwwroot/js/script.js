@@ -92,11 +92,39 @@ function showDivs(n) {
     x[slideIndex - 1].style.display = "block";
 }
 
-function toggleFavorito(event, id) {
-    const btn = event.currentTarget;
-    const icon = btn.querySelector('i');
-    icon.classList.toggle('fa-regular');
-    icon.classList.toggle('fa-solid');
-    icon.style.color = icon.classList.contains('fa-solid') ? '#e4405f' : '';
-    console.log("Receita favorita:", id);
+async function toggleFavorite(btn, recipeId) {
+    try {
+
+        const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]')
+
+        if (!tokenElement) {
+            console.error("Token de verificação não encontrado!");
+            return;
+        }
+
+        const response = await fetch(`/recipes?handler=ToggleFavorite&recipeId=${recipeId}`, {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': tokenElement.value
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const icon = btn.querySelector('i');
+
+            if (data.isFavorite) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-regular', 'fa-solid');
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-solid', 'fa-regular');
+            }
+
+            const countLabel = btn.closest('.receitas-card').querySelector('.card-popularity');
+            countLabel.innerHTML = `<i class="fa-solid fa-heart"></i> ${data.newCount} favoritos`;
+        }
+    } catch (error) {
+        console.error("Erro ao fazer like:", error);
+    }    
 }

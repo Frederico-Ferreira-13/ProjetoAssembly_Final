@@ -1,0 +1,37 @@
+﻿@model Core.Model.Recipes
+
+<article class="receitas-card">
+    <div class="card-img-container" style="position: relative;">
+        <button class="btn-fav @(Model.IsFavorite ? "active" : "")"
+            onclick="event.preventDefault(); toggleFavorite(this, @Model.RecipesId)">
+            <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
+        </button>
+
+        <img src="/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)" alt="@Model.Title"/>
+    </div>
+
+    <div class="card-info">
+        <span class="card-popularity">
+            <i class="fa-solid fa-heart"></i> @Model.FavoriteCount favaoritos
+        </span>
+
+        <h3>@Model.Title</h3>
+
+        <div class="recipe-meta">
+            @{
+                var difClass = Model.DifficultyId == 1 ? "dif-facil" : (Model.DifficultyId == 2 ? "dif-media" : "dif-dificil");
+                var difLabel = Model.DifficultyId == 1 ? "Fácil" : (Model.DifficultyId == 2 ? "Média" : "Difícil");
+            }
+            <span class="badge-dif @difClass">@difLabel</span>
+
+            <span>
+                <i class="fa-regular fa-clock"></i>
+                @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min
+            </span>
+        </div>
+
+        <a href="/view_recipes/@Model.RecipesId" class="btn">
+            Ver Receita
+        </a>        
+    </div>
+</article>

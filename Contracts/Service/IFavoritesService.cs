@@ -11,5 +11,6 @@ namespace Contracts.Service
         Task<IEnumerable<Favorites>> GetUserFavoritesAsync(int userId);
         Task<bool> RemoveFavoriteAsync(int favoriteId);
         Task<bool> ToggleFavoriteAsync(Favorites toogleFavorite);
+
     }
 }

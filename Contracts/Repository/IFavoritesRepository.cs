@@ -10,5 +10,6 @@ namespace Contracts.Repository
         Task<IEnumerable<Favorites>> GetByUserIdAsync(int userId);
         Task<bool> ExistsAsync(int userId, int recipesId);
         Task<int> GetCountByRecipeIdAsync(int recipeId);
+        Task DeactivateFavoriteAsync(int recipeId, int userId);
     }
 }

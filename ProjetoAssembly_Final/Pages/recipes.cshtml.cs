@@ -8,10 +8,12 @@ namespace ProjetoAssembly_Final.Pages
     public class recipesModel : PageModel
     {
         private readonly IRecipesService _recipesService;
+        private readonly ITokenService _tokenService;
 
-        public recipesModel(IRecipesService recipesService)
+        public recipesModel(IRecipesService recipesService, ITokenService tokenService)
         {
             _recipesService = recipesService;
+            _tokenService = tokenService;
         }
 
         public IEnumerable<Recipes> ListRecipes { get; set; } = new List<Recipes>();
@@ -54,6 +56,25 @@ namespace ProjetoAssembly_Final.Pages
             {
                 ListRecipes = temporaria;
             }
+        }
+
+        public async Task<IActionResult> OnPostToggleFavorite(int recipeId, int userId) 
+        {
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            if (!userIdResult.IsSuccessful)
+            {
+                return new JsonResult(new { success = false, message = "Não autenticado" }) { StatusCode = 401 };
+            }
+
+            var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
+
+            if (result.IsSuccessful)
+            {
+                return new JsonResult(result.Value);
+            }
+
+            return new JsonResult(new { success = false }) { StatusCode = 400 };
+
         }
     }
 }

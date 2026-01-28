@@ -17,5 +17,6 @@ namespace Contracts.Service
         Task<Result> DeleteRecipeAsync(int recipeId);
         Task<bool> IsRecipeOwnerAsync(int recipeId);
         Task<bool> ExistsAsync(int recipeId);
+        Task<Result<object>> ToggleFavoriteAsync(int recipeId, int userId);
     }
 }

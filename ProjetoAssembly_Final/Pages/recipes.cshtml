@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="~/css/recipe.css" asp-append-version="true" />
 }
 
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@Html.AntiForgeryToken()
+
 <div class="container-main">
     <section class="Categorias-home">
         <h2 class="section-title">Explorar Receitas</h2>
@@ -45,40 +48,7 @@
             {
                 @foreach (var receita in Model.ListRecipes)
                 {
-                    <article class="receitas-card">
-                        <div class="card-img-container">
-                            <button class="btn-fav" onclick="event.preventDefault(); toggleFavorite(this, @receita.RecipesId">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
-
-                            <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
-                        </div>                      
-
-                        <div class="card-info">
-                            <span class="card-popularity">
-                                <i class="fa-solid fa-heart"></i> @(receita.FavoriteCount ?? 0) favoritos
-                            </span>
-
-                            <h3>@receita.Title</h3>
-
-                            <div class="recipe-meta">
-                                @{
-                                    var difClass = receita.DifficultyId == 1 ? "dif-facil" : (receita.DifficultyId == 2 ? "dif-media" : "dif-dificil");
-                                    var difLabel = receita.DifficultyId == 1 ? "Fácil" : (receita.DifficultyId == 2 ? "Média" : "Difícil");
-                                }
-                                <span class="badge-dif @difClass">@difLabel</span>
-
-                                <span>
-                                    <i class="fa-regular fa-clock"></i>
-                                    @(receita.PrepTimeMinutes + receita.CookTimeMinutes) min
-                                </span>
-                            </div>
-                            
-                            <a href="/view_recipes/@receita.RecipesId" class="btn">
-                                Ver Receita
-                            </a>
-                        </div>
-                    </article>
+                    <partial name="_RecipesCard" model="receita"></partial>
                 }
             }
             else

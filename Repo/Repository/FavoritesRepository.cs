@@ -95,5 +95,18 @@ namespace Repo.Repository
             var result = await SQL.ExecuteScalarAsync(sql, param);
             return Convert.ToInt32(result);
         }
+
+        public async Task DeactivateFavoriteAsync(int recipeId, int userId)
+        {
+            string sql = $"UPDATE {_tableName} SET IsActive = 0 WHERE UserId = @UserId AND RecipesId = @RecipeId";
+
+            SqlParameter[] p =
+            {
+                new SqlParameter("@UserId", userId),
+                new SqlParameter("@RecipeId", recipeId)
+            };
+
+            await SQL.ExecuteScalarAsync(sql, p);
+        }
     }
 }

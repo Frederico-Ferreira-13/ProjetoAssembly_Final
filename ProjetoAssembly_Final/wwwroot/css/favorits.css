@@ -45,6 +45,24 @@
     animation: heartPop 0.3s ease-out;
 }
 
+.btn-fav i.fa-regular {
+    color: #dc3545;
+}
+
+.btn-fav.active i {
+    font-weight: 900;
+    color: #dc3545;
+}
+
+.btn-fav.active {
+    background: #fff;
+    border: 1px solid #dc3545;
+}
+
+.fa-solid.fa-heart {
+    font-weight: 900 !important;
+}
+
 /* Animação de "pulo" ao clicar */
 @keyframes heartPop {
     0% {
