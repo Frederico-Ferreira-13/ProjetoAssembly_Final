@@ -1,92 +1,68 @@
-﻿/* --- SISTEMA DE FAVORITOS --- */
+﻿/* --- ESPECÍFICO DE FAVORITOS (favorits.css) --- */
 
-/* Badge de popularidade no card*/
-.card-popularity {
-    font-size: 0.85em;
-    color: #e74c3c;
-    font-weight: bold;
-    margin-bottom: 10px;
-    display: block;
+.aviso-vazio {
+    grid-column: 1 / -1;
+    background: #fdfdfd;
+    border: 2px dashed #ddd;
+    border-radius: 20px;
+    text-align: center;
+    padding: 80px 20px;
 }
 
-/* Botão de Favorito posicionado sobre a imagem */
-.btn-fav {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
+.aviso-vazio i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.grid-categorias {
     display: flex;
-    align-items: center;
     justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 5;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
 }
 
-.btn-fav:hover {
-    transform: scale(1.1);
-    background: #f8f9fa;
+.cat-card {
+    background: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
 }
 
-.btn-fav i {
-    font-size: 1.2rem;
-    color: #dc3545;
-    transition: 0.3s;
+.cat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* Estado ativo: Coração preenchido */
-.btn-fav i.fa-solid {
-    color: #dc3545;
-    animation: heartPop 0.3s ease-out;
+/* Estado Ativo (Categoria Selecionada) */
+.cat-card.active {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #28a745;
 }
 
-.btn-fav i.fa-regular {
-    color: #dc3545;
+.cat-card.active .cat-icon i {
+    color: white !important;
 }
 
-.btn-fav.active i {
-    font-weight: 900;
-    color: #dc3545;
+.cat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    color: #28a745;
 }
 
-.btn-fav.active {
-    background: #fff;
-    border: 1px solid #dc3545;
-}
-
-.fa-solid.fa-heart {
-    font-weight: 900 !important;
-}
-
-/* Animação de "pulo" ao clicar */
-@keyframes heartPop {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.4);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Garantir que o card pai permite posicionamento absoluto */
-.receitas-card {
-    position: relative; /* Crucial para o .btn-fav funcionar */
-}
-
-/* Estilo para a grelha de favoritos */
-#container-favoritos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
+.separator {
+    border: 0;
+    height: 1px;
+    background: #eee;
+    margin: 40px 0;
 }

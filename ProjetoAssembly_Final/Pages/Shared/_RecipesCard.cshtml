@@ -1,18 +1,22 @@
 ﻿@model Core.Model.Recipes
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 
 <article class="receitas-card">
-    <div class="card-img-container" style="position: relative;">
-        <button class="btn-fav @(Model.IsFavorite ? "active" : "")"
-            onclick="event.preventDefault(); toggleFavorite(this, @Model.RecipesId)">
-            <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
-        </button>
-
-        <img src="/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)" alt="@Model.Title"/>
-    </div>
+    <div class="card-img-container" style="position: relative;">       
+         <partial name="_FavoriteButton" model="Model" />      
+        
+         <a href="/view_recipes/@Model.RecipesId">        
+         <img src="~/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)"
+              alt="@Model.Title"
+              class="card-img"
+              onerror="this.onerror=null; this.src='/img/user.icon.png';">
+        </a>      
+    </div>   
 
     <div class="card-info">
         <span class="card-popularity">
-            <i class="fa-solid fa-heart"></i> @Model.FavoriteCount favaoritos
+            <i class="fa-solid fa-heart"></i> @Model.FavoriteCount favoritos
         </span>
 
         <h3>@Model.Title</h3>
@@ -31,7 +35,7 @@
         </div>
 
         <a href="/view_recipes/@Model.RecipesId" class="btn">
-            Ver Receita
-        </a>        
+            @Localizer["Ver Receita"]
+        </a>
     </div>
 </article>

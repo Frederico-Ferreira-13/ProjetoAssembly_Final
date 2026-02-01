@@ -1,8 +1,10 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.registModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = null;
-    ViewData["Title"] = "Criar Conta - Receitas do Frederico";
+    ViewData["Title"] = Localizer["Criar Conta - Receitas do Frederico"];
 }
 
 <!DOCTYPE html>
@@ -16,12 +18,12 @@
 <body class="Login-page">
     <div class="login-container">
         <form id="registerForm" method="post">
-            <h1>Criar Conta</h1>
+            <h1>@Localizer["Criar Conta"]</h1>
 
             <div asp-validation-summary="All" style="color: #ff6b6b; font-size: 0.9em; list-style: none; padding: 0; font-weight: bold;"></div>
 
             <div class="input-group">
-                <label asp-for="UserName">Nome de Utilizador</label>
+                <label asp-for="UserName">@Localizer["Nome de Utilizador"]</label>
                 <input asp-for="UserName" type="text" required placeholder="Ex: frederico_chef">
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
@@ -38,10 +40,10 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <button type="submit">Registar</button>
+            <button type="submit">@Localizer["Registar"]</button>
 
             <div class="signup-link">
-                <p>Já tem conta? <a href="/Login">Faça login aqui</a></p>
+                <p>@Localizer["Já tem conta?"]<a href="/Login">@Localizer["Faça login aqui"]</a></p>
                 <p><a href="/" style="color: #ffffff; opacity: 0.8; font-weight: normal;">Voltar à HomePage</a></p>
             </div>           
         </form>

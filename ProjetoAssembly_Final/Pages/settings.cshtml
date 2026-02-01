@@ -1,26 +1,97 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.settingsModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Editar o meu Perfil";
+    ViewData["Title"] = Localizer["Editar o meu Perfil"];
 }
 
+<link rel="stylesheet" href="~/css/settings.css" asp-append-version="true" />
+
 <main class="container">
-    <h2>Editar o Meu Perfil</h2>
-    <form id="editProfileForm">
-        <div class="perfil-upload">
-            <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande">
-            <label for="fileInput" class="btn">Alterar Foto</label>
-            <input type="file" id="fileInput" style="display:none" accept="image/*">
-        </div>
+    <div class="settings-container">        
+        <div class="settings-header">
+            <i class="fa-solid fa-user-gear fa-2x"></i>
+            <h2>@Localizer["Editar o Meu Perfil"]</h2>
+        </div>    
+    
+        <form method="post" enctype="multipart/form-data">
+            @if (!ViewData.ModelState.IsValid)
+            {
+               <div class="alert alert-danger" style="background: #fff5f5; border-left: 4px solid #c53030; padding: 15px; margin-bottom: 20px;">
+                   <div asp-validation-summary="All"></div>
+               </div>
+            }
+        
+            <div class="perfil-upload-section">
+                <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande">
+                <label for="fileInput" class="btn btn-outline-success">Alterar Foto</label>
+                <input type="file" id="fileInput" style="display:none" accept="image/*">
+            </div>
 
-        <label>Nome de Utilizador:</label>
-        <input type="text" id="editName" value="Frederico">
+            <div class="settings-grid">
+                <div class="form-group">
+                    <label>@Localizer["Nome de Utilizador"]</label>
+                    <input type="text" asp-for="UserName" class="form-control" placeholder=@Localizer["O seu nome"]">
+                </div>
 
-        <label>Email:</label>
-        <input type="email" id="editEmail" value="exemplo@email.com">
+                <div class="form-group">
+                    <label>@Localizer["Email"]</label>
+                    <input type="email" asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
+                </div>
 
-        <button type="submit" class="btn-guardar">Guardar Alterações</button>
-        <a href="/Perfil" style="text-align:center; display:block; margin-top:10px;">Cancelar</a>
-    </form>
+                <div class="preferences-section full-width">
+                    <h4><i class="fa-solid fa-sliders"></i> @Localizer["Preferências do Sistema"]</h4>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 20px;">@Localizer["Personalize a sua experiência na plataforma."]</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Tema</label>
+                    <select asp-for="InputTheme" class="form-control">
+                        <option value="Light">@Localizer["Modo Claro"]o</option>
+                        <option value="Dark">@Localizer["Modo Escuro"]</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Idioma"]</label>
+                    <select asp-for="InputLanguage" class="form-control">
+                        <option value="pt-PT">Português (Portugal)</option>
+                        <option value="en-US">English (US)</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="checkbox-group">
+                        <input type="checkbox" asp-for="InputNotifications" style="width: 20px; height: 20px;"/>
+                        <span>@Localizer["Desejo receber notificações e novidades por email"]</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-guardar">
+                <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
+            </button>
+
+            <a href="/Perfil" style="text-align:center; display:block; margin-top:20px; color: #888; text-decoration: none;">
+                <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]
+            </a>            
+        </form>
+    </div>
 </main>
+
+@section Scripts {
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function (event){
+            const file = event.target.files[0];
+            if(this){
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('previewImg').setAttribute('src', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

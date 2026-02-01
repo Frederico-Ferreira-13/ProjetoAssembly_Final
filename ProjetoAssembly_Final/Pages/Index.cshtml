@@ -1,16 +1,18 @@
 ﻿@page
-@model ProjectoAssembly_Final.Pages.IndexModel
+@model ProjetoAssembly_Final.Pages.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = Localizer["Home Page"];
 }
 
 <link rel="stylesheet" href="~/css/index.css" />
 
 <header class="hero">
     <div class="hero-content">
-        <h1>Descubra o sabor de cozinhar em casa</h1>
-        <p>As melhores iguarias, desde sopas reconfortantes a sobremesas irresistíveis.</p>
+        <h1>@Localizer["Descubra o sabor de cozinhar em casa"]</h1>
+        <p>@Localizer["As melhores iguarias, desde sopas reconfortantes a sobremesas irresistíveis."]</p>
         <a href="#categorias" class="btn-principal">Explorar Categorias</a>
     </div>
 </header>
@@ -21,25 +23,25 @@
         <div class="grid-categorias">
             <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
-                <span>Sopas</span>
+                <span>@Localizer["Sopas"]</span>
             </a>
             <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
-                <span>Carne</span>
+                <span>@Localizer["Carne"]</span>
             </a>
             <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
-                <span>Peixe</span>
+                <span>@Localizer["Peixe"]</span>
             </a>
             <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
-                <span>Sobremesas</span>
+                <span>@Localizer["Sobremesas"]</span>
             </a>
         </div>
     </section>
 
     <section class="slider-container">
-        <h2 class="section-title">Destaques da Semana</h2>
+        <h2 class="section-title">@Localizer["Destaques da Semana"]</h2>
         <div class="slideshow-wrapper">
             <div class="mySlides fade">
                 <img src="img/bacalhau.jpg" alt="Bacalhau à Brás">
@@ -68,7 +70,7 @@
     </section>
 
     <section class="destaques-home">
-        <h2 class="section-title">Receitas Recentes</h2>
+        <h2 class="section-title">@Localizer["Receitas Recentes"]</h2>
         <div id="container-receitas" class="grid-receitas">
             @if (Model.ListaReceitas != null)
             {
@@ -77,8 +79,8 @@
                     <article class="receitas-card">
                         <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
                         <div class="card-info">
-                            <h3>@receita.Title</h3>
-                            <p>Dificuldade: @(receita.DifficultyId == 1 ? "Fácil" : "Média") | @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</p>
+                            <h3>@Localizer[receita.Title]</h3>
+                            <p>@Localizer["Dificuldade"]: @(receita.DifficultyId == 1 ? Localizer["Fácil"] : Localizer["Média"]) | @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</p>
                             <a href="/view_recipes/@receita.RecipesId" class="btn">Ver Receita</a>
                         </div>
                     </article>

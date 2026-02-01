@@ -1,0 +1,12 @@
+﻿@model Core.Model.Recipes
+@if(Model != null)
+{
+    @Html.AntiForgeryToken()
+
+    <button type="button"
+            onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
+            class="btn-fav @(Model.IsFavorite ? "active" : "")">
+        <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
+    </button>
+   
+}

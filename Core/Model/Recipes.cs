@@ -72,7 +72,7 @@ namespace Core.Model
         }
 
         private Recipes(int id, bool isActive, int userId, int categoriesId, int difficultyId, string title,
-            string instructions, int prepTimeMinutes, int cookTimeMinutes, string servings,
+            string instructions, int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
             DateTime createdAt, DateTime? lastUpdatedAt)
         {
             this.RecipesId = id;
@@ -86,17 +86,18 @@ namespace Core.Model
             PrepTimeMinutes = prepTimeMinutes;
             CookTimeMinutes = cookTimeMinutes;
             Servings = servings;
+            this.ImageUrl = imageUrl;
 
             this.CreatedAt = createdAt;
             this.LastUpdatedAt = lastUpdatedAt;
         }
 
         public static Recipes Reconstitute(int id, int userId, int categoriesId, int difficultyId, string title, string instructions,
-                                         int prepTimeMinutes, int cookTimeMinutes, string servings,
+                                         int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
                                          DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
         {            
             var recipe = new Recipes(id, isActive, userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes, cookTimeMinutes, servings,
-                               createdAt, lastUpdatedAt);
+                              imageUrl, createdAt, lastUpdatedAt);
 
             return recipe;
         }

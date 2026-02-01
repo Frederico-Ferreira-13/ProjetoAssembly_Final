@@ -1,5 +1,7 @@
 ﻿@page "/view_recipes/{id:int}"
 @model ProjetoAssembly_Final.Pages.view_recipesModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_layout";
     ViewData["Title"] = Model.Recipe?.Title;
@@ -16,7 +18,7 @@
         {
             <div style="text-align: right; margin-bottom: 20px;">
                 <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-gestao editar" style="display: inline-flex; width: auto; padding: 10px 20px;">
-                    <i class="fa-solid fa-pen-to-square"></i> Editar a minha Receita
+                    <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar a minha Receita"]
                 </a>
             </div>
         }
@@ -54,7 +56,7 @@
                     }
                 </ul>
 
-                <h3><i class="fa-solid fa-mitten"></i> Modo de Preparação</h3>
+                <h3><i class="fa-solid fa-mitten"></i> @Localizer["Modo de Preparação"]</h3>
                 <div style="line-height: 1.6; color: #444; white-space: pre-line;">
                     @Model.Recipe?.Instructions
                 </div>
@@ -65,17 +67,17 @@
     <hr class="dropdown-divider" style="margin: 40px 0;">          
 
     <section class="seccao-comentarios">
-        <h2 class="section-title"><i class="fa-solid fa-comments"></i> Comentários e Avaliações</h2>
+        <h2 class="section-title"><i class="fa-solid fa-comments"></i> @Localizer["Comentários e Avaliações"]</h2>
         
         @if (!(User.Identity?.IsAuthenticated ?? false))
         {
             <div class="login-prompt-box" style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; margin-bottom: 20px;">
                 <i class="fa-solid fa-lock" style="font-size: 2rem; color: #ccc; margin-bottom: 15px"></i>
                 <h4>Quer deixar a sua opinião?</h4>
-                <p>Apenas utilizadores registados podem comentar.</p>
+                <p>@Localizer["Apenas utilizadores registados podem comentar."]</p>
                 <div style="margin-top: 15px">
-                    <a asp-page="/Login" class="btn btn-success">Entrar</a>
-                    <a asp-page="/Regist" class="btn btn-outline-secondary" style="margin-left: 10px;">Criar conta</a>
+                    <a asp-page="/Login" class="btn btn-success">@Localizer["Entrar"]</a>
+                    <a asp-page="/Regist" class="btn btn-outline-secondary" style="margin-left: 10px;">@Localizer["Criar conta"]</a>
                 </div>
             </div>
         }

@@ -1,8 +1,10 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.loginModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = null;
-    ViewData["Title"] = "Login - Receitas do Frederico";
+    ViewData["Title"] = Localizer["Login - Receitas do Frederico"];
 }
 
 <!DOCTYPE html>
@@ -18,23 +20,23 @@
         <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 15px; font-weight: bold;"></div>
         
         <form method="post">
-            <h1>Entrar</h1>
+            <h1>@Localizer["Entrar"]</h1>
             <div class="input-group">
-                <label asp-for="Input.UserName">Utilizador</label>
-                <input asp-for="Input.UserName" type="text" required placeholder="O seu nome de Utilizador" />
+                <label asp-for="Input.UserName">@Localizer["Utilizador"]</label>
+                <input asp-for="Input.UserName" type="text" required placeholder="@Localizer["O seu nome de Utilizador"]" />
                 <span asp-validation-for="Input.UserName" class="text-danger"></span>
             </div>
 
             <div class="input-group">
-                <label asp-for="Input.Password">Palavra-passe</label>
+                <label asp-for="Input.Password">@Localizer["Palavra-passe"]</label>
                 <input asp-for="Input.Password" type="password" required>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
 
-            <button type="submit" style="margin-top: 25px">Entrar</button>
+            <button type="submit" style="margin-top: 25px">@Localizer["Entrar"]</button>
 
-            <p class="signup-link">Não tem conta? <a href="/regist">Registe-se aqui</a></p>
-            <p class="signup-link"><a href="/" style="font-weight: normal; opacity: 0.8;">Voltar à Home</a></p>
+            <p class="signup-link">Não tem conta? <a href="/regist">@Localizer["Registe-se aqui"]</a></p>
+            <p class="signup-link"><a href="/" style="font-weight: normal; opacity: 0.8;">@Localizer["Voltar à Home"]</a></p>
         </form>
     </div>
     <partial name="_ValidationScriptsPartial" />

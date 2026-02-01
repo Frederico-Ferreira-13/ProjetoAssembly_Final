@@ -16,21 +16,36 @@ namespace Repo.Repository
 
         protected override Favorites MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("FavoritesId"));
-            int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
-            int recipesId = reader.GetInt32(reader.GetOrdinal("RecipesId"));
+            int id = Convert.ToInt32(reader["FavoritesId"]);
+            int userId = Convert.ToInt32(reader["UserId"]);
+            int recipesId = Convert.ToInt32(reader["RecipesId"]);
 
-            DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
+            DateTime createdAtFav = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
+            bool isActiveFav = reader.GetBoolean(reader.GetOrdinal("IsActive"));
 
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            var favorite = Favorites.Reconstitute(id, userId, recipesId, createdAtFav, isActiveFav);
 
-            return Favorites.Reconstitute(
-                id,
-                userId,
-                recipesId,
-                createdAt,
-                isActive
+            string? imageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl"))
+                        ? "default.jpg"
+                        : reader.GetString(reader.GetOrdinal("ImageUrl"));
+
+            favorite.Recipe = Recipes.Reconstitute(
+                id: recipesId,
+                userId: userId,
+                categoriesId: reader.IsDBNull(reader.GetOrdinal("CategoriesId")) ? 0 : Convert.ToInt32(reader["CategoriesId"]),
+                difficultyId: reader.IsDBNull(reader.GetOrdinal("DifficultyId")) ? 0 : Convert.ToInt32(reader["DifficultyId"]),
+                title: reader.GetString(reader.GetOrdinal("Title")),
+                instructions: reader.GetString(reader.GetOrdinal("Instructions")),
+                prepTimeMinutes: Convert.ToInt32(reader["PrepTimeMinutes"]),
+                cookTimeMinutes: Convert.ToInt32(reader["CookTimeMinutes"]),
+                servings: reader.GetString(reader.GetOrdinal("Servings")),
+                imageUrl: imageUrl,
+                createdAt: DateTime.Now,
+                lastUpdatedAt: null,
+                isActive: true
             );
+
+            return favorite;
         }
 
         protected override string BuildInsertSql(Favorites entity)
@@ -68,7 +83,15 @@ namespace Repo.Repository
 
         public async Task<IEnumerable<Favorites>> GetByUserIdAsync(int userId)
         {
-            string sql = $"SELECT * FROM {_tableName} WHERE UserId = @UserId AND IsActive = 1";
+            string sql = @"
+                SELECT f.*, 
+                       r.Title, r.Instructions, r.PrepTimeMinutes, 
+                       r.CookTimeMinutes, r.Servings, r.CategoriesId, r.DifficultyId,
+                       r.ImageUrl
+                FROM Favorites f
+                INNER JOIN Recipes r ON f.RecipesId = r.RecipesId
+                WHERE f.UserId = @UserId AND f.IsActive = 1";
+            
             SqlParameter param = new SqlParameter("@UserId", userId);
 
             return await ExecuteListAsync(sql, param);
@@ -98,7 +121,7 @@ namespace Repo.Repository
 
         public async Task DeactivateFavoriteAsync(int recipeId, int userId)
         {
-            string sql = $"UPDATE {_tableName} SET IsActive = 0 WHERE UserId = @UserId AND RecipesId = @RecipeId";
+            string sql = $"DELETE FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipeId";
 
             SqlParameter[] p =
             {

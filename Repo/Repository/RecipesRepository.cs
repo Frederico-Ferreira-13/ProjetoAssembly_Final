@@ -30,9 +30,11 @@ namespace Repo.Repository
             int difficultyIdValue = reader.GetInt32(reader.GetOrdinal("DifficultyId"));
             string title = reader.GetString(reader.GetOrdinal("Title"));
             string instructions = reader.GetString(reader.GetOrdinal("Instructions"));
-            int prepTimeMinutes = reader.GetInt32(reader.GetOrdinal("PrepTimeMinutes"));
-            int cookTimeMinutes = reader.GetInt32(reader.GetOrdinal("CookTimeMinutes"));
+            int prepTimeMinutes = Convert.ToInt32(reader["PrepTimeMinutes"]);
+            int cookTimeMinutes = Convert.ToInt32(reader["CookTimeMinutes"]);
             string servings = reader.GetString(reader.GetOrdinal("Servings"));
+
+            string imageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? "default.jpg" : reader.GetString(reader.GetOrdinal("ImageUrl"));
 
             return Recipes.Reconstitute(
                 id,
@@ -44,6 +46,7 @@ namespace Repo.Repository
                 prepTimeMinutes,
                 cookTimeMinutes,
                 servings,
+                imageUrl,
                 createdAt,
                 lastUpdatedAt,
                 isActive
@@ -52,8 +55,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(Recipes entity)
         {
-            return $"INSERT INTO {_tableName} (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, CreatedAt, IsActive) " +
-                    $"VALUES (@UserId, @CategoriesId, @DifficultyId, @Title, @Instructions, @PrepTimeMinutes, @CookTimeMinutes, @Servings, GETDATE(), 1)";
+            return $"INSERT INTO {_tableName} (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, IsActive) " +
+                    $"VALUES (@UserId, @CategoriesId, @DifficultyId, @Title, @Instructions, @PrepTimeMinutes, @CookTimeMinutes, @Servings, @ImageUrl, GETDATE(), 1)";
         }
 
         protected override SqlParameter[] GetInsertParameters(Recipes entity)
@@ -67,16 +70,17 @@ namespace Repo.Repository
                 new SqlParameter("@Instructions", entity.Instructions),
                 new SqlParameter("@PrepTimeMinutes", entity.PrepTimeMinutes),
                 new SqlParameter("@CookTimeMinutes", entity.CookTimeMinutes),
-                new SqlParameter("@Servings", entity.Servings)
+                new SqlParameter("@Servings", entity.Servings),
+                new SqlParameter("@ImageUrl", (object)entity.ImageUrl ?? DBNull.Value)
             };
         }
 
         protected override string BuildUpdateSql(Recipes entity)
         {
             return $"UPDATE {_tableName} SET Title = @Title, Instructions = @Instructions, " +
-               $"PrepTimeMinutes = @PrepTimeMinutes, CookTimeMinutes = @CookTimeMinutes, " +
-               $"Servings = @Servings, CategoriesId = @CategoriesId, DifficultyId = @DifficultyId, " +
-               $"LastUpdatedAt = GETDATE() WHERE RecipesId = @RecipesId";
+                   $"PrepTimeMinutes = @PrepTimeMinutes, CookTimeMinutes = @CookTimeMinutes, " +
+                   $"Servings = @Servings, CategoriesId = @CategoriesId, DifficultyId = @DifficultyId, " +
+                   $"ImageUrl = @ImageUrl, LastUpdatedAt = GETDATE() WHERE RecipesId = @RecipesId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Recipes entity)
@@ -90,7 +94,7 @@ namespace Repo.Repository
                 new SqlParameter("@Servings", entity.Servings),
                 new SqlParameter("@CategoriesId", entity.CategoriesId),
                 new SqlParameter("@DifficultyId", entity.DifficultyId),
-
+                new SqlParameter("@ImageUrl", (object)entity.ImageUrl ?? DBNull.Value), // Adicionado
                 new SqlParameter("@RecipesId", entity.GetId())
             };
         }
@@ -101,7 +105,7 @@ namespace Repo.Repository
 
             string sql = $@"
                 SELECT RecipesId, UserId, CategoriesId, DifficultyId, Title, Instructions, 
-                       PrepTimeMinutes, CookTimeMinutes, Servings, CreatedAt, LastUpdatedAt, IsActive
+                       PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, LastUpdatedAt, IsActive
                 FROM {_tableName} 
                 WHERE UserId = @UserId AND IsActive = 1
                 ORDER BY CreatedAt DESC";
@@ -173,13 +177,67 @@ namespace Repo.Repository
                     var recipe = MapFromReader(reader); // Lê as colunas base
 
                     // Preencher as propriedades extra
-                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoriteCount"));
+                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoritesCount"));
                     recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
 
                     recipes.Add(recipe);
                 }
             }
             return recipes;
+        }
+
+        public async Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId)
+        {
+            var recipes = new List<Recipes>();
+            int totalCount = 0;
+
+            string searchTerm = search?.Trim() ?? string.Empty;
+
+            string sql = $@"
+                SELECT r.*,
+                       (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoritesCount,
+                       CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId AND f.IsActive = 1)
+                            THEN 1 ELSE 0 END as IsFavorited,
+                       COUNT(*) OVER() as TotalCount
+                FROM Recipes r
+                WHERE r.IsActive = 1
+                    AND (@CategoryId IS NULL OR r.CategoriesId = @CategoryId)
+                    AND (
+                        @Search IS NULL 
+                        OR r.Title COLLATE Latin1_General_CI_AI LIKE '%' + @Search + '%'
+                        OR DIFFERENCE(r.Title, @Search) >= 3
+                    )
+                ORDER BY
+                    CASE WHEN r.Title COLLATE Latin1_General_CI_AI LIKE @Search + '%' THEN 0 ELSE 1 END, 
+                    r.CreatedAt DESC
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+            SqlParameter[] parameters =
+            {
+                new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
+                new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value),
+                new SqlParameter("@Search", (object)search ?? DBNull.Value),
+                new SqlParameter("@Offset", (page - 1) * pageSize),
+                new SqlParameter("@PageSize", pageSize)
+            };
+
+            using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
+            {
+                while(reader.Read())
+                {
+                    if(totalCount == 0)
+                    {
+                        totalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));                       
+                    }
+
+                    var recipe = MapFromReader(reader);
+                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoritesCount"));
+                    recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
+                    recipes.Add(recipe);
+                }
+            }
+
+            return (recipes, totalCount);
         }
     }
 }

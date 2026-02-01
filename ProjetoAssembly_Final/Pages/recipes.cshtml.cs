@@ -21,60 +21,65 @@ namespace ProjetoAssembly_Final.Pages
         [BindProperty(SupportsGet = true)]
         public int? CategoryId { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public string? Search { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int P { get; set; } = 1; // Página atual (default = 1)
+
+        public int TotalPages { get; set; }
+
         public async Task OnGetAsync()
         {
-            var result = await _recipesService.GetAllRecipesAsync();
-            var temporaria = new List<Recipes>();
+            int pageSize = 9;
+            if (P < 1) P = 1;
 
-            if (result.IsSuccessful && result.Value != null)
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            int? currentUserId = userIdResult.IsSuccessful ? userIdResult.Value : null;
+
+            var result = await _recipesService.SearchRecipesAsync(Search, CategoryId, P, pageSize, currentUserId);
+
+            if (result.IsSuccessful && result.Value.Items != null)
             {
-                temporaria.AddRange(result.Value);
-            }
+                // Os itens já vêm com .IsFavorite preenchido pelo SQL!
+                ListRecipes = result.Value.Items;
 
-            var sopa = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Casseira", "Instruções aqui...", 10, 25, "4 Pessoas", DateTime.Now, null, true);
-            sopa.SetImageUrl("sopa.jpg");
-
-            var carne = Recipes.Reconstitute(2, 1, 2, 2, "Arroz de Pato Tradicional", "Instruções aqui...", 20, 50, "6 Pessoas", DateTime.Now, null, true);
-            carne.SetImageUrl("arroz-de-pato.jpg");
-
-            var peixe = Recipes.Reconstitute(3, 1, 3, 2, "Bacalhau à Brás", "Instruções aqui...", 15, 15, "2 Pessoas", DateTime.Now, null, true);
-            peixe.SetImageUrl("bacalhau.jpg");
-
-            var doce = Recipes.Reconstitute(4, 1, 4, 1, "Arroz Doce Cremoso", "Instruções aqui...", 10, 40, "8 Pessoas", DateTime.Now, null, true);
-            doce.SetImageUrl("arroz-doce.jpg");
-
-            temporaria.Add(sopa);
-            temporaria.Add(carne);
-            temporaria.Add(peixe);
-            temporaria.Add(doce);
-
-            if (CategoryId.HasValue && CategoryId > 0)
-            {
-                ListRecipes = temporaria.Where(r => r.CategoriesId == CategoryId.Value).ToList();
+                // O TotalCount vem do COUNT(*) OVER() do SQL
+                TotalPages = (int)Math.Ceiling(result.Value.TotalCount / (double)pageSize);
             }
             else
             {
-                ListRecipes = temporaria;
+                ListRecipes = new List<Recipes>();
+                TotalPages = 0;
             }
         }
 
-        public async Task<IActionResult> OnPostToggleFavorite(int recipeId, int userId) 
+        public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId) 
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
             if (!userIdResult.IsSuccessful)
             {
-                return new JsonResult(new { success = false, message = "Não autenticado" }) { StatusCode = 401 };
+                return Unauthorized();
             }
 
-            var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
-
-            if (result.IsSuccessful)
+            try
             {
-                return new JsonResult(result.Value);
+                var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
+                if (result.IsSuccessful)
+                {
+                    return new JsonResult(result.Value);
+                }
+                else
+                {                   
+                    Console.WriteLine($"Toggle failed for recipeId {recipeId}: {result.Error}");
+                    return BadRequest(result.Error); 
+                }
             }
-
-            return new JsonResult(new { success = false }) { StatusCode = 400 };
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in toggle: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

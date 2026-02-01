@@ -25,7 +25,7 @@ namespace ProjetoAssembly_Final.Pages
 
             if(result == null || !result.IsSuccessful || result.Value == null)
             {
-                Input = Recipes.Reconstitute(id, 1, 1, 1, "Receita Exemplo", "...", 10, 20, "4 pessoas", DateTime.Now, null, true);
+                Input = Recipes.Reconstitute(id, 1, 1, 1, "Receita Exemplo", "...", 10, 20, "4 pessoas", null, DateTime.Now, null, true);
                 return Page();
             }
 

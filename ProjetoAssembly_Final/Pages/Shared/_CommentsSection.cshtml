@@ -1,4 +1,6 @@
 ﻿@model ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 
 <div class="comments-section-wrapper">
     <div id="container-comentarios" class="comentarios-lista">
@@ -43,7 +45,7 @@
     {
         <section class="comentarios-form-section">
             <div class="comentarios-form">
-                <h3><i class="fa-solid fa-pen-to-square"></i> Deixe a sua opinião</h3>
+                <h3><i class="fa-solid fa-pen-to-square"></i>@Localizer["Deixe a sua opinião"]</h3>
                 <form method="post">
                     <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
                     <div class="rating-input-group">
@@ -61,12 +63,12 @@
                     
                     <div class="form-group">
                         <textarea name="Message" class="form-control-modern" rows="4" 
-                                  placeholder="O que achou desta receita?"></textarea>
+                                  placeholder="@Localizer["O que achou desta receita?"]"></textarea>
                     </div>
 
                     <div class="form-footer">
                         <button type="submit" class="btn-publicar">
-                            <i class="fa-solid fa-paper-plane"></i>Publicar Comentário
+                            <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Comentário"]
                         </button>
                     </div>
                 </form>

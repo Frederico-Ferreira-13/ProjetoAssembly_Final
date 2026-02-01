@@ -56,6 +56,17 @@ namespace Service.Services
             });
         }
 
+        public async Task<int> GetFavoriteCountAsync(int recipeId)
+        {
+            return await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+        }
+
+        public async Task<bool> IsRecipeFavoriteAsync(int recipeId, int userId)
+        {
+            // Usamos o favoritesRepository que já injetaste no construtor
+            return await _favoritesRepository.ExistsAsync(recipeId, userId);
+        }
+
         public async Task<bool> IsRecipeOwnerAsync(int recipeId)
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
@@ -250,6 +261,35 @@ namespace Service.Services
             await _unitOfWork.CommitAsync();
 
             return Result.Success("Receita eliminada com sucesso.");
-        }       
+        }
+        
+        public async Task<int> GetTotalRecipesByUserAsync(int userId)
+        {
+            var recipes = await _recipesRepository.ReadAllAsync();
+            return recipes.Count(r => r.UserId == userId);
+        }
+
+        public async Task<int> GetTotalFavoritesByUserAsync(int userId)
+        {
+            var favorites = await _favoritesRepository.GetByUserIdAsync(userId);
+            return favorites.Count();
+        }
+
+        public async Task<Result<(IEnumerable<Recipes> Items, int TotalCount)>> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId)
+        {
+            try
+            {
+                var data = await _recipesRepository.SearchRecipesAsync(search, categoryId, page, pageSize, currentUserId);
+
+                // Explicitamos o tipo no Success para evitar confusões do compilador
+                return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Success(data);
+            }
+            catch (Exception ex)
+            {
+                return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Failure(
+                    Error.InternalServer($"Erro ao pesquisar receitas: {ex.Message}")
+                );
+            }
+        }
     }
 }

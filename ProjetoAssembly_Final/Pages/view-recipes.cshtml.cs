@@ -35,32 +35,29 @@ namespace ProjetoAssembly_Final.Pages
                 return RedirectToPage("/Index");
             }
 
+            RecipeId = id;
+
             var result = await _recipesService.GetRecipeByIdAsync(id);
 
-            if (result == null || !result.IsSuccessful || result.Value == null)
+            if (result != null || result.IsSuccessful || result.Value != null)
             {
-                if (id >= 1 && id <= 4)
-                {
-                    LoadMockRecipe(id);                    
-                }
-                else
-                {
-                    return NotFound();
-                }
-                
+                Recipe = result.Value;                
             }
-            else
+            else if(id >= 1 && id <= 4)
+            {                
+                LoadMockRecipe(id);                
+            }
+
+            if (Recipe == null)
             {
-                Recipe = result.Value!;
+                return NotFound();
             }
 
             var commentsResult = await _commentsService.GetCommentsByRecipeIdAsync(id);
             if(commentsResult.IsSuccessful)
             {
                 ListComments = commentsResult.Value;
-            }
-
-            RecipeId = id;
+            }           
 
             return Page();
         }
@@ -121,23 +118,24 @@ namespace ProjetoAssembly_Final.Pages
         {
             if (id == 1)
             {
-                Recipe = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Caseira", "1. Descasque... 2. Coza...", 10, 25, "4 Pessoas", DateTime.Now, null, true);
-                Recipe.SetImageUrl("sopa.jpg");
+                Recipe = Recipes.Reconstitute(1, 1, 1, 1, "Sopa de Legumes Caseira", "1. Descasque... 2. Coza...", 10, 25, "4 Pessoas", 
+                    "sopa.jpg", DateTime.Now, null, true);
+                
             }
             else if (id == 2)
             {
-                Recipe = Recipes.Reconstitute(2, 1, 2, 2, "Arroz de Pato Tradicional", "1. Coza... 2. Refogue...", 20, 50, "6 Pessoas", DateTime.Now, null, true);
-                Recipe.SetImageUrl("arroz-de-pato.jpg");
+                Recipe = Recipes.Reconstitute(2, 1, 2, 2, "Arroz de Pato Tradicional", "1. Coza... 2. Refogue...", 20, 50, "6 Pessoas", 
+                    "arroz-de-pato.jpg", DateTime.Now, null, true);                
             }
             else if (id == 3)
             {
-                Recipe = Recipes.Reconstitute(3, 1, 3, 2, "Bacalhau à Brás", "1. Refogue... 2. Envolva...", 15, 15, "2 Pessoas", DateTime.Now, null, true);
-                Recipe.SetImageUrl("bacalhau.jpg");
+                Recipe = Recipes.Reconstitute(3, 1, 3, 2, "Bacalhau à Brás", "1. Refogue... 2. Envolva...",  15, 15, "2 Pessoas",
+                    "bacalhau.jpg", DateTime.Now, null, true);                
             }
             else if (id == 4)
             {
-                Recipe = Recipes.Reconstitute(4, 1, 4, 1, "Arroz Doce Cremoso", "1. Coza... 2. Polvilhe...", 10, 40, "8 Pessoas", DateTime.Now, null, true);
-                Recipe.SetImageUrl("arroz-doce.jpg");
+                Recipe = Recipes.Reconstitute(4, 1, 4, 1, "Arroz Doce Cremoso", "1. Coza... 2. Polvilhe...", 10, 40, "8 Pessoas",
+                    "arroz-doce.jpg", DateTime.Now, null, true);                
             }
         }
     }

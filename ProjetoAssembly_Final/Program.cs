@@ -7,6 +7,7 @@ using Repo.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,16 @@ SQL.Initialize(connectionString);
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "pt-PT", "en-US" };
+    options.SetDefaultCulture("pt-PT")
+        .AddSupportedCultures(supportedCultures)
+        .AddSupportedUICultures(supportedCultures);
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
@@ -100,6 +111,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseDefaultFiles();
+
+var localizationOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+app.UseRequestLocalization(localizationOptions);
 app.UseStaticFiles();
 
 app.UseRouting();

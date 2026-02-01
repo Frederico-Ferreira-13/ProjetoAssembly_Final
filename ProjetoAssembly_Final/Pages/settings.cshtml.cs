@@ -16,10 +16,7 @@ namespace ProjetoAssembly_Final.Pages
         {
             _settingsService = settingsService;
             _usersService = usersService;
-        }
-
-        [BindProperty]
-        public UserSettings CurrentSettings { get; set; } = null!;
+        }       
 
         [BindProperty]
         public string UserName { get; set; } = string.Empty;
@@ -27,18 +24,21 @@ namespace ProjetoAssembly_Final.Pages
         [BindProperty]
         public string Email { get; set; } = string.Empty;
 
+        [BindProperty]
+        public string InputTheme { get; set; } = "Light";
+
+        [BindProperty]
+        public string InputLanguage { get; set; } = "pt-PT";
+
+        [BindProperty]
+        public bool InputNotifications { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
             var userId = GetUserId();
-            if(userId == null)
+            if(userId == 0)
             {
                 return RedirectToPage("/Login");
-            }
-
-            var settingsResult = await _settingsService.GetSettingsByUserIdAsync(userId);
-            if (settingsResult.IsSuccessful)
-            {
-                CurrentSettings = settingsResult.Value;
             }
 
             var userResult = await _usersService.GetUserByIdAsync(userId);
@@ -48,18 +48,84 @@ namespace ProjetoAssembly_Final.Pages
                 Email = userResult.Value.Email;
             }
 
+            var settingsResult = await _settingsService.GetSettingsByUserIdAsync(userId);
+            if (settingsResult.IsSuccessful)
+            {
+                InputTheme = settingsResult.Value.Theme;
+                InputLanguage = settingsResult.Value.Language;
+                InputNotifications = settingsResult.Value.ReceiveNotifications;
+            }            
+
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!ModelState.IsValid)
+            {
+                // Se entrar aqui, é porque algum campo está a falhar a validação silenciosamente
+                return Page();
+            }
+
             var userId = GetUserId();
             if(userId == 0)
             {
                 return RedirectToPage("/Login");
             }
 
-            return RedirectToPage();
+            var settingsUpdate = new UserSettings(
+                userId, 
+                InputTheme, 
+                InputLanguage, 
+                InputNotifications
+            );
+
+            var result = await _settingsService.UpdateUserSettingsAsync(settingsUpdate);
+
+            if (result.IsSuccessful)            {              
+
+                var userResult = await _usersService.GetUserByIdAsync(userId);
+
+                if (userResult.IsSuccessful)
+                {
+                    var userToUpdate = userResult.Value;
+
+                    userToUpdate.UpdateUserName(UserName);
+                    userToUpdate.UpdateEmail(Email);
+
+                    var userUpdateResult = await _usersService.UpdateUserProfileAsync(userToUpdate);
+                }
+
+                // Lógica para o idioma mudar
+                Response.Cookies.Append(
+                    Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,
+                    Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
+                        new Microsoft.AspNetCore.Localization.RequestCulture(InputLanguage)),
+                    new CookieOptions { 
+                        Expires = DateTimeOffset.UtcNow.AddYears(1),
+                        Path = "/",
+                        HttpOnly = false
+                    }
+                );
+
+                TempData["SuccessMessage"] = "Perfil atualizado com sucesso";
+                return RedirectToPage("/Perfil");
+            }
+
+            ModelState.AddModelError(string.Empty, result.Message ?? "Ocurreu um erro inesperado.");
+
+            if(result.ValidationErrors != null)
+            {
+                foreach (var error in result.ValidationErrors)
+                {
+                    foreach (var message in error.Value)
+                    {
+                        ModelState.AddModelError(error.Key, message);
+                    }
+                }
+            }
+
+            return Page();
         }
 
         private int GetUserId()

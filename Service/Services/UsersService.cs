@@ -48,8 +48,8 @@ namespace Service.Services
                     return Result<Users>.Failure(hashResult.Error);
                 }
 
-                var roleId = (newUser.Email.ToLower() == "fredericocrf87@hotmail.com") ? 2 : 1;
-                var aproved = (roleId == 2);
+                var roleId = (newUser.Email.ToLower() == "fredericocrf87@hotmail.com") ? 1 : 2;
+                var aproved = (roleId == 1);
 
                 var userToSave = new Users(
                     userName: newUser.UserName,

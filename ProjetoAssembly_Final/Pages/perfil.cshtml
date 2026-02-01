@@ -1,8 +1,10 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.perfilModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "O Meu Perfil";
+    ViewData["Title"] = Localizer["O Meu Perfil"];
 }
 
 @section Styles {
@@ -14,10 +16,10 @@
         <div class="perfil-flex">
             <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
             <div class="info-user">
-                <h1>Olá, Frederico!</h1>
-                <p>Membro desde: Janeiro de 2026</p>
+                <h1>@Localizer["Olá, Frederico!"]</h1>
+                <p>@Localizer["Membro desde: Janeiro de 2026"]</p>
                 <a asp-page="/perfilEdit" class="btn-principal" style="padding: 8px 20px;">
-                    <i class="fa-solid fa-user-gear"></i>Editar Dados
+                    <i class="fa-solid fa-user-gear"></i>@Localizer["Editar Dados"]
                 </a>
             </div>
         </div>
@@ -25,30 +27,30 @@
 
     <div style="display: flex; gap: 20px; margin-bottom: 40px;">
         <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center;">
-            <h3 style="margin:0; color: #2ecc71;">1</h3>
+            <h3 style="margin:0; color: #2ecc71;">@Model.TotalCriadas</h3>
             <span style="font-size: 0.9rem; color: #7f8c8d;">Receita Criada</span>
         </div>
         <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center">
-            <h3 style="margin:0; color: #e74c3c;">0</h3>
+            <h3 style="margin:0; color: #e74c3c;">@Model.TotalFavoritos</h3>
             <span style="font-size: 0.9rem; color: #7f8c8d;">Favoritos</span>
         </div>
     </div>
 
     <h2 class="section-title" style="text-align: left;">
-        <i class="fa-solid fa-utensils"></i> As Minhas Receitas
+        <i class="fa-solid fa-utensils"></i> @Localizer["As Minhas Receitas"]
     </h2>    
 
     <section class="grid-perfil">
         <article class="receitas-card">
-            <img src="~/img/bacalhau.jpg" alt="Bacalhau à Brás">
+            <img src="~/img/bacalhau.jpg" alt="@Localizer["Bacalhau à Brás"]">
             <div class="card-info">
-                <h3>Bacalhau à Brás</h3>
+                <h3>@Localizer["Bacalhau à Brás"]</h3>
                 <div class="acoes-perfil">
                     <a href="/EditarReceita?id=3" class="btn-gestao editar">
-                        <i class="fa-solid fa-pen-to-square"></i>Editar
+                        <i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar"]
                     </a>
                     <button onclick="confirmarEliminar(3)" class="btn-gestao eliminar">
-                        <i class="fa-solid fa-trash"></i> Apagar
+                        <i class="fa-solid fa-trash"></i> @Localizer["Apagar"]
                     </button>
                 </div>
             </div>

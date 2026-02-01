@@ -1,8 +1,10 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.PerfilEditModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Configurações de Perfil";
+    ViewData["Title"] = Localizer["Configurações de Perfil"];
 }
 
 @section Styles {
@@ -12,7 +14,7 @@
 <div class="container-perfil">
     <div class="perfil-header">
         <h2><i class="fa-solid fa-user-gear"></i> Configurações da Conta</h2>
-        <p>Gere as tuas informações pessoais e preferências.</p>
+        <p>@Localizer["Gere as tuas informações pessoais e preferências."]</p>
     </div>
 
     <form method="post" enctype="multipart/form-data" class="perfil-header">
@@ -22,7 +24,7 @@
                 <img src="~/img/user.icon.png" class="img-perfil-grande" style="margin-bottom: 15px;"/>
                 <div class="upload-btn-wrapper">
                     <label for="foto" class="btn-gestao editar" style="cursor:pointer;">
-                        <i class="fa-solid fa-camera"></i> Alterar Foto
+                        <i class="fa-solid fa-camera"></i> @Localizer["Alterar Foto"]
                     </label>
                     <input type="file" id="foto" name="FotoPerfil" style="display:none;"/>
                 </div>
@@ -30,16 +32,16 @@
 
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label>Nome de Utilizador</label>
+                    <label>@Localizer["Nome de Utilizador"]</label>
                     <input type="text" class="form-control" value="Frederico" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;"/>
                 </div>
                 <div>
-                    <label>E-mail</label>
+                    <label>@Localizer["E-mail"]</label>
                     <input type="email" class="form-control" value="fredericocrf87@hotmail.com" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" />
                 </div>
                 <div style="margin-top: 10px; display: flex; gap: 10px;">
                     <button type="submit" class="btn-principal" style="flex: 1;">Guardar Alterações</button>
-                    <a asp-page="/perfil" class="btn-gestao editar" style="flex: 0.5; text-decoration: none">Cancelar</a>
+                    <a asp-page="/perfil" class="btn-gestao editar" style="flex: 0.5; text-decoration: none">@Localizer["Cancelar"]</a>
                 </div>
             </div>
         </div>

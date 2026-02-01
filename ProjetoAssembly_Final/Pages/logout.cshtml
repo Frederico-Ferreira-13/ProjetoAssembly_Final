@@ -1,8 +1,10 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.logoutModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Sair do Sistema";
+    ViewData["Title"] = Localizer["Sair do Sistema"];
 }
 
 <link rel="stylesheet" href="~/css/logout.css" asp-append-version="true" />
@@ -10,7 +12,7 @@
 <div class="logout-wrapper">
     <div class="content-box login-container">
         <h1>Até breve!</h1>
-        <p>Tens a certeza que pretendes terminar a sessão?</p>
+        <p>@Localizer["Tens a certeza que pretendes terminar a sessão?"]</p>
 
         <div class="logout-actions">
             <form method="post">
@@ -24,13 +26,13 @@
                             <circle cx="70" cy="50" r="3" fill="white" />
                         </svg>
                     </div>
-                    <span class="button-text">Terminar Sessão</span>
+                    <span class="button-text">@Localizer["Terminar Sessão"]</span>
                 </button>
             </form>
 
             <div class="voltar-container">
                 <a asp-page="/Index" class="btn-cancelar"> 
-                    <i class="fa-solid fa-arrow-left"></i>Voltar ao Início</a>
+                    <i class="fa-solid fa-arrow-left"></i>@Localizer["Voltar ao Início"]</a>
             </div>            
         </div>
     </div>
