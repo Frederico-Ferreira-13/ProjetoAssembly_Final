@@ -15,5 +15,12 @@ namespace Contracts.Service
         Task<bool> CategoryNameExistsForUserAsync(string categoryName, int userId, int? excludeCategoryId = null);
         Task<Result<Category>> UpdateCategoryAsync(Category updateCategory);
         Task<Result<Category>> DeactivateCategoryAsync(int categoryId);
+
+        Task<Result<CategoryType>> GetCategoryTypeByIdAsync(int id);
+        Task<Result<CategoryType>> GetCategoryTypeByNameAsync(string name);
+        Task<Result<IEnumerable<CategoryType>>> GetAllCategoryTypesAsync();
+        Task<Result<CategoryType>> CreateCategoryTypeAsync(CategoryType categoryType);
+        Task<Result> UpdateCategoryTypeAsync(CategoryType updateCategoryType);
+        Task<Result> DeleteCategoryTypeAsync(int id);
     }
 }

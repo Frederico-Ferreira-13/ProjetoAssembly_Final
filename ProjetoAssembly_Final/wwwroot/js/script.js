@@ -4,8 +4,19 @@
 
 // --- 1. GESTÃO DE NAVEGAÇÃO (Active Link) ---
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- GESTÃO DE NAVEGAÇÃO & TEMA ---
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.container-nav ul li a');
+
+    // Marcar link ativo no menu 
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+
+    // Gestão do Dark Mode (Definições)
     const themeSelect = document.querySelector('select[name="InputTheme"]');
     if (themeSelect) {
         themeSelect.addEventListener('change', (e) => {
@@ -16,11 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
-        }
-    });
+
+    const pendingLink = document.getElementById('pendingBadgeLink');
+    if (pendingLink) {
+        updatePendingCount();
+        setInterval(updatePendingCount, 60000);
+    }
 
     // --- 2. ADICIONAR DINAMICAMENTE INGREDIENTES (Página Criar Receita) ---
     const btnAdd = document.getElementById('btn-add-ingrediente');
@@ -31,10 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const linha = document.createElement('div');
             linha.className = 'ingrediente-linha';
             linha.innerHTML = `
-                <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
-                <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" required />
+                <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
+                <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" />
                 <input type="text" name="IngredientName[]" placeholder="Nome do Ingrediente" class="form-input-custom" required />
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
+                <input type="text" name="ingredientDetail[]" placeholder="Nota/Tipo" class="form-input-custom detail" />
+                <button type="button" class="btn-remove">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             `;
@@ -102,6 +115,8 @@ function showDivs(n) {
     x[slideIndex - 1].style.display = "block";
 }
 
+
+// Lógica de Favoritos via AJAX
 async function handleToggleFavorite(event, btn, recipeId) {    
 
     if (event) {
@@ -163,6 +178,36 @@ async function handleToggleFavorite(event, btn, recipeId) {
             window.location.href = "/Login";
         }
     } catch (error) {
-        console.error("Erro:", error);
+        console.error("Erro ao processar favorito:", error);
+    }
+}
+
+async function updatePendingCount() {
+    const badge = document.getElementById('pendingCount');
+    if (!badge) return;
+
+    try {
+        // Chamada ao Handler OnGetCount na página PendingRecipes
+        const response = await fetch('/PendingRecipes?handler=Count', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (response.ok) {
+            const count = await response.json();
+
+            badge.textContent = count;
+
+            if (count > 0) {
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }  
+    } catch (error) {
+        console.error('Erro ao atualizar contador de pendentes:', error);
     }
 }

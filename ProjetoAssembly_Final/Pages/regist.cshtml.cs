@@ -1,4 +1,3 @@
-using Contracts.Repository;
 using Contracts.Service;
 using Core.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -16,50 +15,43 @@ namespace ProjetoAssembly_Final.Pages
         }
 
         [BindProperty]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
         [BindProperty]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [BindProperty]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
+
+        public void OnGet()
+        {
+
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
-            }
+            }           
 
-            try
-            {
-                var dummyHash = new string('0', 60);
-                var dummySalt = new string('0', 16);
-
-                var newUserRequest = new Users(
-                    UserName,
-                    Email,
-                    dummyHash,
-                    dummySalt,
-                    usersRoleId: 1,
-                    isApproved: false,
-                    accountId: 1
-                );
-
+            var newUser = new Users(
+                userName: UserName,
+                email: Email,
+                passwordHash: "",
+                salt: "",
+                usersRoleId: 2,
+                isApproved: false,
+                accountId: 1
+            );
                 
-                var result = await _usersService.RegisterUserAsync(newUserRequest, Password);
+            var result = await _usersService.RegisterUserAsync(newUser, Password);
 
-                if (result.IsSuccessful)
-                {
-                    return RedirectToPage("/Login");
-                }
-
-                ModelState.AddModelError(string.Empty, result.Error.Message);
-            }
-            catch (ArgumentException ex)
+            if (result.IsSuccessful)
             {
-               
-                ModelState.AddModelError(string.Empty, ex.Message);
+                TempData["Success"] = "Conta criada com sucesso! Faça login.";
+                return RedirectToPage("/Login");
             }
 
+            ModelState.AddModelError(string.Empty, result.Message ?? "Erro ao criar conta. Tente novamente.");
             return Page();
         }
     }

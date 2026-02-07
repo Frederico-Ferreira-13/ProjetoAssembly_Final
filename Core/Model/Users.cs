@@ -263,7 +263,7 @@ namespace Core.Model
             {
                 throw new ArgumentException("O hash da password é obrigatório.", nameof(passwordHash));
             }
-            if (passwordHash.Length < 60 || passwordHash.Length > 120)
+            if (passwordHash.Length < 60)
             {
                 throw new ArgumentException("O hash da password tem um comprimento inválido.", nameof(passwordHash));
             }

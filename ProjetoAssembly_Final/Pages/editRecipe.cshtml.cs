@@ -33,7 +33,7 @@ namespace ProjetoAssembly_Final.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string?[] unit, string?[] ingredientName, string?[] ingredientDetail)
         {
             if (!ModelState.IsValid)
             {

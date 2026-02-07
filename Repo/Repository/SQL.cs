@@ -82,26 +82,12 @@ namespace Repo.Repository
         public static async Task<SqlDataReader> ExecuteQueryAsync(string sql, params SqlParameter[] parameters)
         {
             SqlConnection conn = new SqlConnection(_connectionString);
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddRange(parameters);
+            await conn.OpenAsync();
 
-                    await conn.OpenAsync();
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddRange(parameters);
 
-                    return await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
-                }
-            }
-            catch (Exception)
-            {
-                if (conn != null && conn.State == ConnectionState.Open)
-                {
-                    conn.Close();
-
-                }
-                throw;
-            }
+            return await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
         }
     }
 }

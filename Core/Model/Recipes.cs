@@ -33,6 +33,8 @@ namespace Core.Model
 
         public Difficulty? Difficulty { get; protected set; }
 
+        public virtual Users? User { get; private set; }
+
         public virtual ICollection<IngredientsRecips> Ingredients { get; protected set; } = new List<IngredientsRecips>();
 
         private const int MinTitleLength = 5;
@@ -102,15 +104,15 @@ namespace Core.Model
             return recipe;
         }
 
-        public void ChangeDifficulty(int newDifficultyId)
+        public void ChangeDifficulty(int newDefficultyId)
         {
-            if (newDifficultyId <= 0)
+            if (newDefficultyId <= 0)
             {
-                throw new ArgumentException("O ID da nova dificuldade deve ser positivo.", nameof(newDifficultyId));
+                throw new ArgumentException("O ID da nova dificuldade deve ser positivo.", nameof(newDefficultyId));
             }
-            if (DifficultyId != newDifficultyId)
+            if (DifficultyId != newDefficultyId)
             {
-                DifficultyId = newDifficultyId;
+                DifficultyId = newDefficultyId;
                 SetLastUpdatedAt();
             }
         }
@@ -269,5 +271,20 @@ namespace Core.Model
         }
 
         public bool GetIsActive() => IsActive;
+
+        public void SetUser(Users user)
+        {
+            if(user == null)
+            {
+                return;
+            }
+
+            if(user.UserId != UserId)
+            {
+                throw new InvalidOperationException("O User injetado não corresponde ao UserId da receita.");
+            }
+
+            User = user;
+        }
     }
 }

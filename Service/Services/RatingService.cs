@@ -4,7 +4,8 @@ using Core.Common;
 using Core.Model;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Service.Services
 {
@@ -38,7 +39,6 @@ namespace Service.Services
                     $"Avaliação com ID {ratingId} não encontrada.")
                 );
             }
-
             return Result<Ratings>.Success(rating);
         }
 
@@ -60,7 +60,6 @@ namespace Service.Services
             }
 
             var rating = await _ratingRepository.GetRatingByUserIdAndRecipeIdAsync(recipeId, userId);
-
             if (rating == null)
             {
                 return Result<Ratings>.Failure(
@@ -69,7 +68,6 @@ namespace Service.Services
                     $"Avaliação não encontrada para o Utilizador {userId} na Receita {recipeId}.")
                 );
             }
-
             return Result<Ratings>.Success(rating);
         }
 
@@ -110,7 +108,6 @@ namespace Service.Services
             }
 
             int currentUserId = userIdResult.Value;
-
             if (!await _recipesService.ExistsAsync(newRating.RecipesId))
             {
                 return Result<Ratings>.Failure(
@@ -128,62 +125,76 @@ namespace Service.Services
                     "O Utilizador já avaliou esta receita. Deve usar 'UpdateRating'.")
                 );
             }
+            
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var newRatings = new Ratings(
+                var ratingToCreate = new Ratings(
                     recipesId: newRating.RecipesId,
                     userId: currentUserId,
                     ratingValue: newRating.RatingValue
                 );
 
-                await _ratingRepository.CreateAddAsync(newRating);
+                await _ratingRepository.CreateAddAsync(ratingToCreate);
                 await _unitOfWork.CommitAsync();
 
-                return Result<Ratings>.Success(newRating);
+                return Result<Ratings>.Success(ratingToCreate);
             }
             catch (ArgumentException ex)
             {
+                _unitOfWork.Rollback();
                 string fieldName = ex.ParamName ?? "Geral";
                 return Result<Ratings>.Failure(
                     Error.Validation(
-                    ex.Message,
-                    new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
-                );
+                        "Dados de entrada inválidos ao criar avaliação.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
             }
-
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<Ratings>.Failure(
+                    Error.InternalServer($"Erro ao criar avaliação: {ex.Message}"));
+            }
         }
 
         public async Task<Result> UpdateRatingAsync(int ratingId, int newRatingValue)
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-
             if (!userIdResult.IsSuccessful)
             {
                 return Result.Failure(
                     Error.Unauthorized(
-                    ErrorCodes.AuthUnauthorized,
-                    "O utilizador deve estar autenticado para atualizar uma avaliação.")
+                        ErrorCodes.AuthUnauthorized,
+                        "O utilizador deve estar autenticado para atualizar uma avaliação.")
                 );
             }
 
             int currentUserId = userIdResult.Value;
 
             var existingRating = await _ratingRepository.ReadByIdAsync(ratingId);
-
             if (existingRating == null)
             {
                 return Result.Failure(
                     Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Avaliação com ID {ratingId} não encontrada para atualização.")
+                        ErrorCodes.NotFound,
+                        $"Avaliação com ID {ratingId} não encontrada para atualização.")
                 );
             }
+
+            if (existingRating.UserId != currentUserId)
+            {
+                return Result.Failure(
+                    Error.Forbidden(
+                        ErrorCodes.AuthForbidden,
+                        "Não tem permissão para atualizar esta avaliação."));
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
                 existingRating.UpdateRating(newRatingValue);
-
                 await _ratingRepository.UpdateAsync(existingRating);
                 await _unitOfWork.CommitAsync();
 
@@ -191,12 +202,18 @@ namespace Service.Services
             }
             catch (ArgumentException ex)
             {
+                _unitOfWork.Rollback();
                 string fieldName = ex.ParamName ?? "Geral";
                 return Result.Failure(
                     Error.Validation(
-                    ex.Message,
-                    new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
-                );
+                        "Dados de entrada inválidos ao atualizar avaliação.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao atualizar avaliação: {ex.Message}"));
             }
         }
 
@@ -216,7 +233,6 @@ namespace Service.Services
             int currentUserId = userIdResult.Value;
 
             var existingRating = await _ratingRepository.ReadByIdAsync(ratingId);
-
             if (existingRating == null)
             {
                 return Result.Success("Avaliação não encontrada ou já eliminada.");
@@ -231,10 +247,21 @@ namespace Service.Services
                 );
             }
 
-            await _ratingRepository.RemoveAsync(existingRating);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.BeginTransactionAsync();
 
-            return Result.Success("Avaliação removida com sucesso.");
+            try
+            {
+                await _ratingRepository.RemoveAsync(existingRating);
+                await _unitOfWork.CommitAsync();
+
+                return Result.Success("Avaliação removida com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao remover avaliação: {ex.Message}"));
+            }
         }
     }
 }

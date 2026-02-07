@@ -325,3 +325,7 @@ body.dark-mode select {
 body.dark-mode .separator {
     background: var(--border-color);
 }
+
+#pendingBadgeLink i, #sino-notificacao {
+    color: #28a745 !important;
+}

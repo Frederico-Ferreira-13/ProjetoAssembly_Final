@@ -27,6 +27,24 @@ namespace ProjetoAssembly_Final.Pages
 
             try
             {
+                if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                {
+                    var pendingResult = await _recipesService.GetPendingRecipesAsync();
+
+                    if (pendingResult != null && pendingResult.IsSuccessful && pendingResult.Value != null)
+                    {                        
+                        ViewData["PendingCount"] = pendingResult.Value.Count();
+                    }
+                    else
+                    {
+                        ViewData["PendingCount"] = 0;
+                    }                    
+                }
+                else
+                {
+                    ViewData["PendingCount"] = 0;
+                }
+
                 var results = await _recipesService.GetAllRecipesAsync();
                 if (results != null && results.IsSuccessful && results.Value != null)
                 {
@@ -35,13 +53,17 @@ namespace ProjetoAssembly_Final.Pages
                         .Take(4)
                         .ToList();
                 }
+                else
+                {
+                    AdicionarReceitasExemplo();
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao carregar destaques");
-            }
-            
-            AdicionarReceitasExemplo();
+                AdicionarReceitasExemplo();
+                ViewData["PendingCount"] = 0;
+            }            
         }
 
         private void AdicionarReceitasExemplo()

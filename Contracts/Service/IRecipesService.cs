@@ -24,5 +24,8 @@ namespace Contracts.Service
         Task<int> GetTotalRecipesByUserAsync(int userId);
         Task<int> GetTotalFavoritesByUserAsync(int userId);
         Task<Result<(IEnumerable<Recipes> Items, int TotalCount)>> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId);
+
+        Task<Result<IEnumerable<Recipes>>> GetPendingRecipesAsync();
+        Task<Result> ApproveRecipeAsync(int recipeId);
     }
 }

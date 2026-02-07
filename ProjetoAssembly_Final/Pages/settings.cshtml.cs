@@ -8,13 +8,11 @@ namespace ProjetoAssembly_Final.Pages
 {
     public class settingsModel : PageModel
     {
-
-        private readonly IUserSettingsService _settingsService;
+       
         private readonly IUsersService _usersService;
 
-        public settingsModel(IUserSettingsService settingsService, IUsersService usersService)
-        {
-            _settingsService = settingsService;
+        public settingsModel(IUsersService usersService)
+        {            
             _usersService = usersService;
         }       
 
@@ -48,7 +46,7 @@ namespace ProjetoAssembly_Final.Pages
                 Email = userResult.Value.Email;
             }
 
-            var settingsResult = await _settingsService.GetSettingsByUserIdAsync(userId);
+            var settingsResult = await _usersService.GetSettingsByUserIdAsync(userId);
             if (settingsResult.IsSuccessful)
             {
                 InputTheme = settingsResult.Value.Theme;
@@ -80,7 +78,7 @@ namespace ProjetoAssembly_Final.Pages
                 InputNotifications
             );
 
-            var result = await _settingsService.UpdateUserSettingsAsync(settingsUpdate);
+            var result = await _usersService.UpdateUserSettingsAsync(settingsUpdate);
 
             if (result.IsSuccessful)            {              
 

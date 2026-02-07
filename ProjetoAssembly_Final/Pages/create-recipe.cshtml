@@ -4,7 +4,7 @@
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = @Localizer["Crie a sua Receita"];
+    ViewData["Title"] = Localizer["Crie a sua Receita"];
 }
 
 @section Styles {
@@ -18,7 +18,7 @@
 
     <form method="post" enctype="multipart/form-data">
         <div class="input-group">
-            <label asp-for="Titulo">@Localizer["Mome da Receita"]</label>
+            <label asp-for="Titulo">@Localizer["Nome da Receita"]</label>
             <input asp-for="Titulo" placeholder="@Localizer["Ex: Bacalhau à Brás Especial"]" required>
             <span asp-validation-for="Titulo" class="text-danger"></span>
         </div>
@@ -29,7 +29,7 @@
             <span asp-validation-for="Descricao" class="text-danger"></span>
         </div>
 
-        <div class="row">
+        <div class="row" style="display: flex; gap: 20px;">
             <div class="input-group" style="flex: 1;">
                 <label asp-for="CategoriaSelecionada">@Localizer["Categoria"]</label>
                 <select asp-for="CategoriaSelecionada" required>
@@ -37,10 +37,11 @@
                     <option value="1">@Localizer["Entradas/Sopas"]</option>
                     <option value="2">@Localizer["Prato Principal"]</option>
                     <option value="3">@Localizer["Sobremesas"]</option>
+                    <option value="4">@Localizer["Vegetariano"]</option>
                 </select>
             </div>
 
-            <div class="input-group">
+            <div class="input-group" style="flex: 1;">
                 <label asp-for="DificuldadeSelecionada">@Localizer["Dificuldade"]</label>
                 <select asp-for="DificuldadeSelecionada" required>
                     <option value="">@Localizer["Selecione.."]</option>
@@ -57,6 +58,13 @@
                 <input type="number" name="QuantityValue[]" placeholder="Qtd" step="0.01" style="width: 70px;">
                 <input type="text" name="Unit[]" placeholder="Unid." style="width: 80px;">
                 <input type="text" name="IngredientName[]" placeholder="Ingrediente" style="flex: 1;" required>
+
+                <div class="detalhe-container" style="flex: 1;">
+                    <input type="text" name="ingredientDetail[]" class="detalhe-input" placeholder="Nota/Tipo" />
+                </div>
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" style="display:none;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
         </div>
         <button type="button" id="btn-add-ingrediente">+ @Localizer["Adicionar Ingrediente"]</button>
@@ -64,9 +72,21 @@
         <div class="input-group">
             <label>@Localizer["Imagem da Receita"]</label>
             <input type="file" name="RecipeImage" accept="image/*">
-        </div>
+        </div>      
 
-        <button type="submit" class="btn-guardar">@Localizer["Guardar Receita"]</button>
+        @if(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "2")
+        {
+            <buttom typeof="submit" class="btn-guardar" style="background-color: #28a745;">
+                <i class="fa-solid fa-paper-plan"></i> @Localizer["Publicar Receita"]
+            </buttom>
+        }
+        else
+        {
+           <button type="submit" class="btn-guardar">
+               <i class="fa-solid fa-save"></i> @Localizer["Guardar Receita"]
+           </button>     
+        }
+
     </form>
 </main>
 

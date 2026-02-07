@@ -5,7 +5,6 @@ using Core.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.Services
@@ -49,7 +48,8 @@ namespace Service.Services
         private async Task<bool> CategoryNameExistsForAccountAsync(string categoryName, int accountId, int? excludeCategoryId = null)
         {
             var existingCategory = await _categoryRepository.GetCategoryByNameAndAccount(categoryName, accountId);
-            return existingCategory != null && existingCategory.IsActive && (!excludeCategoryId.HasValue || existingCategory.CategoriesId != excludeCategoryId.Value);
+            return existingCategory != null && existingCategory.IsActive && 
+                (!excludeCategoryId.HasValue || existingCategory.CategoriesId != excludeCategoryId.Value);
         }
 
         public async Task<Result<Category>> CreateCategoryAsync(Category newCategory)
@@ -85,13 +85,15 @@ namespace Service.Services
                 }
             }
 
+            await _unitOfWork.BeginTransactionAsync();
+
             try
             {
                 var categoryToSave = new Category(
-                categoryName: newCategory.CategoryName,
-                categoryTypeId: newCategory.CategoryTypeId,
-                accountId: accountId,
-                parentCategoryId: newCategory.ParentCategoryId
+                    categoryName: newCategory.CategoryName,
+                    categoryTypeId: newCategory.CategoryTypeId,
+                    accountId: accountId,
+                    parentCategoryId: newCategory.ParentCategoryId
                 );
 
                 await _unitOfWork.Category.CreateAddAsync(categoryToSave);
@@ -101,6 +103,8 @@ namespace Service.Services
             }
             catch (ArgumentException ex)
             {
+                _unitOfWork.Rollback();
+
                 string fieldName = ex.ParamName ?? "Geral";
                 return Result<Category>.Failure(
                     Error.Validation(
@@ -108,7 +112,12 @@ namespace Service.Services
                     new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
                 );
             }
-
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<Category>.Failure(
+                    Error.InternalServer($"Erro inesperado ao criar categoria: {ex.Message}"));
+            }
         }
 
         public async Task<Result<Category>> GetCategoryByIdAsync(int categoryId)
@@ -223,6 +232,8 @@ namespace Service.Services
                 }
             }
 
+            await _unitOfWork.BeginTransactionAsync();
+
             try
             {
                 existingCategory.UpdateDetails(
@@ -238,6 +249,8 @@ namespace Service.Services
             }
             catch (ArgumentException ex)
             {
+                _unitOfWork.Rollback();
+
                 string fieldName = ex.ParamName ?? "Geral";
                 return Result<Category>.Failure(
                     Error.Validation(
@@ -245,7 +258,12 @@ namespace Service.Services
                     new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
                 );
             }
-
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<Category>.Failure(
+                    Error.InternalServer($"Erro inesperado ao atualizar categoria: {ex.Message}"));
+            }
         }
 
         public async Task<Result<Category>> DeactivateCategoryAsync(int categoryId)
@@ -255,10 +273,10 @@ namespace Service.Services
             {
                 return Result<Category>.Failure(accountIdResult.Error);
             }
+            
             int accountId = accountIdResult.Value;
 
             var categoryToDeactivate = await _categoryRepository.GetByIdWithSubCategories(categoryId, accountId);
-
             if (categoryToDeactivate == null)
             {
                 return Result<Category>.Failure(
@@ -282,12 +300,188 @@ namespace Service.Services
                 return Result<Category>.Success(categoryToDeactivate, "A categoria já se encontra desativada.");
             }
 
-            // 3. Desativar no Modelo de Domínio e Persistir
-            categoryToDeactivate.Deactivate();
-            await _unitOfWork.Category.UpdateAsync(categoryToDeactivate);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.BeginTransactionAsync();
 
-            return Result<Category>.Success(categoryToDeactivate);
+
+
+            try
+            {
+                categoryToDeactivate.Deactivate();
+                await _unitOfWork.Category.UpdateAsync(categoryToDeactivate);
+                await _unitOfWork.CommitAsync();
+
+                return Result<Category>.Success(categoryToDeactivate);
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<Category>.Failure(
+                    Error.InternalServer($"Erro ao desativar categoria: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result<CategoryType>> GetCategoryTypeByNameAsync(string name)
+        {
+            var categoryType = await _unitOfWork.CategoryType.GetByNameAsync(name);
+
+            if (categoryType == null)
+            {
+                return Result<CategoryType>.Failure(
+                    Error.NotFound(
+                    ErrorCodes.NotFound,
+                    $"Tipo de Categoria com nome '{name}' não encontrado.")
+                );
+            }
+
+            return Result<CategoryType>.Success(categoryType);
+        }
+
+        public async Task<Result<CategoryType>> GetCategoryTypeByIdAsync(int id)
+        {
+            var categoryType = await _unitOfWork.CategoryType.ReadByIdAsync(id);
+
+            if (categoryType == null)
+            {
+                return Result<CategoryType>.Failure(
+                    Error.NotFound(
+                    ErrorCodes.NotFound,
+                    $"Tipo de Categoria com ID {id} não encontrado.")
+                );
+            }
+
+            return Result<CategoryType>.Success(categoryType);
+        }
+
+        public async Task<Result<IEnumerable<CategoryType>>> GetAllCategoryTypesAsync()
+        {
+            var categoryTypes = await _unitOfWork.CategoryType.ReadAllAsync();
+
+            return Result<IEnumerable<CategoryType>>.Success(categoryTypes);
+        }
+
+        public async Task<Result<CategoryType>> CreateCategoryTypeAsync(CategoryType categoryType)
+        {
+            if (await _unitOfWork.CategoryType.GetByNameAsync(categoryType.TypeName) != null)
+            {
+                return Result<CategoryType>.Failure(
+                    Error.Validation(
+                    $"O Tipo de Categoria '{categoryType.TypeName}' já existe.",
+                    new Dictionary<string, string[]> { { nameof(categoryType.TypeName), new[] { "Nome já em uso." } } })
+                );
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var newCategoryType = new CategoryType(categoryType.TypeName);
+                await _unitOfWork.CategoryType.CreateAddAsync(newCategoryType);
+                await _unitOfWork.CommitAsync();
+
+                return Result<CategoryType>.Success(newCategoryType);
+            }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.Rollback();
+
+                string fieldName = ex.ParamName ?? "Geral";
+                return Result<CategoryType>.Failure(
+                    Error.Validation(
+                        "Dados de entrada inválidos para o tipo de categoria.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+
+                return Result<CategoryType>.Failure(
+                    Error.InternalServer($"Erro inesperado ao criar tipo de categoria: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result> UpdateCategoryTypeAsync(CategoryType updateCategoryType)
+        {
+            var existingType = await _unitOfWork.CategoryType.ReadByIdAsync(updateCategoryType.CategoryTypeId);
+
+            if (existingType == null)
+            {
+                return Result.Failure(Error.NotFound(
+                    ErrorCodes.NotFound,
+                    $"Tipo de Categoria com ID {updateCategoryType.CategoryTypeId} não encontrado.")
+                );
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                bool changed = false;
+
+                if (existingType.TypeName != updateCategoryType.TypeName)
+                {
+                    if (await _unitOfWork.CategoryType.GetByNameAsync(updateCategoryType.TypeName) != null)
+                    {
+                        _unitOfWork.Rollback();
+
+                        return Result<CategoryType>.Failure(
+                            Error.Validation(
+                                $"O nome do Tipo de Categoria '{updateCategoryType.TypeName}' já está em uso.",
+                                new Dictionary<string, string[]> { { nameof(updateCategoryType.TypeName), new[] { "Nome já em uso" } } }));
+                    }
+
+                    existingType.UpdateName(updateCategoryType.TypeName);
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    await _unitOfWork.CategoryType.UpdateAsync(existingType);
+                    await _unitOfWork.CommitAsync();
+                }
+
+                return Result<CategoryType>.Success(existingType);
+            }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.Rollback();
+                string fieldName = ex.ParamName ?? "Geral";
+                return Result<CategoryType>.Failure(
+                    Error.Validation(
+                        "Dados de entrada inválidos para a atualização do tipo de categoria.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<CategoryType>.Failure(
+                    Error.InternalServer($"Erro inesperado ao atualizar tipo de categoria: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result> DeleteCategoryTypeAsync(int id)
+        {
+            var existingType = await _unitOfWork.CategoryType.ReadByIdAsync(id);
+
+            if (existingType == null)
+            {
+                return Result.Success($"Tipo de Categoria com ID {id} não encontrado (Idempotência).");
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                await _unitOfWork.CategoryType.RemoveAsync(existingType);
+                await _unitOfWork.CommitAsync();
+
+                return Result.Success("Tipo de Categoria eliminado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao eliminar tipo de categoria: {ex.Message}"));
+            }
         }
     }
 }

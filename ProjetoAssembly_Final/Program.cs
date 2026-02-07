@@ -52,6 +52,8 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRecipesRepository, RecipesRepository>();
@@ -70,17 +72,12 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 builder.Services.AddScoped<IFavoritesRepository, FavoritesRepository>();
 
 builder.Services.AddScoped<IRecipesService, RecipeService>();
-builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IIngredientsService, IngredientService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<ICategoryTypeService, CategoryTypeService>();
-builder.Services.AddScoped<IIngredientsRecipesService, IngredientsRecipsService>();
-builder.Services.AddScoped<IIngredientsTypeService, IngredientsTypeService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<ICommentsService, CommentsService>();
-builder.Services.AddScoped<IUsersRoleService, UsersRoleService>();
 builder.Services.AddScoped<IDifficultyService, DifficultyService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

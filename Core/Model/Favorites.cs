@@ -76,6 +76,14 @@ namespace Core.Model
             FavoritesId = id;
         }
 
+        public void Deactivate()
+        {
+            if (IsActive)
+            {
+                IsActive = false;               
+            }
+        }
+
         public bool GetIsActive() => IsActive;
     }
 }

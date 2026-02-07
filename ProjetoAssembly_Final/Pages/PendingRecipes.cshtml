@@ -1,0 +1,64 @@
+﻿@page
+@model ProjetoAssembly_Final.Pages.PendingRecipesModel
+@{
+    ViewData["Title"] = "Receitas Pendentes";
+}
+
+<link rel="stylesheet" href="~/css/PendingRecipes.css" asp-append-version="true" />
+
+<h1>Receitas Pendentes de Aprovação</h1>
+
+@if(TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if(TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.PendingRecipes.Any())
+{
+    <div class="row g-4">
+        @foreach (var recipe in Model.PendingRecipes)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <a href="/view_recipes/@recipe.RecipesId">
+                        <img src="/img/@(string.IsNullOrEmpty(recipe.ImageUrl) ? "default.jpg" : recipe.ImageUrl)"
+                             class="card-img-top"
+                             alt="@recipe.Title"
+                             style="height: 200px; object-fit: cover;" />
+                    </a>                    
+
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe.Title</h5>
+                        <p class="card-text text-muted small">
+                            Criada por: @(recipe.User?.UserName ?? "Utilizador") <br />
+                            Data: @recipe.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+
+                        <div class="mt-auto">
+                            <a href="/view_recipes/@recipe.RecipesId" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fa-solid fa-eye"></i> Rever Conteúdo
+                            </a>
+                        </div>                        
+
+                        <form method="post" asp-page-handler="Approve">
+                            <input type="hidden" name="id" value="@recipe.RecipesId" />
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fa-solid fa-check"></i> Autorizar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        Não há receitas pendentes de aprovação no momento.
+    </div>
+}

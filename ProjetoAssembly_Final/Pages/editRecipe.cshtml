@@ -22,9 +22,10 @@
                 <input type="hidden" asp-for="Input.RecipesId" />
 
                 <div class="form-grid">
-                    <div class="form-group-custom">
+                    <div class="form-group-custom full-width">
                         <label asp-for="Input.Title"><i class="fa-solid fa-heading"></i> @Localizer["Titulo da Receita"]</label>
                         <input asp-for="Input.Title" class="form-input-custom" placeholder="@Localizer["Ex: Arroz de Pato à Antiga"]" />
+                        <span asp-validation-for="Input.Title" class="text-danger"></span>
                     </div>
 
                     <div class="form-group-custom">
@@ -33,6 +34,7 @@
                             <option value="1">@Localizer["Entradas/Sopa"]</option>
                             <option value="2">@Localizer["Prato Principal"]</option>
                             <option value="3">@Localizer["Sobremesas"]</option>
+                            <option value="4">@Localizer["Vegetariano"]</option>
                         </select>
                     </div>
 
@@ -57,18 +59,26 @@
                     </div>
 
                     <div class="form-group-custom full-width">
+                        <label><i class="fa-solid fa-imgage"></i> @Localizer["Alterar Imagem da Receita"]</label>
+                        <input type="file" name="RecipeImage" class="form-input-custom" accept="image/*"/>
+                    </div>
+
+                    <div class="form-group-custom full-width">
                         <label style="font-size: 1.1rem; color: #2d3436; margin-bottom: 15px;">
                             <i class="fa-solid fa-basket-shopping"></i> @Localizer["Ingredientes"]
                         </label>
+
                         <div id="lista-ingredientes">
                             @if(Model.Input.Ingredients != null && Model.Input.Ingredients.Any())
                                 {
                                     foreach(var item in Model.Input.Ingredients)
                                     {
                                         <div class="ingrediente-linha">
-                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
-                                            <input type="text" name="Unit[]" value="@item.Unit" placeholder="Unid." class="form-input-custom unit" required />
-                                            <input type="text" name="IngredientName[]" value="@item.Ingredient?.IngredientName" placeholder="Nome do Ingrediente" class="form-input-custom" required />
+                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
+                                            <input type="text" name="Unit[]" value="@item.Unit" placeholder="Unid." class="form-input-custom unit" />
+                                            <input type="text" name="IngredientName[]" value="@item.Ingredient?.IngredientName" placeholder="Ingrediente" class="form-input-custom" required />
+                                            <input type="text" name="ingredientDetail[]" value="@item.Detail" placeholder="Nota/Tipo" class="form-input-custom detail" />
+
                                             <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
@@ -77,10 +87,11 @@
                                 }
                                 else
                                 {
-                                    <div class="ingrediente-linha">
-                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" required />
-                                        <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" required />
-                                        <input type="text" name="IngredientName[]" placeholder="Nome do Ingrediente" class="form-input-custom" required />
+                                    <div class="ingrediente-linha">                                        
+                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
+                                        <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" />
+                                        <input type="text" name="IngredientName[]" placeholder="Ingrediente" class="form-input-custom" required />
+                                        <input type="text" name="ingredientDetail[]" placeholder="Nota/Tipo" class="form-input-custom detail" />
                                     </div>
                                 }
                         </div>
@@ -91,7 +102,8 @@
 
                     <div class="form-group-custom full-width">
                         <label asp-for="Input.Instructions"><i class="fa-solid fa-utensils"> @Localizer["Modo de Preparação"]</i></label>
-                        <textarea asp-for="Input.Instructions" class="form-input-custom textarea-custom"></textarea>
+                        <textarea asp-for="Input.Instructions" class="form-input-custom textarea-custom"
+                                    placeholder="@Localizer["Explica o passo a passo da tua receita..."]"></textarea>
                     </div>
                 </div>
 

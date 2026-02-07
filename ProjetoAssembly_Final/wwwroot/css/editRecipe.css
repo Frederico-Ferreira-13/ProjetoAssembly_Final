@@ -28,7 +28,10 @@
 .edit-header h2 {
     font-size: 2rem;
     color: var(--text-main);
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 15px;
 }
 
 .form-grid {
@@ -70,6 +73,7 @@
     box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
 }
 
+/* --- LINHA DE INGREDIENTES --- */
 .ingrediente-linha {
     display: flex;
     gap: 10px;
@@ -77,8 +81,23 @@
     align-items: center;
 }
 
-.ingrediente-linha .qtd { width: 80px; flex-shrink: 0; }
-.ingrediente-linha .unit { width: 100px; flex-shrink: 0; }
+.ingrediente-linha .qtd {
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.ingrediente-linha .unit {
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.ingrediente-linha input[name="IngredientName[]"] {
+    flex: 2;
+}
+
+.ingrediente-linha .detail {
+    flex: 1;
+}
 
 .btn-remove {
     background: #ff7675;
@@ -88,6 +107,9 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-remove:hover {
@@ -104,11 +126,13 @@
     cursor: pointer;
     font-weight: 600;
     margin-top: 5px;
+    transition: all 0.2s;
 }
 
 .btn-secondary:hover {
     background-color: #dfe6e9;
     border-color: var(--primary);
+    color: var(--primary-dark);
 }
 
 .textarea-custom {

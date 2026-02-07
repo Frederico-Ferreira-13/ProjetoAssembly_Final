@@ -1,4 +1,5 @@
-﻿using Core.Model;
+﻿using Core.Common;
+using Core.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,10 +8,11 @@ namespace Contracts.Service
 {
     public interface IFavoritesService
     {
-        Task<int> AddFavoriteAsync(Favorites favorite);
-        Task<IEnumerable<Favorites>> GetUserFavoritesAsync(int userId);
-        Task<bool> RemoveFavoriteAsync(int favoriteId);
-        Task<bool> ToggleFavoriteAsync(Favorites toogleFavorite);
+        Task<Result<int>> GetCurrentUserIdAsync();
+        Task<Result> AddFavoriteAsync(Favorites favorite);
+        Task<Result<IEnumerable<Favorites>>> GetUserFavoritesAsync(int userId);
+        Task<Result> RemoveFavoriteAsync(int favoriteId);
+        Task<Result<bool>> ToggleFavoriteAsync(int recipeId);
 
     }
 }

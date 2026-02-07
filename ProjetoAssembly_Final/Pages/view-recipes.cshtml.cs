@@ -28,6 +28,8 @@ namespace ProjetoAssembly_Final.Pages
         [BindProperty]
         public int RecipeId { get; set; }
 
+        public bool IsReviewMode { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int id)
         {
             if(id <= 0) 
@@ -36,16 +38,17 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             RecipeId = id;
-
             var result = await _recipesService.GetRecipeByIdAsync(id);
 
-            if (result != null || result.IsSuccessful || result.Value != null)
+            if (result != null && result.IsSuccessful && result.Value != null)
             {
-                Recipe = result.Value;                
+                Recipe = result.Value;
+                IsReviewMode = !Recipe.IsActive;
             }
-            else if(id >= 1 && id <= 4)
+            else if (id >= 1 && id <= 4)
             {                
-                LoadMockRecipe(id);                
+                LoadMockRecipe(id);
+                IsReviewMode = false;
             }
 
             if (Recipe == null)

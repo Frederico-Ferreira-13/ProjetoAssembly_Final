@@ -81,7 +81,7 @@
                         <div class="card-info">
                             <h3>@Localizer[receita.Title]</h3>
                             <p>@Localizer["Dificuldade"]: @(receita.DifficultyId == 1 ? Localizer["Fácil"] : Localizer["Média"]) | @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</p>
-                            <a href="/view_recipes/@receita.RecipesId" class="btn">Ver Receita</a>
+                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
                         </div>
                     </article>
                 }

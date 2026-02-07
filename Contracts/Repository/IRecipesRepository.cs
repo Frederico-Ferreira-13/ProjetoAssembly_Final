@@ -10,6 +10,10 @@ namespace Contracts.Repository
         Task<List<Recipes>> GetUserIdRecipes(int userId);
         Task<bool> ExistsByIdAsync(int recipeId);
 
-        Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId);
+        Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(
+            string? search, int? categoryId, int page, int pageSize, int? currentUserId);
+
+        Task<bool> AnyWithDifficultyIdAsync(int difficultyId);
+        Task<IEnumerable<Recipes>> GetPendingRecipesAsync();
     }
 }

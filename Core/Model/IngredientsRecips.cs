@@ -17,6 +17,7 @@ namespace Core.Model
 
         public decimal QuantityValue { get; protected set; }
         public string Unit { get; protected set; } = string.Empty;
+        public string Detail { get; protected set; } = string.Empty;
 
         public virtual Ingredients? Ingredient { get; protected set; }
 
@@ -56,7 +57,7 @@ namespace Core.Model
             return new IngredientsRecips(id, isActive, recipesId, ingredientsId, quantityValue, unit);
         }
 
-        public void Update(decimal newQuantityValue, [NotNull] string newUnit)
+        public void Update(decimal newQuantityValue, [NotNull] string newUnit, string? newDetail)
         {
             if (!IsActive)
             {
@@ -69,6 +70,7 @@ namespace Core.Model
             {
                 QuantityValue = newQuantityValue;
                 Unit = newUnit;
+                Detail = newDetail;
             }
         }
 

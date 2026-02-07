@@ -137,28 +137,31 @@ namespace Repo.Repository
         }
 
         protected async Task<TEntity?> ExecuteSingleAsync(string sql, params SqlParameter[] parameters)
-        {
+        {           
+
             try
             {
                 using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
                 {
-                    if (reader.Read())
+                    if (await reader.ReadAsync())
                     {
-                        return MapFromReader(reader);
+                        return MapFromReader(reader);                       
                     }
                 }
+
+                return null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro no Repositório ExecuteSingleAsync para {_tableName}: {ex.Message}");
                 throw;
-            }
-            return default!;
+            }            
         }
 
         protected async Task<IEnumerable<TEntity>> ExecuteListAsync(string sql, params SqlParameter[] parameters)
         {
             var entities = new List<TEntity>();
+
             try
             {
                 using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))

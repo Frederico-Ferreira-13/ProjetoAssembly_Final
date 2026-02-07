@@ -131,5 +131,35 @@ namespace Repo.Repository
 
             await SQL.ExecuteScalarAsync(sql, p);
         }
+
+        public async Task<Favorites?> GetByUserAndRecipeAsync(int userId, int recipesId)
+        {
+            string sql = @"
+                SELECT * FROM Favorites 
+                WHERE UserId = @UserId 
+                  AND RecipesId = @RecipesId 
+                  AND IsActive = 1";
+
+            var parameters = new[]
+            {
+                new SqlParameter("@UserId", userId),
+                new SqlParameter("@RecipesId", recipesId)
+            };
+
+            using var reader = await SQL.ExecuteQueryAsync(sql, parameters);
+
+            if (await reader.ReadAsync())
+            {
+                return new Favorites
+                {
+                    FavoritesId = reader.GetInt32(reader.GetOrdinal("FavoritesId")),
+                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                    RecipesId = reader.GetInt32(reader.GetOrdinal("RecipesId")),                    
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                };
+            }
+
+            return null;
+        }
     }
 }

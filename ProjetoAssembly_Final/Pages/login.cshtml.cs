@@ -44,7 +44,7 @@ namespace ProjetoAssembly_Final.Pages
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                     new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.UsersRoleId.ToString())
+                    new Claim(ClaimTypes.Role, user.UsersRoleId == 1 ? "Admin" : "User")
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -55,7 +55,7 @@ namespace ProjetoAssembly_Final.Pages
                 return RedirectToPage("/Index");
             }
 
-            ModelState.AddModelError(string.Empty, "Utilizador ou palavra-passe incorreto.");
+            ModelState.AddModelError(string.Empty, result.Message ?? "Utilizador ou palavra-passe incorreto.");
             return Page();
         }
 

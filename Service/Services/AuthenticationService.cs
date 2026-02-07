@@ -39,27 +39,17 @@ namespace Service.Services
             {
                 return Result<Users>.Failure(
                     Error.Unauthorized(
-                    ErrorCodes.AuthFailed,
-                    "Credenciais inválidas.")
-                );
+                        ErrorCodes.AuthFailed,
+                        "Utilizador não encontrado ou conta inativa."));
             }
-
-            if (!user.IsActive)
-            {
-                return Result<Users>.Failure(
-                    Error.Forbidden(
-                    ErrorCodes.AuthLockedOut,
-                    "A sua conta encontra-se inativa ou bloqueada.")
-                );
-            }
+            
 
             if (!_passwordHasher.VerifyPassword(user.PasswordHash, password, user.Salt))
             {
                 return Result<Users>.Failure(
                     Error.Unauthorized(
-                    ErrorCodes.AuthFailed,
-                    "Credenciais inválidas.")
-                );
+                        ErrorCodes.AuthFailed,
+                        "Credenciais inválidas."));
             }
             
             return Result<Users>.Success(user);

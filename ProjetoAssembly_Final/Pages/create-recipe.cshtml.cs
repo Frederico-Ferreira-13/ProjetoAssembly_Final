@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
 {
-    [Authorize(Roles = "1,2")]
+    [Authorize]
     public class create_recipeModel : PageModel
     {        
         private readonly IRecipesRepository _recipesRepository;
@@ -43,7 +43,7 @@ namespace ProjetoAssembly_Final.Pages
         {
         }
 
-        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string[] unit, string[] ingredientName)
+        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string[] unit, string[] ingredientName, string[] ingredientDetail)
         {
             if (!ModelState.IsValid)
             {
@@ -53,14 +53,12 @@ namespace ProjetoAssembly_Final.Pages
             try
             {
                 var userIdClaim = User.FindFirst("UserId")?.Value;
-
                 if (string.IsNullOrEmpty(userIdClaim))
                 {
                     return RedirectToPage("/Login");
                 }                              
 
                 int userId = int.Parse(userIdClaim);
-
                 bool isApproved = (User.FindFirst(ClaimTypes.Role)?.Value == "2");
 
                 var newRecipe = new Recipes(
@@ -77,21 +75,36 @@ namespace ProjetoAssembly_Final.Pages
 
                 await _recipesRepository.CreateAddAsync(newRecipe);
 
-                for (int i = 0; i < ingredientName.Length; i++)
+                if (ingredientName != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(ingredientName[i]))
+                    for (int i = 0; i < ingredientName.Length; i++)
                     {
-                        var ingredientBase = new Ingredients(ingredientName[i].Trim(), 1);
-                        await _ingredientsRepository.CreateAddAsync(ingredientBase);
+                        string? baseName = ingredientName[i].Trim();
 
-                        var relection = new IngredientsRecips(
-                            newRecipe.RecipesId,
-                            ingredientBase.IngredientsId,
-                            quantityValue[i],
-                            unit[i]
-                        );
+                        if (!string.IsNullOrWhiteSpace(baseName))
+                        {
+                            string detail = (ingredientDetail != null && i < ingredientDetail.Length)
+                                            ? ingredientDetail[i]?.Trim() ?? string.Empty
+                                            : string.Empty;
 
-                        await _ingredientsRecipsRepository.CreateAddAsync(relection);
+                            string currentUnit = (unit != null && i < unit.Length)
+                                                ? unit[i] ?? string.Empty 
+                                                : string.Empty;
+
+                            string fullName = string.IsNullOrEmpty(detail) ? baseName : $"{baseName} ({detail})";
+
+                            var ingredientBase = new Ingredients(fullName, 1);
+                            await _ingredientsRepository.CreateAddAsync(ingredientBase);
+
+                            var relection = new IngredientsRecips(
+                                newRecipe.RecipesId,
+                                ingredientBase.IngredientsId,
+                                quantityValue.Length > i ? quantityValue[i] : 0,
+                                currentUnit
+                            );
+
+                            await _ingredientsRecipsRepository.CreateAddAsync(relection);
+                        }
                     }
                 }
 

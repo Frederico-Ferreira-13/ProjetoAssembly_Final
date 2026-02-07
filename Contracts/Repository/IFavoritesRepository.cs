@@ -11,5 +11,6 @@ namespace Contracts.Repository
         Task<bool> ExistsAsync(int userId, int recipesId);
         Task<int> GetCountByRecipeIdAsync(int recipeId);
         Task DeactivateFavoriteAsync(int recipeId, int userId);
+        Task<Favorites?> GetByUserAndRecipeAsync(int userId, int recipesId);
     }
 }

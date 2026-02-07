@@ -3,6 +3,7 @@ using Core.Model;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace Repo.Repository
@@ -77,10 +78,17 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(Recipes entity)
         {
-            return $"UPDATE {_tableName} SET Title = @Title, Instructions = @Instructions, " +
-                   $"PrepTimeMinutes = @PrepTimeMinutes, CookTimeMinutes = @CookTimeMinutes, " +
-                   $"Servings = @Servings, CategoriesId = @CategoriesId, DifficultyId = @DifficultyId, " +
-                   $"ImageUrl = @ImageUrl, LastUpdatedAt = GETDATE() WHERE RecipesId = @RecipesId";
+            return $"UPDATE {_tableName} SET " +
+                   "Title = @Title, " +
+                   "Instructions = @Instructions, " +
+                   "PrepTimeMinutes = @PrepTimeMinutes, " +
+                   "CookTimeMinutes = @CookTimeMinutes, " +
+                   "Servings = @Servings, " +
+                   "CategoriesId = @CategoriesId, " +
+                   "DifficultyId = @DifficultyId, " +
+                   "ImageUrl = @ImageUrl, " +
+                   "LastUpdatedAt = GETDATE() " +
+                   "WHERE RecipesId = @RecipesId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Recipes entity)
@@ -238,6 +246,78 @@ namespace Repo.Repository
             }
 
             return (recipes, totalCount);
+        }
+
+        public async Task<bool> AnyWithDifficultyIdAsync(int difficultyId)
+        {
+            string sql = @"
+                SELECT TOP 1 1 
+                FROM Recipes 
+                WHERE DifficultyId = @DifficultyId 
+                  AND IsActive = 1";
+
+            var parameter = new SqlParameter("@DifficultyId", difficultyId);
+
+            using var reader = await SQL.ExecuteQueryAsync(sql, parameter);
+
+            return reader.HasRows;
+        }
+
+        public async Task<IEnumerable<Recipes>> GetPendingRecipesAsync()
+        {
+            string sql = @"
+                SELECT r.*, u.UserName, u.Email
+                FROM Recipes r
+                LEFT JOIN Users u ON r.UserId = u.UserId
+                WHERE r.IsApproved = 0 AND r.IsActive = 1
+                ORDER BY r.CreatedAt DESC";
+
+            var recipes = new List<Recipes>();
+
+            using var reader = await SQL.ExecuteQueryAsync(sql);
+
+            while (await reader.ReadAsync())
+            {
+                var recipe = Recipes.Reconstitute(
+                    id: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                    userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                    categoriesId: reader.GetInt32(reader.GetOrdinal("CategoriesId")),
+                    difficultyId: reader.GetInt32(reader.GetOrdinal("DifficultyId")),
+                    title: reader.GetString(reader.GetOrdinal("Title")),
+                    instructions: reader.GetString(reader.GetOrdinal("Instructions")),
+                    prepTimeMinutes: reader.GetInt16(reader.GetOrdinal("PrepTimeMinutes")),
+                    cookTimeMinutes: reader.GetInt16(reader.GetOrdinal("CookTimeMinutes")),
+                    servings: reader.GetString(reader.GetOrdinal("Servings")),
+                    imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader.GetString(reader.GetOrdinal("ImageUrl")),
+                    createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                    lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt")),
+                    isActive: reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                );
+
+                string validateEmail = reader.IsDBNull(reader.GetOrdinal("Email"))
+                                       ? "sistema@temp.com"
+                                       : reader.GetString(reader.GetOrdinal("Email"));
+
+                string fakeHash = new string('0', 60);
+                string fakeSalt = new string('0', 16);
+
+                recipe.SetUser(Users.Reconstitute(
+                   id: reader.GetInt32(reader.GetOrdinal("UserId")),
+                   userName: reader.GetString(reader.GetOrdinal("UserName")),
+                   email: reader.IsDBNull(reader.GetOrdinal("Email")) ? "" : reader.GetString(reader.GetOrdinal("Email")),
+                   passwordHash: "",
+                   salt: "",
+                   isApproved: true,
+                   usersRoleId: 1,
+                   accountId: 1,
+                   createdAt: DateTime.Now,
+                   lastUpdatedAt: null,
+                   isActive: true
+                ));
+
+                recipes.Add(recipe);
+            }
+            return recipes;
         }
     }
 }

@@ -91,6 +91,7 @@ CREATE TABLE Recipes(
 	CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
 	LastUpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	IsApproved BIT NOT NULL DEFAULT 0;									
 	CONSTRAINT FK_Recipes_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
 	CONSTRAINT FK_Recipes_Category FOREIGN KEY (CategoriesId) REFERENCES Category(CategoriesId),
 	CONSTRAINT FK_Recipes_Difficulty FOREIGN KEY (DifficultyId) REFERENCES Difficulty(DifficultyId)

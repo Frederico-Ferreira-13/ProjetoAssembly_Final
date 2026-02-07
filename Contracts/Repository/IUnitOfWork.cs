@@ -21,6 +21,8 @@ namespace Contracts.Repository
         IUsersRepository Users { get; }
         IFavoritesRepository Favorites { get; }
 
+        Task BeginTransactionAsync();
         Task<int> CommitAsync();
+        void Rollback();
     }
 }

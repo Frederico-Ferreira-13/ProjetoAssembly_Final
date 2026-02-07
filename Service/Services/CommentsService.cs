@@ -26,7 +26,6 @@ namespace Service.Services
         public async Task<Result<Comments>> GetCommentsByIdAsync(int id)
         {
             var comment = await _commentsRepository.ReadByIdAsync(id);
-
             if (comment == null)
             {
                 return Result<Comments>.Failure(
@@ -77,6 +76,8 @@ namespace Service.Services
                 );
             }
 
+            await _unitOfWork.BeginTransactionAsync();
+
             try
             {
                 var commentsToCreate = new Comments(
@@ -93,13 +94,20 @@ namespace Service.Services
             }
             catch (ArgumentException ex)
             {
-                string fieldName = ex.ParamName ?? "Geral";
+                _unitOfWork.Rollback();
 
+                string fieldName = ex.ParamName ?? "Geral";
                 return Result<Comments>.Failure(
                     Error.Validation(
                     "Dados de entrada inválidos ao criar o comentário.",
                     new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
                 );
+            }
+            catch(Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<Comments>.Failure(
+                    Error.InternalServer($"Erro inesperado ao criar comentário: {ex.Message}"));
             }
         }
 
@@ -126,6 +134,8 @@ namespace Service.Services
                 );
             }
 
+            await _unitOfWork.BeginTransactionAsync();
+
             try
             {
                 existingComments.UpdateComment(updateComments.CommentText!);
@@ -137,12 +147,19 @@ namespace Service.Services
             }
             catch (ArgumentException ex)
             {
-                string fieldName = ex.ParamName ?? "Geral";
+                _unitOfWork.Rollback();
 
+                string fieldName = ex.ParamName ?? "Geral";
                 return Result.Failure(Error.Validation(
                     "Dados de entrada inválidos ao atualizar o comentário.",
                     new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } })
                 );
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao atualizar comentário: {ex.Message}"));
             }
         }
 
@@ -165,12 +182,22 @@ namespace Service.Services
                 );
             }
 
-            existingComments.DeleteComment();
+            await _unitOfWork.BeginTransactionAsync();
 
-            await _commentsRepository.UpdateAsync(existingComments);
-            await _unitOfWork.CommitAsync();
+            try
+            {
+                existingComments.DeleteComment();
+                await _commentsRepository.UpdateAsync(existingComments);
+                await _unitOfWork.CommitAsync();
 
-            return Result.Success("Comentário eliminado com sucesso.");
+                return Result.Success("Comentário eliminado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao eliminar comentário: {ex.Message}"));
+            }
         }
     }
 }
