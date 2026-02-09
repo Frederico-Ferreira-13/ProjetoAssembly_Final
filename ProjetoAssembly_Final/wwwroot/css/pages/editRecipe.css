@@ -1,0 +1,196 @@
+﻿.edit-recipe-container {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.edit-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 45px;
+    border-top: 8px solid var(--primary-green);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.edit-header {
+    margin-bottom: 40px;    
+    text-align: center;
+}
+
+.edit-header h2 {
+    font-size: 2.2rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-weight: 800;
+}
+
+/* --- GRID DO FORMULÁRIO --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.full-width { 
+    grid-column: span 2;
+}
+
+.form-group-custom {
+    margin-bottom: 25px;
+}
+
+.form-group-custom label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.form-input-custom {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.3s;
+    font-size: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+.form-input-custom:focus {
+    border-color: var(--primary-green);
+    background-color: var(--card-bg);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+}
+
+/* --- LINHA DE INGREDIENTES (GESTÃO AVANÇADA) --- */
+.ingrediente-linha {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.02);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.ingrediente-linha:hover {
+    border-color: var(--border-color);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.ingrediente-linha .qtd {
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.ingrediente-linha .unit {
+    width: 110px;
+    flex-shrink: 0;
+}
+
+.ingrediente-linha .detail {
+    flex: 1;
+}
+
+.btn-remove {
+    background: #ff7675;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove:hover {
+    background: #d63031;
+    transform: scale(1.05);
+}
+
+/* Botão Secundário (Adicionar novo campo) */
+.btn-secondary {
+    background-color: transparent;
+    color: var(--primary-green);
+    border: 2px dashed var(--primary-green);
+    padding: 12px;
+    width: 100%;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* --- ÁREA DE AÇÕES --- */
+.edit-actions {
+    display: flex;
+    gap: 20px;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid var(--border-color);
+}
+
+.btn-save {
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 18px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex: 2;
+    font-size: 1.1rem;
+    transition: 0.3s;
+}
+
+.btn-save:hover {
+    filter: brightness(1.1);    
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2)
+}
+
+.btn-cancel {
+    background-color: #f1f2f6;
+    color: #636e72;
+    text-decoration: none;
+    padding: 18px 20px;
+    border-radius: 12px;
+    text-align: center;
+    flex: 1;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-cancel:hover{
+    background-color: #dfe6e9;
+    color: #2d3436;
+}
+
+/* Responsividade */
+@media (max-width: 768px){
+    .form-grid { grid-template-columns: 1fr; }
+    .full-width { grid-column: span 1; }
+    .ingrediente-linha { flex-wrap: wrap; }
+    .ingrediente-linha input {flex: 1 1 100%; }
+    .edit-actions { flex-direction: column; }
+}

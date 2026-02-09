@@ -74,19 +74,18 @@
             <input type="file" name="RecipeImage" accept="image/*">
         </div>      
 
-        @if(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "2")
+        @if (User.IsInRole("Admin") || User.IsInRole("2") || User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "2")
         {
-            <buttom typeof="submit" class="btn-guardar" style="background-color: #28a745;">
-                <i class="fa-solid fa-paper-plan"></i> @Localizer["Publicar Receita"]
-            </buttom>
+            <button type="submit" class="btn-guardar" style="background-color: #28a745 !important; border: none;">
+                <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Receita"]
+            </button>
         }
         else
         {
-           <button type="submit" class="btn-guardar">
-               <i class="fa-solid fa-save"></i> @Localizer["Guardar Receita"]
-           </button>     
+            <button type="submit" class="btn-guardar">
+                <i class="fa-solid fa-save"></i> @Localizer["Guardar Receita"]
+            </button>
         }
-
     </form>
 </main>
 

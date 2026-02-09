@@ -7,13 +7,15 @@
 
 /* --- CARDS DE COMENTÁRIOS --- */
 .comentario-card {
-    background: #ffffff;
+    background: var(--card-bg);
     border-radius: 16px;
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border-left: 6px solid #28a745;
     transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation: fadeInUp 0.4s ease forwards;
+    color: var(--text-color);
 }
 
 .comentario-card:hover {
@@ -38,12 +40,12 @@
     align-items: center;
     justify-content: center;
     color: white;    
-    box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+    font-weight: bold;
 }
 
 .user-id {
     font-weight: 700;
-    color: #2d3748;
+    color: var(--text-color);    
 }
 
 .comment-date {
@@ -53,9 +55,8 @@
 }
 
 .comment-text {
-    font-size: 1.05rem;
-    color: #4a5568;
-    background: #f8fafc;
+    font-size: 1.05rem;    
+    background: rgba(0, 0, 0, 0.03);
     padding: 15px;
     border-radius: 10px;
     line-height: 1.5;
@@ -67,98 +68,56 @@
     text-shadow: 0 0 5px rgba(241, 196, 15, 0.2);
 }
 
-/* --- SISTEMA DE ESTRELAS INTERATIVO (FORMULÁRIO) ---*/
 .star-rating-control {
     display: flex !important;
     flex-direction: row-reverse !important;
     justify-content: flex-end;
-    gap: 5px;
-    min-height: 40px;
-    align-items: center;
+    gap: 5px;    
 }
 
 .star-rating-control input[type="radio"]{
-   display: none !important;
-   visibility: hidden !important;
-   position: absolute;
-}
-
-/* Garante que as estrelas ficam amarelas quando o rádio está selecionado */
-.star-rating-control input[type="radio"]:checked ~ label,
-.star-rating-control input[type="radio"]:checked + label {
-    color: #f1c40f !important;
+   display: none !important;   
 }
 
 .star-rating-control label {
     font-size: 2rem;
     color: #edf2f7;
     cursor: pointer;
-    transition: color 0.2s, transform 0.2s;
-    line-height: 1;
-    display: inline-block;
+    transition: 0.2s,
+    
 }
 
-.rating-input-group {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-/* Efeito Hover e Check */
 .star-rating-control label:hover,
 .star-rating-control label:hover ~ label,
 .star-rating-control input:checked ~ label {
     color: #f1c40f !important;
 }
 
-.star-rating-control label:active {
-    transform: scale(0.9);
-}
-
 /* --- FORMULÁRIO DE ENVIO --- */
 .comentarios-form-section {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    border: 1px solid #edf2f7;
-    margin-top: 60px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;    
+    border: 1px solid var(--border-color);
+    margin-top: 40px;
 }
 
 .form-control-modern {
     width: 100%;
-    border: 2px solid #e2e8f0;
+    border: var(--bg-color);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
-    padding: 18px;
-    transition: all 0.3s ease;
+    padding: 15px;
+    transition: 0.3s;
+    box-sizing: border-box;
 }
 
 .form-control-modern:focus {
-    border-color: #28a745;
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
+    border-color: var(--primary-green);
+    outline: none;    
 }
 
-.btn-publicar {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 14px 30px;
-    border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    float: right;
-    margin-top: 20px;
-    transition: background 0.3s;
-}
-
-.btn-publicar:hover {
-    background: #218838;
-}
-
-/* --- ANIMAÇÃO DE ENTRADA --- */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -169,21 +128,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* --- ADIÇÕES DE ALINHAMENTO */
-.comentario-card {
-    animation: fadeInUp 0.4s ease forwards;
-}
-
-.user-details {
-    flex-grow: 1;
-}
-
-.btn-publicar i {
-    margin-right: 10px;
-}
-
-.form-group {
-    margin-bottom: 10px;
 }

@@ -2,10 +2,12 @@
     DESCRIÇÃO: Lógica geral de navegação, slider, gestão de ingredientes e comunicação com a API.
 */
 
-// --- 1. GESTÃO DE NAVEGAÇÃO (Active Link) ---
+let slideIndex = 1;
+let autoSlideInterval;
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- GESTÃO DE NAVEGAÇÃO & TEMA ---
+    // --- 1. GESTÃO DE NAVEGAÇÃO & TEMA ---
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.container-nav ul li a');
 
@@ -28,10 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Atualização do Sino de Notificações
     const pendingLink = document.getElementById('pendingBadgeLink');
     if (pendingLink) {
         updatePendingCount();
-        setInterval(updatePendingCount, 60000);
+        setInterval(updatePendingCount, 60000); // Atualiza a cada minuto
     }
 
     // --- 2. ADICIONAR DINAMICAMENTE INGREDIENTES (Página Criar Receita) ---
@@ -81,29 +84,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- FUNÇÕES GLOBAIS (Fora do DOMContentLoaded) ---
+// --- FUNÇÕES DO SLIDER (Ajustadas para reiniciar o tempo) ---
 
-// Menu Dropdown do Perfil
-function toggleMenu() {
-    const menu = document.getElementById("dropdown-perfil");
-    if (menu) {
-        menu.classList.toggle("show");
-    }
+function startAutoSlide() {
+    stopAutoSlide();
+    autoSlideInterval = setInterval(() => { pulsDivs(1); }, 5000);
 }
 
-// Fechar menu ao clicar fora
-window.onclick = function (event) {
-    if (!event.target.closest('.perfil-menu')) {
-        const dropdown = document.getElementById("dropdown-perfil");
-        if (dropdown && dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-        }
-    }
+function stopAutoSlide() {
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
 }
 
-// Slider
-var slideIndex = 1;
-function plusDivs(n) { showDivs(slideIndex += n); }
+function plusDivs(n) {
+    showDivs(slideIndex += n);
+    startAutoSlide();
+}
+
 function showDivs(n) {
     const x = document.getElementsByClassName("mySlides");
     if (x.length === 0) return;
@@ -115,6 +111,26 @@ function showDivs(n) {
     x[slideIndex - 1].style.display = "block";
 }
 
+// --- GESTÃO DO PERFIL (Compatibilidade e Fecho) ---
+
+function toggleMenu() {
+    const menu = document.getElementById("dropdown-perfil");
+    if (menu) {
+        menu.classList.toggle("show");
+    }
+}
+
+// Fechar menu ao clicar fora (útil para mobile onde o hover não existe)
+window.onclick = function (event) {
+    if (!event.target.closest('.perfil-menu')) {
+        const dropdown = document.getElementById("dropdown-perfil");
+        if (dropdown && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    }
+}
+
+// --- COMUNICAÇÃO COM API / HANDLERS ---
 
 // Lógica de Favoritos via AJAX
 async function handleToggleFavorite(event, btn, recipeId) {    
@@ -198,7 +214,6 @@ async function updatePendingCount() {
 
         if (response.ok) {
             const count = await response.json();
-
             badge.textContent = count;
 
             if (count > 0) {

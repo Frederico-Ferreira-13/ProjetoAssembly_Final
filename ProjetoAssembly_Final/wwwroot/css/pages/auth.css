@@ -1,48 +1,43 @@
-﻿
-/* --- PÁGINA DE LOGIN/REGISTO E RODAPÉ --- */
-
-/* Configuração total da página para centrar tudo */
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
+﻿/* --- auth.css --- */
+/* --- ESTILOS DE AUTENTICAÇÃO (LOGIN & REGISTO) --- */
 .Login-page {
     background-image: url('/img/BackgroundImageLogin.avif');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    background-attachment: fixed;    
+    background-attachment: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    min-height: calc(100vh - 70px);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* A caixa de vidro */
 .login-container {
     width: 100%;
     max-width: 400px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
-    padding: 40px;   
+    padding: 40px;
     border-radius: 20px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
+    margin: 20px;
 }
 
 .login-container h1 {
     color: white;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     margin-bottom: 30px;
     font-weight: 700;
 }
 
+/* Grupos de Input */
 .input-group {
     margin-bottom: 20px;
-    text-align: left; /* Labels alinhados à esquerda */
+    text-align: left;
 }
 
 .input-group label {
@@ -68,61 +63,40 @@ html, body {
 
 .input-group input:focus {
     background: #fff;
-    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
 }
 
-button[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-    transition: all 0.3s ease;
-    margin-top: 25px;
-    appearance: none;
-}
-
-button[type="submit"]:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-}
-
+/* Links de Alternância (Ex: Não tem conta? Regieste-se */
 .signup-link {
     margin-top: 25px;
     display: block; /* Garante que cada link fica na sua linha se necessário */
     color: #ffffff;
-    font-size: 0.95rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    font-size: 0.95rem;    
 }
 
 .signup-link a {
     color: #4cd137;
     text-decoration: none;
     font-weight: bold;
-    transition: color 0.3s ease;
+    transition: 0.3s;
 }
 
 .signup-link a:hover {
-    color: #ffffff;
+    color: white;
     text-decoration: underline;
 }
 
-.signup-link a[href="/"] {
+.link-back-home {
     display: inline-block;
     margin-top: 15px;
     color: #ecf0f1;
-    opacity: 0.9;
-    font-weight: normal;
-    font-size: 0.9rem;
+    opacity: 0.8;
+    font-size: 0.85rem;
+    text-decoration: none;
 }
 
-.signup-link a[href="/"]:hover {
+.link-back-home:hover {
     opacity: 1;
-    color: #ffffff;
+    text-decoration: underline;
 }

@@ -4,10 +4,11 @@
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = Localizer["Home Page"];
+    ViewData["Title"] = Localizer["Início"];
 }
 
 <link rel="stylesheet" href="~/css/index.css" />
+<link rel="preload" as="image" href="~/img/hero.jpg">
 
 <header class="hero">
     <div class="hero-content">
@@ -74,7 +75,7 @@
         <div id="container-receitas" class="grid-receitas">
             @if (Model.ListaReceitas != null)
             {
-                @foreach (var receita in Model.ListaReceitas.Take(4)) // Mostra apenas as 4 primeiras
+                @foreach (var receita in Model.ListaReceitas.Take(4))
                 {
                     <article class="receitas-card">
                         <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">

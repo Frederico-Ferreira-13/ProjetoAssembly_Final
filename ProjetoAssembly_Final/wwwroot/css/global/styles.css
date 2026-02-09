@@ -1,0 +1,46 @@
+/* --- styles.css --- */
+/* --- ESTILOS GERAIS DE CONTEÚDO --- */
+h1, h2, h3 {
+    color: #2c3e50;
+    transition: color: 0.3s;
+}
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+    color: #fff;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.section-title::after {
+    content: "";
+    width: 50px;
+    height: 3px;
+    background: var(--primary-green);
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateY(-50%);
+}
+
+.btn, .btn-principal {
+    background-color: var(--primary-green);
+    color: white !important;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.3s;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn:hover {
+    filter: brightness(90%);
+    transform: translateY(-20px);
+}
