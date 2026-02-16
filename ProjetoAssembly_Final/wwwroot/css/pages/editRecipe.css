@@ -1,4 +1,6 @@
-﻿.edit-recipe-container {
+﻿/* editrecipe.css*/
+
+.edit-recipe-container {
     max-width: 950px;
     margin: 40px auto;
     padding: 0 20px;
@@ -28,6 +30,17 @@
     justify-content: center;
     gap: 15px;
     font-weight: 800;
+}
+
+.edit-subtitle {
+    color: #b2bec3;
+    font-size: 1.1rem;
+}
+
+.section-label {
+    font-size: 1.1rem !important;
+    color: var(--text-color) !important;
+    margin-bottom: 15px !important;
 }
 
 /* --- GRID DO FORMULÁRIO --- */
@@ -73,7 +86,12 @@
     box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
 }
 
-/* --- LINHA DE INGREDIENTES (GESTÃO AVANÇADA) --- */
+.textarea-custom {
+    resize: vertical;
+    min-height: 150px;
+}
+
+/* --- LINHA DE INGREDIENTES --- */
 .ingrediente-linha {
     display: flex;
     gap: 12px;

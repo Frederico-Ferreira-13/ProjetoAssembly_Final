@@ -8,43 +8,46 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/perfil.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/perfil.css" asp-append-version="true" />
 }
 
 <div class="container-perfil">
     <section class="perfil-header">
         <div class="perfil-flex">
-            <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
+            <<div class="img-perfil-wrapper">
+                <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
+            </div>            
             <div class="info-user">
                 <h1>@Localizer["Olá, Frederico!"]</h1>
                 <p>@Localizer["Membro desde: Janeiro de 2026"]</p>
-                <a asp-page="/perfilEdit" class="btn-principal" style="padding: 8px 20px;">
+                <a asp-page="/perfilEdit" class="btn-principal">
                     <i class="fa-solid fa-user-gear"></i>@Localizer["Editar Dados"]
                 </a>
             </div>
         </div>
     </section>
 
-    <div style="display: flex; gap: 20px; margin-bottom: 40px;">
-        <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center;">
-            <h3 style="margin:0; color: #2ecc71;">@Model.TotalCriadas</h3>
-            <span style="font-size: 0.9rem; color: #7f8c8d;">Receita Criada</span>
+    <div class="user-stats-container">
+        <div class="stat-card">
+            <h3 class="status-value">@Model.TotalCriadas</h3>
+            <span class="stat-label">@Localizer["Receitas Criadas"]</span>
         </div>
-        <div class="perfil-header" style="flex: 1; margin-bottom: 0; padding: 20px; text-align: center">
-            <h3 style="margin:0; color: #e74c3c;">@Model.TotalFavoritos</h3>
-            <span style="font-size: 0.9rem; color: #7f8c8d;">Favoritos</span>
+        <div class="stat-card">
+            <h3 class="status-value color-fav">@Model.TotalFavoritos</h3>
+            <span class="stat-label">@Localizer["Favoritos"]</span>
         </div>
-    </div>
+    </div>   
 
-    <h2 class="section-title" style="text-align: left;">
+    <h2 class="section-subtitle">
         <i class="fa-solid fa-utensils"></i> @Localizer["As Minhas Receitas"]
     </h2>    
 
     <section class="grid-perfil">
-        <article class="receitas-card">
-            <img src="~/img/bacalhau.jpg" alt="@Localizer["Bacalhau à Brás"]">
-            <div class="card-info">
+        <article class="receitas-card-perfil">
+            <img src="~/img/bacalhau.jpg" alt="@Localizer["Bacalhau à Brás"]" class="card-img-perfil">
+            <div class="card-info-perfil">
                 <h3>@Localizer["Bacalhau à Brás"]</h3>
+                
                 <div class="acoes-perfil">
                     <a href="/EditarReceita?id=3" class="btn-gestao editar">
                         <i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar"]
@@ -62,8 +65,7 @@
     <script>
         function confirmarEliminar(id) {
             if (confirm("Tem a certeza que deseja eliminar esta receita?")) {
-                console.log("Eliminar receita ID: " + id);
-                // Aqui podes chamar o backend via fetch futuramente
+                console.log("Eliminar receita ID: " + id);                
             }
         }
     </script>

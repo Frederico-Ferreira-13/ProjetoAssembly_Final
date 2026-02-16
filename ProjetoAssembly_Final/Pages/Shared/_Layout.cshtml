@@ -8,18 +8,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - @Localizer["Receitas do Frederico"]</title>
     
-    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/pendingRecipes.css" asp-append-version="true">   
+    <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/pages/pendingRecipes.css" asp-append-version="true">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">   
 
     @RenderSection("Styles", required: false)
 </head>
-<body>
+<body class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
+
     <nav>
         <div class="container-nav">
             <div class="logo">
                 <a asp-page="/Index">
-                    👨‍🍳 <span style="color:#28a745;">Frederico Receitas</span>
+                    <span class="logo-icon">👨‍🍳</span>
+                     <span class="logo-text">Frederico <span style="color: var(--primary-green);">Receitas</span></span>
                 </a>
             </div>
 
@@ -42,31 +46,21 @@
 
             @if (User.IsInRole("Admin"))
             {
-                <a asp-page="/PendingRecipes" 
-                    class="nav-link position-relative d-flex align-items-center @(currentPage == "/PendingRecipes" ? "active-sino" : "")"
-                    id="pendingBadgeLink"
-                    style="margin-right: 25px; text-decoration: none;"
+                <a asp-page="/PendingRecipes" class="notification-bell @(currentPage == "/PendingRecipes" ? "active-sino" : "")"
                     title="@Localizer["Receitas Pendentes"]">
-
-                    <i id="sino-notificacao" class="fa-solid fa-bell" style="color: #28a745 !important; font-size: 1.5rem; transition: 0.3s;"></i>
-                    
-                    @{
-                            var count = ViewData["PendingCount"] as int? ?? 0;
+                    <i class="~fa-solid fa-bell"></i>
+                    @{ var count = ViewData["PendingCount"] as int? ?? 0; }
+                        @if(count > 0)
+                        {
+                            <span class="badge">@count</span>
                         }
-
-                    <span id="pendingCount" class="position-absolute badge rounded-pill badge-danger" 
-                          style="top: -5px; right: -10px; font-size: 0.7rem; @(count > 0 ? "" : "display: none;")">
-                        @count
-                    </span>
-                </a>
+                    </a>
             }
 
             <div class="search-box">
-                <form action="/recipes" method="get" style="display: flex; width: 100%; height: 100%;">
+                <form action="/recipes" method="get">
                     <input type="text" name="search" class="search-input" placeholder=@Localizer["Procurar Receita..."]>
-                    <button type="submit" class="search-btn">
-                        <i class="fa fa-search"></i>
-                    </button>
+                    <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
                 </form>
             </div>
 
@@ -79,15 +73,10 @@
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
                         <li><a asp-page="/perfil"><i class="fa-solid fa-user"></i> @Localizer["O Meu Perfil"]</a></li>
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li><a asp-page="/PendingRecipes"><i class="fa-solid fa-clipboard-check"></i>@Localizer["Aprovar Receitas"]</a></li>
-                        }
-
                         <li><a asp-page="/settings"><i class="fa-solid fa-gear"></i> @Localizer["Definições"]</a></li>
+                        <li><a asp-page="/logout"><i class="fa-solid fa-right-from-bracket"></i> @Localizer["Sair"]</a></li>                        
                         <li><a asp-page="/MyFavoritsRecipes"><i class="fa-solid fa-heart"></i> @Localizer["Favoritos"]</a></li>
-                        <li><a asp-page="/logout"><i class="fa-solid fa-right-from-bracket"></i> @Localizer["Sair"]</a></li>
+                        
                     }
                     else
                     {
@@ -103,7 +92,7 @@
         </div>
     </nav>
 
-    <main>
+    <main class="main-content">
         @RenderBody()
     </main>    
 

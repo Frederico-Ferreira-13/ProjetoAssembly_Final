@@ -1,0 +1,159 @@
+﻿/* perfilEdit.css*/
+
+.container-edit-perfil {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.header-edit-top {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-edit-top h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.edit-card {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* Layout em Grelha */
+.edit-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* --- ÁREA DA FOTO --- */
+.foto-edit-section {
+    text-align: center;
+    margin-bottom: 35px;
+    position: relative;
+}
+
+.avatar-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.img-edit-perfil {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-green);
+    padding: 3px;
+}
+
+.btn-change-photo {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: var(--primary-green);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 3px solid var(--card-bg);
+    transition: 0.3s;
+}
+
+.btn-change-photo:hover {
+    transform: scale(1.1);
+    background: #218838;
+}
+
+/* --- FORMULÁRIO --- */
+.form-group-edit {
+    margin-bottom: 25px;
+}
+
+.form-group-edit label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.input-edit {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+.input-edit:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+}
+
+/* --- ACÇÕES --- */
+.edit-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.btn-save {
+    flex: 2;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save:hover {
+    background: #218838;
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2);
+}
+
+.btn-back {
+    flex: 1;
+    background: var(--bg-color);
+    color: var(--text-color);
+    text-align: center;
+    padding: 15px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    transition: 0.3s;
+}
+
+.btn-back:hover {
+    background: var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .edit-grid-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .img-edit-perfil {
+        width: 150px;
+        height: 150px;
+    }
+}

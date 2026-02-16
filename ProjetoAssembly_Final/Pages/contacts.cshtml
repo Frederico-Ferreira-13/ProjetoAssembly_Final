@@ -7,7 +7,9 @@
     ViewData["Title"] = Localizer["Contactos"];
 }
 
-<link rel="stylesheet" href="~/css/contacts.css"/>
+<link rel="stylesheet" href="~/css/pages/contacts.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true" />
 
 <main class="container">   
     <div class="contact-header">
@@ -20,33 +22,35 @@
             <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
             <h3>@Localizer["Telefone"]</h3>
             <p>@Localizer["Segunda a Sexta, 9h às 18h"]</p>
-            <a href="tel:916781293" class="btn-contact-action">916 781 293</a>
+            <a href="tel:916781293" class="btn-contact-link">916 781 293</a>
         </div>
 
         <div class="contact-card">
             <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
             <h3>@Localizer["E-mail"]</h3>
             <p>Respondemos em 24h</p>
-            <a href="malito:fredericocrf87@hotmail.com" class="btn-contact-action">Enviar E-mail</a>
+            <a href="malito:fredericocrf87@hotmail.com" class="btn-contact-link">@Localizer["Enviar E-mail"]</a>
         </div>
     </div>
                
-    <div class="contact-form-wrapper">
-        <h3>@Localizer["Envie-nos uma mensagem"]</h3>      
+    <div class="contact-form-container">
+        <h3 style="text-align: center; margin-bottom: 30px; color: var(--text-color);">
+            @Localizer["Envie-nos uma mensagem"]
+        </h3>        
 
         <form method="post" class="custom-form">
             <div class="form-group">
                 <label asp-for="Nome">@Localizer["Nome"]</label>
-                <input asp-for="Nome" placeholder="@Localizer["O seu nome..."]" required />
+                <input asp-for="Nome" class="form-control" placeholder="@Localizer["O seu nome..."]" required />
             </div>
 
             <div class="form-group">
                 <label asp-for="Email">@Localizer["E-mail"]</label>
-                <input asp-for="Email" type="email" placeholder="exemplo@email.com" required />
+                <input asp-for="Email" type="email" class="form-control" placeholder="exemplo@email.com" required />
             </div>
             <div class="form-group">
                 <label asp-for="Mensagem">@Localizer["Mensagem"]"</label>
-                <textarea asp-for="Mensagem" placeholder="@Localizer["Em que podemos ajudar?"]" required></textarea>
+                <textarea asp-for="Mensagem" class="form-control" placeholder="@Localizer["Em que podemos ajudar?"]" required></textarea>
             </div>
 
             <button type="submit" class="btn-send">

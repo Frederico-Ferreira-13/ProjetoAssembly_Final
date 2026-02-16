@@ -1,48 +1,53 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.PendingRecipesModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     ViewData["Title"] = "Receitas Pendentes";
 }
 
-<link rel="stylesheet" href="~/css/PendingRecipes.css" asp-append-version="true" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/pendingRecipes.css" asp-append-version="true" />
+}
 
-<h1>Receitas Pendentes de Aprovação</h1>
+<div class="pending-container">
+    <h1 class="section-title">
+        <i class="fa-solid fa-clock-rotate-left"></i> @Localizer["Receitas Pendentes"]
+    </h1>
+</div>
 
 @if(TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if(TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert-pending-info">
+        <i class="fa-solid fa-circle-check"></i>@TempData["Success"]
+    </div>
 }
 
 @if (Model.PendingRecipes.Any())
 {
-    <div class="row g-4">
+    <div class="grid-pending">
         @foreach (var recipe in Model.PendingRecipes)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <a href="/view_recipes/@recipe.RecipesId">
-                        <img src="/img/@(string.IsNullOrEmpty(recipe.ImageUrl) ? "default.jpg" : recipe.ImageUrl)"
-                             class="card-img-top"
-                             alt="@recipe.Title"
-                             style="height: 200px; object-fit: cover;" />
-                    </a>                    
+            <article class="card-pending">
+                <span class="status-badge">A aguardar</span>
+                <a href="/view_recipes/@recipe.RecipesId">
+                    <img src="/img/@(string.IsNullOrEmpty(recipe.ImageUrl) ? "default.jpg" : recipe.ImageUrl)"
+                         class="card-pending-img"
+                         alt="@recipe.Title" />                      
+                </a>
 
-                    <div class="card-body">
-                        <h5 class="card-title">@recipe.Title</h5>
-                        <p class="card-text text-muted small">
-                            Criada por: @(recipe.User?.UserName ?? "Utilizador") <br />
-                            Data: @recipe.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                        </p>
+                <div class="card-pending-body">
+                    <h3 class="card-pending-title">@recipe.Title</h3>
 
-                        <div class="mt-auto">
-                            <a href="/view_recipes/@recipe.RecipesId" class="btn btn-outline-primary w-100 mb-2">
-                                <i class="fa-solid fa-eye"></i> Rever Conteúdo
-                            </a>
-                        </div>                        
+                    <div class="card-pending-meta">
+                        <span><i class="fa-solid fa-user"></i> @(recipe.User?.UserName ?? "Utilizador")</span>
+                        <span><i class="fa-solid fa-calendar-days"></i> @recipe.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    <div class="pending-actions">
+                        <a href="/view_recipes/@recipe.RecipesId" class="btn-view-details" title="Rever Conteúdo">
+                            <i class="fa-solid fa-eye"></i>    
+                        </a>
 
                         <form method="post" asp-page-handler="Approve">
                             <input type="hidden" name="id" value="@recipe.RecipesId" />
@@ -52,7 +57,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
+            </article>
         }
     </div>
 }
@@ -61,4 +66,4 @@ else
     <div class="alert alert-info text-center">
         Não há receitas pendentes de aprovação no momento.
     </div>
-}
+}            

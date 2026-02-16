@@ -8,16 +8,20 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/recipe.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/favorits.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
 }
 
 <div class="container-main">
+    <header class="favoritos-header">
+        <h1>
+            <i class="fa-solid fa-heart" style="color: #e74c3c"></i>
+            @Localizer["As Minhas Receitas Favorites"]
+        </h1>
+        <p class="edit-subtitle">@Localizer["Todas as receitas que guardaste num só lugar."]</p>
+    </header>
+    
     <section class="destaques-home">
-        <h2 class="section-title">
-            <i class="fa-solid fa-heart" style="color: #e74c3c;"></i> @Localizer["As Minhas Receitas Favoritas"]
-        </h2>
-
         <div id="container-receitas" class="grid-receitas">
             @if(Model.MyFavoriteRecipes != null && Model.MyFavoriteRecipes.Any())
             {
@@ -28,10 +32,10 @@
             }
             else
             {
-                <div class="aviso-vazio" style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
-                    <i class="fa-regular fa-heart" style="font-size: 4rem; color: #ddd; margin-bottom: 20px;"></i>
+                <div class="aviso-vazio">
+                    <i class="fa-regular fa-heart"></i>
                     <p>@Localizer["Ainda não guardaste nenhuma receita como favorita."]</p>
-                    <a asp-page="/recipes" class="btn-principal" style="margin-top: 20px; display: inline-block;">
+                    <a asp-page="/recipes" class="btn-explorar">
                         @Localizer["Explorar Receitas"]
                     </a>
                 </div>

@@ -7,19 +7,23 @@
     ViewData["Title"] = Localizer["Sair do Sistema"];
 }
 
-<link rel="stylesheet" href="~/css/logout.css" asp-append-version="true" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/logout.css" asp-append-version="true" />
+}
 
 <div class="logout-wrapper">
-    <div class="content-box login-container">
-        <h1>Até breve!</h1>
-        <p>@Localizer["Tens a certeza que pretendes terminar a sessão?"]</p>
+    <div class="logout-container">
+        <header class="logout-header">
+            <h2>@Localizer["Até Breve!"]</h2>
+            <p>@Localizer["Tens a certeza que pretendes terminar a sessão?"]</p>
+        </header>       
 
         <div class="logout-actions">
-            <form method="post">
+            <form method="post" style="width: 100%">
                 <button type="submit" class="logoutButton">
                     <div class="icon-container">
                         <svg class="doorway" viewBox="0 0 100 100">
-                            <path d="M20,90 V10 H80 V90" fill="none" stroke="currentColor" stroke-width="4" />
+                            <path d="M20,90 V10 H80 V90" fill="none" stroke="currentColor" stroke-width="6" />
                         </svg>
                         <svg class="door" viewBox="0 0 100 100">
                             <rect x="20" y="10" width="60" height="80" fill="currentColor" />
@@ -29,11 +33,9 @@
                     <span class="button-text">@Localizer["Terminar Sessão"]</span>
                 </button>
             </form>
-
-            <div class="voltar-container">
-                <a asp-page="/Index" class="btn-cancelar"> 
-                    <i class="fa-solid fa-arrow-left"></i>@Localizer["Voltar ao Início"]</a>
-            </div>            
+            
+            <a asp-page="/Index" class="btn-cancelar"> 
+                <i class="fa-solid fa-arrow-left"></i>@Localizer["Voltar ao Início"]</a>                     
         </div>
     </div>
 </div>

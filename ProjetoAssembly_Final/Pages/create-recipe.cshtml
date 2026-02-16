@@ -8,10 +8,10 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/create-recipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/create-recipe.css" asp-append-version="true" />    
 }
 
-<main class="container">
+<div class="recipe-form-container">
     <h1>@Localizer["Submeter Nova Receita"]</h1>
 
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -19,20 +19,20 @@
     <form method="post" enctype="multipart/form-data">
         <div class="input-group">
             <label asp-for="Titulo">@Localizer["Nome da Receita"]</label>
-            <input asp-for="Titulo" placeholder="@Localizer["Ex: Bacalhau à Brás Especial"]" required>
+            <input asp-for="Titulo" class="form-control-recipe" placeholder="@Localizer["Ex: Bacalhau à Brás Especial"]" required>
             <span asp-validation-for="Titulo" class="text-danger"></span>
         </div>
 
         <div class="input-group">
             <label asp-for="Descricao">@Localizer["Instruções de Preparação"]</label>
-            <textarea asp-for="Descricao" rows="5" placeholder="@Localizer["Descreva os passos detalhadamente..."]" required></textarea>
+            <textarea asp-for="Descricao" class="form-control-recipe" rows="5" placeholder="@Localizer["Descreva os passos detalhadamente..."]" required></textarea>
             <span asp-validation-for="Descricao" class="text-danger"></span>
         </div>
 
-        <div class="row" style="display: flex; gap: 20px;">
-            <div class="input-group" style="flex: 1;">
+        <div class="form-row" style="display: flex; gap: 20px;">
+            <div class="input-group flex-1">
                 <label asp-for="CategoriaSelecionada">@Localizer["Categoria"]</label>
-                <select asp-for="CategoriaSelecionada" required>
+                <select asp-for="CategoriaSelecionada" class="form-control-recipe" required>
                     <option value="">@Localizer["Selecione.."]</option>
                     <option value="1">@Localizer["Entradas/Sopas"]</option>
                     <option value="2">@Localizer["Prato Principal"]</option>
@@ -41,9 +41,9 @@
                 </select>
             </div>
 
-            <div class="input-group" style="flex: 1;">
+            <div class="input-group flex-1">
                 <label asp-for="DificuldadeSelecionada">@Localizer["Dificuldade"]</label>
-                <select asp-for="DificuldadeSelecionada" required>
+                <select asp-for="DificuldadeSelecionada" class="form-control-recipe" required>
                     <option value="">@Localizer["Selecione.."]</option>
                     <option value="1">@Localizer["Fácil"]</option>
                     <option value="2">@Localizer["Médio"]</option>
@@ -52,43 +52,43 @@
             </div>
         </div>
 
-        <h3>@Localizer["Ingredientes"]</h3>
-        <div id="lista-ingredientes">
-            <div class="ingrediente-linha" style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="number" name="QuantityValue[]" placeholder="Qtd" step="0.01" style="width: 70px;">
-                <input type="text" name="Unit[]" placeholder="Unid." style="width: 80px;">
-                <input type="text" name="IngredientName[]" placeholder="Ingrediente" style="flex: 1;" required>
-
-                <div class="detalhe-container" style="flex: 1;">
-                    <input type="text" name="ingredientDetail[]" class="detalhe-input" placeholder="Nota/Tipo" />
-                </div>
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" style="display:none;">
+        <h3 class="section-title">@Localizer["Ingredientes"]</h3>
+        <div id="lista-ingredientes" class="ingredientes-section">
+            <div class="ingrediente-linha">
+                <input type="number" name="QuantityValue[]" class="form-control-recipe input-qtd" placeholder="Qtd" step="0.01">
+                <input type="text" name="Unit[]" class="form-control-recipe input-unit" placeholder="Unid.">
+                <input type="text" name="IngredientName[]" class="form-control-recipe input-name" placeholder="@Localizer["Ingrediente"]" required>
+                <input type="text" name="ingredientDetail[]" class="form-control-recipe input-detail" placeholder="@Localizer["Nota/Tipo"]" />
+                              
+                <button type="button" class="btn-remove-ing" onclick="this.parentElement.remove()" style="display:none;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-            </div>
+            <</div>
         </div>
-        <button type="button" id="btn-add-ingrediente">+ @Localizer["Adicionar Ingrediente"]</button>
+        
+        <button type="button" id="btn-add-ingrediente">
+            <i class="fa-solid fa-plus"></i> @Localizer["Adicionar Ingrediente"]
+        </button>
 
-        <div class="input-group">
+        <div class="input-group image-upload-section">
             <label>@Localizer["Imagem da Receita"]</label>
-            <input type="file" name="RecipeImage" accept="image/*">
+            <input type="file" name="RecipeImage" class="form-control-recipe" accept="image/*">
         </div>      
-
-        @if (User.IsInRole("Admin") || User.IsInRole("2") || User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "2")
-        {
-            <button type="submit" class="btn-guardar" style="background-color: #28a745 !important; border: none;">
-                <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Receita"]
-            </button>
-        }
-        else
-        {
-            <button type="submit" class="btn-guardar">
-                <i class="fa-solid fa-save"></i> @Localizer["Guardar Receita"]
-            </button>
-        }
+        
+        <button type="submit" class="btn-guardar-recipes">
+            @if (User.IsInRole("Admin") || User.IsInRole("2"))
+            {            
+                 <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Receita"]            
+            }
+            else
+            {            
+                <i class="fa-solid fa-save"></i> @Localizer["Guardar Receita"]            
+            }
+        </button>
     </form>
-</main>
+</div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" /> <script src="~/js/ingredientes.js"></script>
+    <partial name="_ValidationScriptsPartial" /> 
+    <script src="~/js/ingredientes.js"></script>
 }

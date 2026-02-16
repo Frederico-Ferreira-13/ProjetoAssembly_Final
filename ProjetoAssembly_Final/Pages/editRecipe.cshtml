@@ -8,14 +8,14 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/editRecipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/editRecipe.css" asp-append-version="true" />
 }
 <main class="container">   
     <div class="edit-recipe-container">
         <div class="edit-card">
             <header class="edit-header">
-                <h2><i class="fa-solid fa-pen-to-square"></i>Editar Receita</h2>
-                <p style="color: #b2bec3;">@Localizer["Altera os detalhes da tua deliciosa criação."]</p>
+                <h2><i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar Receita"]</h2>
+                <p class="edit-subtitle">@Localizer["Altera os detalhes da tua deliciosa criação."]</p>
             </header>
 
             <form method="post" enctype="multipart/form-data">
@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="form-group-custom full-width">
-                        <label style="font-size: 1.1rem; color: #2d3436; margin-bottom: 15px;">
+                        <label class="section-label">
                             <i class="fa-solid fa-basket-shopping"></i> @Localizer["Ingredientes"]
                         </label>
 

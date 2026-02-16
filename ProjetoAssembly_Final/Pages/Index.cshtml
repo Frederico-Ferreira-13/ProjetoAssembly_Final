@@ -7,20 +7,22 @@
     ViewData["Title"] = Localizer["Início"];
 }
 
-<link rel="stylesheet" href="~/css/index.css" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/index.css" asp-append-version="true" />
+}
+
 <link rel="preload" as="image" href="~/img/hero.jpg">
 
 <header class="hero">
     <div class="hero-content">
         <h1>@Localizer["Descubra o sabor de cozinhar em casa"]</h1>
         <p>@Localizer["As melhores iguarias, desde sopas reconfortantes a sobremesas irresistíveis."]</p>
-        <a href="#categorias" class="btn-principal">Explorar Categorias</a>
+        <a href="#categorias" class="btn-principal">@Localizer["Explorar Categorias"]</a>
     </div>
 </header>
 
 <main class="container">
-    <section id="categorias" class="categorias-home">
-        <h2 class="section-title">O que lhe apetece hoje?</h2>
+    <section id="categorias" class="categorias-home">        
         <div class="grid-categorias">
             <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
@@ -47,17 +49,17 @@
             <div class="mySlides fade">
                 <img src="img/bacalhau.jpg" alt="Bacalhau à Brás">
                 <div class="slide-badge">Tradicional</div>
-                <div class="slide-text">Bacalhau à Brás</div>
+                <div class="slide-text-overlay">Bacalhau à Brás</div>
             </div>
             <div class="mySlides fade">
                 <img src="img/sopa.jpg" alt="Sopa de Legumes">
                 <div class="slide-badge">Saudável</div>
-                <div class="slide-text">Sopa de Legumes - Saudável e Caseira</div>
+                <div class="slide-text-overlay">Sopa de Legumes - Saudável e Caseira</div>
             </div>
             <div class="mySlides fade">
                 <img src="img/arroz-de-pato.jpg" alt="Arroz de Pato">
                 <div class="slide-badge">Saudável</div>
-                <div class="slide-text"> Arroz de Pato</div>
+                <div class="slide-text-overlay"> Arroz de Pato</div>
             </div>
             <div class="mySlides fade">
                 <img src="img/arroz-doce.jpg" alt="Arroz Doce">
@@ -78,10 +80,15 @@
                 @foreach (var receita in Model.ListaReceitas.Take(4))
                 {
                     <article class="receitas-card">
-                        <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+                        <div class="card-image-wrapper">
+                            <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
+                        </div>                        
                         <div class="card-info">
-                            <h3>@Localizer[receita.Title]</h3>
-                            <p>@Localizer["Dificuldade"]: @(receita.DifficultyId == 1 ? Localizer["Fácil"] : Localizer["Média"]) | @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</p>
+                            <h3>@receita.Title</h3>
+                            <div class="card-meta">
+                                <span><i class="fa-solid fa-gauge"></i> @(receita.DifficultyId == 1 ? Localizer["Fácil"] : Localizer["Média"])</span>
+                                <span><i class="fa-solid fa-clock"></i> @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</span>
+                            </div>                            
                             <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
                         </div>
                     </article>

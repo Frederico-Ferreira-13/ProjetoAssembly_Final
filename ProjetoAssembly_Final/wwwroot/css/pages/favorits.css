@@ -1,53 +1,53 @@
 ﻿/* --- ESPECÍFICO DE FAVORITOS (favorits.css) --- */
-
-.aviso-vazio {
-    grid-column: 1 / -1;
-    background: #fdfdfd;
-    border: 2px dashed #ddd;
-    border-radius: 20px;
+/* --- PÁGINA DE FAVORITOS --- */
+.favoritos-header {
     text-align: center;
-    padding: 80px 20px;
+    margin-bottom: 40px;
+    padding-top: 20px;
 }
 
-.aviso-vazio i {
-    font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 20px;
+.favoritos-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color);
+    font-weight: 800;
 }
 
+/* --- FILTROS DE CATEGORIAS (Navegação Suave) --- */
 .grid-categorias {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     gap: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .cat-card {
-    background: white;
+    background: var(--card-bg);
     padding: 15px 25px;
-    border-radius: 12px;
+    border-radius: 15px;
     text-decoration: none;
-    color: #333;
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 100px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    border: 1px solid #eee;
+    min-width: 110px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
 }
 
 .cat-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-color: var(--primary-green);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.15);
 }
 
 /* Estado Ativo (Categoria Selecionada) */
 .cat-card.active {
     background-color: #28a745 !important;
     color: white !important;
-    border-color: #28a745;
+    border-color: var(--primary-green);
+    transform: scale(1.05);
 }
 
 .cat-card.active .cat-icon i {
@@ -57,12 +57,64 @@
 .cat-icon {
     font-size: 1.8rem;
     margin-bottom: 8px;
-    color: #28a745;
+    color: var(--primary-green);
+    transition: color 0.3s;
 }
 
+/* --- ESTADO VAZIO --- */
+.aviso-vazio {
+    grid-column: 1 / -1;
+    background: var(--card-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 20px;
+    text-align: center;
+    padding: 60px 30px;
+    margin: 20px 0;
+    transition: 0.3s;
+}
+
+.aviso-vazio i {
+    font-size: 5rem;
+    color: var(--border-color);
+    margin-bottom: 25px;
+    display: block;
+}
+
+.aviso-vazio p {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-bottom: 25px;
+}
+
+/* Botão para incentivar a explorar quando está vazio */
+.btn-explorar {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--primary-green);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.btn-explorar:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* --- SEPARADOR --- */
 .separator {
     border: 0;
     height: 1px;
-    background: #eee;
-    margin: 40px 0;
+    background: var(--border-color);
+    margin: 50px 0;
+}
+
+/* Ajuste para a Grelha de Receitas nos Favoritos */
+.favoritos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
 }

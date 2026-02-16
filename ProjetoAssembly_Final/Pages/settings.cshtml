@@ -7,7 +7,9 @@
     ViewData["Title"] = Localizer["Editar o meu Perfil"];
 }
 
-<link rel="stylesheet" href="~/css/settings.css" asp-append-version="true" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/settings.css" asp-append-version="true" />
+}
 
 <main class="container">
     <div class="settings-container">        
@@ -19,15 +21,20 @@
         <form method="post" enctype="multipart/form-data">
             @if (!ViewData.ModelState.IsValid)
             {
-               <div class="alert alert-danger" style="background: #fff5f5; border-left: 4px solid #c53030; padding: 15px; margin-bottom: 20px;">
+               <div class="alert alert-danger">
                    <div asp-validation-summary="All"></div>
                </div>
             }
         
             <div class="perfil-upload-section">
-                <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande">
-                <label for="fileInput" class="btn btn-outline-success">Alterar Foto</label>
-                <input type="file" id="fileInput" style="display:none" accept="image/*">
+                <div class="avatar-wrapper">
+                    <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande" alt="Preview">
+                    <label for="fileInput" class="btn-change-photo-mini">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                </div>               
+                <input type="file" id="fileInput" name="UserPhoto" style="display:none" accept="image/*">
+                <p class="upload-hint">@Localizer["Clique na câmara para alterar a foto"]</p>
             </div>
 
             <div class="settings-grid">
@@ -43,11 +50,11 @@
 
                 <div class="preferences-section full-width">
                     <h4><i class="fa-solid fa-sliders"></i> @Localizer["Preferências do Sistema"]</h4>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 20px;">@Localizer["Personalize a sua experiência na plataforma."]</p>
+                    <p class="text-muted">@Localizer["Personalize a sua experiência na plataforma."]</p>
                 </div>
 
                 <div class="form-group">
-                    <label>Tema</label>
+                    <label>@Localizer["Tema"]</label>
                     <select asp-for="InputTheme" class="form-control">
                         <option value="Light">@Localizer["Modo Claro"]o</option>
                         <option value="Dark">@Localizer["Modo Escuro"]</option>
@@ -64,15 +71,21 @@
 
                 <div class="form-group full-width">
                     <label class="checkbox-group">
-                        <input type="checkbox" asp-for="InputNotifications" style="width: 20px; height: 20px;"/>
+                        <input type="checkbox" asp-for="InputNotifications" />
                         <span>@Localizer["Desejo receber notificações e novidades por email"]</span>
                     </label>
                 </div>
             </div>
 
-            <button type="submit" class="btn-guardar">
-                <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
-            </button>
+            <div class="settings-actions">
+                <button type="submit" class="btn-guardar">
+                    <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
+                </button>
+
+                <a asp-page="/perfil" class="btn-cancelar">
+                    <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]
+                </a>
+            </div>
 
             <a href="/Perfil" style="text-align:center; display:block; margin-top:20px; color: #888; text-decoration: none;">
                 <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]

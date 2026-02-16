@@ -8,8 +8,8 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/recipe.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/favorits.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
     <style>
         .pagination-container { display: flex; justify-content: center; gap: 8px; margin: 40px 0; }
         .btn-pag { padding: 10px 18px; border: 1px solid #28a745; color: #28a745; border-radius: 6px; text-decoration: none; transition: 0.3s; }
@@ -22,40 +22,43 @@
 @Html.AntiForgeryToken()
 
 <div class="container-main">
-    <section class="Categorias-home">
+    <section class="Categorias-filter">
         <h2 class="section-title">@Localizer["Explorar Receitas"]</h2>
 
-        <div class="grid-categorias">
-            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card @(Request.Query["categoryId"] == "1" ? "active" : "")">
+        <div class="grid-categorias-nav">
+            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-item @(Request.Query["categoryId"] == "1" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>@Localizer["Sopas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card @(Request.Query["categoryId"] == "2" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-item @(Request.Query["categoryId"] == "2" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>@Localizer["Carne"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card @(Request.Query["categoryId"] == "3" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-item @(Request.Query["categoryId"] == "3" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>@Localizer["Peixe"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card @(Request.Query["categoryId"] == "4" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-item @(Request.Query["categoryId"] == "4" ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>@Localizer["Sobremesas"]</span>
             </a>
-            <a asp-page="/recipes" class="cat-card @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")" style="background-color: #f8f9fa;">
+            <a asp-page="/recipes" class="cat-item all-cat @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
                 <span>@Localizer["Todas"]</span>
             </a>
         </div>
     </section>
 
-    <hr class="separator">
+    <hr class="separator-light">
 
-    <section class="destaques-home">
+    <section class="results-section">
         @if (!string.IsNullOrEmpty(Model.Search))
         {
-            <p class="margin-bottom: 20px;">@Localizer["Resultados para: "]<strong>"@Model.Search"</strong></p>
+            <div class="search-info">
+                @Localizer["Resultados para: "] <strong>"@Model.Search"</strong>
+            </div>
         }
+
         <div id="container-receitas" class="grid-receitas">
             @if (Model.ListRecipes != null && Model.ListRecipes.Any())
             {
@@ -66,10 +69,12 @@
             }
             else
             {
-                <div class="aviso-vazio" style="grid-column: 1/-1; text-align: center; padding: 50px">
-                    <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: #ccc;"></i>
-                    <p style="margin-top: 15px;">Não encontrámos receitas com esses critérios.</p>
-                    <a asp-page="/recipes" class="btn-principal">@Localizer["Limpar filtros"]</a>
+                <div class="aviso-vazio">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <p>@Localizer["Não encontrámos receitas com esses critérios."]</p>
+                    <a asp-page="/recipes" class="btn-card" style="display:inline-block; width: auto; padding: 12px 30px;">
+                        @Localizer["Limpar filtros"]
+                    </a>
                 </div>
             }
         </div>
@@ -81,7 +86,9 @@
                     asp-route-p="@(Model.P - 1)"
                     asp-route-CategoryId="@Model.CategoryId"
                     asp-route-search="@Model.Search"
-                    class="btn-pag @(Model.P == 1 ? "disabled" : "")">«</a>
+                    class="btn-pag @(Model.P == 1 ? "disabled" : "")">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
 
                 @for(int i = 1; i <= Model.TotalPages; i++)
                 {
@@ -96,7 +103,9 @@
                    asp-route-p="@(Model.P + 1)"
                    asp-route-categoryId="@Model.CategoryId"
                    asp-route-search="@Model.Search"
-                   class="btn-pag @(Model.P == Model.TotalPages ? "disabled" : "")">»</a>
+                   class="btn-pag @(Model.P == Model.TotalPages ? "disabled" : "")">
+                    <i class="fa-solid fa-chevron-right"></i>
+               </a>
             </div>
         }
     </section>

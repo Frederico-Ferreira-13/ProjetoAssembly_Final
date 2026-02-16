@@ -1,70 +1,166 @@
-﻿h1.section-title {
-    font-size: 2.2rem;
-    margin-bottom: 1.5rem;
-    color: var(--primary-color);
+﻿/* pendingRecipes.css */
+/* --- PÁGINA DE RECEITAS PENDENTES --- */
+.pending-container {
+    min-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Título com Badge de Contador */
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--text-color);
     text-align: center;
+    font-weight: 800;
 }
 
-.card {
-    border: none;
+/* --- ESTADO INFORMATIVO (ALERTAS) --- */
+.alert-pending-info {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--primary-green);
+    border: 1px solid var(--primary-green);
     border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background: #fff;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-}
-
-.card-img-top {
-    height: 200px;
-    object-fit: cover;
-}
-
-.card-body {
-    padding: 1.25rem;
-}
-
-.card-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
-    color: #333;
-}
-
-.card-text {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 1rem;
-}
-
-.btn-success {
-    background: #28a745;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
     font-weight: 500;
-    transition: background 0.3s ease;
 }
 
-.btn-success:hover {
+/* --- GRID E CARDS DE PENDENTES --- */
+.grid-pending {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr);
+    gap: 30px;
+}
+
+.card.pending {
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--card-bg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.card-pending:hover {
+    transform: translateY(-9px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+/* Selo de "A aguardar" */
+.status-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(241, 196, 15, 0.9);
+    color: #000;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 5;
+}
+
+.card-pending-img {
+    height: 220px;
+    width: 100%;
+    object-fit: cover;
+    filter: grayscale(30%);
+    transition: 0.3s;
+}
+
+.card-pending:hover .card-pending-img {
+    filter: grayscale(0%);
+}
+
+.card-pending-body {
+    padding: 25px;
+    flex-grow: 1;
+}
+
+.card-pending-title {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.card-pending-meta {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+/* --- BOTÕES DE AÇÃO --- */
+.pending-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-approve {
+    flex: 2;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-approve:hover {
     background: #218838;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
 
-.alert {
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+.btn-view-details {
+    flex: 1;
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    transition: 0.3s;
 }
 
-.alert-info {
-    background: #e7f3ff;
-    color: #0c5460;
-    border-color: #bee5eb;
+.btn-view-details:hover {
+    background: var(--border-color);
 }
 
-@media (max-width: 768px) {
-    .card {
-        margin-bottom: 1rem;
-    }
+/* --- ESTADO VAZIO --- */
+.no-pending {
+    text-align: center;
+    padding: 60px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 2px dashed var(--border-color);
+}
+
+.no-pending i {
+    font-size: 4rem;
+    color: var(--border-color);
+    margin-bottom: 20px;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    .grid-pending { grid-template-columns: 1fr; }
+    .pending-actions { flex-direction: column; }
 }
