@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. GESTÃO DE NAVEGAÇÃO & TEMA ---
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.container-nav ul li a');
+    const navLinks = document.querySelectorAll('.nav-container ul li a');
 
     // Marcar link ativo no menu 
     navLinks.forEach(link => {
@@ -37,32 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(updatePendingCount, 60000); // Atualiza a cada minuto
     }
 
-    // --- 2. ADICIONAR DINAMICAMENTE INGREDIENTES (Página Criar Receita) ---
-    const btnAdd = document.getElementById('btn-add-ingrediente');
-    const lista = document.getElementById('lista-ingredientes');
-
-    if (btnAdd && lista) {
-        btnAdd.addEventListener('click', () => {
-            const linha = document.createElement('div');
-            linha.className = 'ingrediente-linha';
-            linha.innerHTML = `
-                <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
-                <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" />
-                <input type="text" name="IngredientName[]" placeholder="Nome do Ingrediente" class="form-input-custom" required />
-                <input type="text" name="ingredientDetail[]" placeholder="Nota/Tipo" class="form-input-custom detail" />
-                <button type="button" class="btn-remove">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            `;
-
-            lista.appendChild(linha);
-            linha.querySelector('.btn-remove').onclick = () => {
-                linha.remove();
-            };
-        });
-    }
-
-    // --- 3. PREVIEW DE IMAGEM (Receita ou Perfil) ---
+    // --- 2. PREVIEW DE IMAGEM (Receita ou Perfil) ---
     const recipeInput = document.getElementById('RecipeImage');
     const recipeImg = document.getElementById('image-preview');
     if (recipeInput && recipeImg) {
@@ -74,9 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsDataURL(file);
             }
         });
-    }
+    } 
 
-    // --- 4. SLIDER AUTOMÁTICO ---
+    // --- 3. SLIDER AUTOMÁTICO ---
     const slides = document.getElementsByClassName("mySlides");
     if (slides.length > 0) {
         showDivs(slideIndex);
@@ -114,7 +89,7 @@ function showDivs(n) {
 // --- GESTÃO DO PERFIL (Compatibilidade e Fecho) ---
 
 function toggleMenu() {
-    const menu = document.getElementById("dropdown-perfil");
+    const menu = document.getElementById("profile-dropdown");
     if (menu) {
         menu.classList.toggle("show");
     }
@@ -122,8 +97,8 @@ function toggleMenu() {
 
 // Fechar menu ao clicar fora (útil para mobile onde o hover não existe)
 window.onclick = function (event) {
-    if (!event.target.closest('.perfil-menu')) {
-        const dropdown = document.getElementById("dropdown-perfil");
+    if (!event.target.closest('.profile-menu')) {
+        const dropdown = document.getElementById("profile-dropdown");
         if (dropdown && dropdown.classList.contains('show')) {
             dropdown.classList.remove('show');
         }
@@ -161,7 +136,7 @@ async function handleToggleFavorite(event, btn, recipeId) {
         if (response.ok) {
             const data = await response.json();
             const icon = btn.querySelector('i');
-            const card = btn.closest('.receitas-card');
+            const card = btn.closest('.recipe-card');
 
             if (data.isFavorite) {
                 btn.classList.add('active');
@@ -177,8 +152,8 @@ async function handleToggleFavorite(event, btn, recipeId) {
 
                     setTimeout(() => {
                         card.remove();
-                        const grid = document.getElementById('container-receitas');
-                        if (grid && grid.querySelectorAll('.receitas-card').length === 0) {
+                        const grid = document.getElementById('recipe-container');
+                        if (grid && grid.querySelectorAll('.recipe-card').length === 0) {
                             location.reload();
                         }
                     }, 400);

@@ -24,7 +24,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(IngredientsType entity)
         {
-            return $"INSERT INTO {_tableName} (TypeName) VALUES (@IngredientsTypeName)";
+            return @$"INSERT INTO {_tableName} (IngredientsTypeName)
+                      VALUES (@IngredientsTypeName)";
         }
 
         protected override SqlParameter[] GetInsertParameters(IngredientsType entity)
@@ -37,7 +38,9 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(IngredientsType entity)
         {
-            return $"UPDATE {_tableName} SET IngredientsTypeName = @TypeName WHERE IngredientsTypeId = @IngredientsTypeId";
+            return @$"UPDATE {_tableName} 
+                      SET IngredientsTypeName = @IngredientsTypeName 
+                      WHERE IngredientsTypeId = @IngredientsTypeId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(IngredientsType entity)
@@ -51,11 +54,13 @@ namespace Repo.Repository
 
         public async Task<IngredientsType?> GetByNameAsync(string typeName)
         {
-            const string sql = "SELECT IngredientsTypeId, IngredientsTypeName FROM IngredientsType WHERE TypeName = @TypeName";
+            string sql = $@"SELECT IngredientsTypeId, IngredientsTypeName 
+                            FROM {_tableName} 
+                            WHERE IngredientsTypeName = @IngredientsTypeName";
 
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@TypeName", typeName)
+                new SqlParameter("@IngredientsTypeName", typeName)
             };
 
             return await ExecuteSingleAsync(sql, parameters);

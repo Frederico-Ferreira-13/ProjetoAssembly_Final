@@ -15,6 +15,8 @@ namespace ProjetoAssembly_Final.Pages
         }
 
         [BindProperty]
+        public string Name { get; set; } = string.Empty;
+        [BindProperty]
         public string UserName { get; set; } = string.Empty;
         [BindProperty]
         public string Email { get; set; } = string.Empty;
@@ -31,23 +33,13 @@ namespace ProjetoAssembly_Final.Pages
             if (!ModelState.IsValid)
             {
                 return Page();
-            }           
-
-            var newUser = new Users(
-                userName: UserName,
-                email: Email,
-                passwordHash: "",
-                salt: "",
-                usersRoleId: 2,
-                isApproved: false,
-                accountId: 1
-            );
+            }            
                 
-            var result = await _usersService.RegisterUserAsync(newUser, Password);
+            var result = await _usersService.RegisterUserAsync(UserName, Name, Email, Password);
 
             if (result.IsSuccessful)
             {
-                TempData["Success"] = "Conta criada com sucesso! Faça login.";
+                TempData["Success"] = "Conta criada com sucesso! Já podes fazer login.";
                 return RedirectToPage("/Login");
             }
 

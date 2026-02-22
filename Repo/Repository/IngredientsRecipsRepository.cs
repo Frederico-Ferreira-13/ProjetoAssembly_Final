@@ -15,17 +15,13 @@ namespace Repo.Repository
         protected override IngredientsRecips MapFromReader(SqlDataReader reader)
         {
             int id = reader.GetInt32(reader.GetOrdinal("IngredientsRecipsId"));
-
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-
             int recipesId = reader.GetInt32(reader.GetOrdinal("RecipesId"));
             int ingredientsId = reader.GetInt32(reader.GetOrdinal("IngredientsId"));
             decimal quantityValue = reader.GetDecimal(reader.GetOrdinal("QuantityValue"));
             string unit = reader.GetString(reader.GetOrdinal("Unit"));
 
             return IngredientsRecips.Reconstitute(
-                id,
-                isActive,
+                id,               
                 recipesId,
                 ingredientsId,
                 quantityValue,
@@ -35,8 +31,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(IngredientsRecips entity)
         {
-            return $"INSERT INTO {_tableName} (RecipesId, IngredientsId, QuantityValue, Unit, IsActive) " +
-                   $"VALUES (@RecipesId, @IngredientsId, @QuantityValue, @Unit, 1)";
+            return @$"INSERT INTO {_tableName} (RecipesId, IngredientsId, QuantityValue, Unit)
+                   VALUES (@RecipesId, @IngredientsId, @QuantityValue, @Unit)";
         }
 
         protected override SqlParameter[] GetInsertParameters(IngredientsRecips entity)
@@ -45,35 +41,26 @@ namespace Repo.Repository
             {
                 new SqlParameter("@RecipesId", entity.RecipesId),
                 new SqlParameter("@IngredientsId", entity.IngredientsId),
-                new SqlParameter("@QuantityValue", System.Data.SqlDbType.Decimal)
-                {
-                    Value = entity.QuantityValue,
-                    Precision = 10,
-                    Scale = 4
-                },
+                new SqlParameter("@QuantityValue", entity.QuantityValue),
                 new SqlParameter("@Unit", entity.Unit)
             };
         }
 
         protected override string BuildUpdateSql(IngredientsRecips entity)
         {
-            return $"UPDATE {_tableName} SET QuantityValue = @QuantityValue, Unit = @Unit " +
-                   $"WHERE IngredientsRecipsId = @Id";
+            return @$"UPDATE {_tableName}
+                      SET QuantityValue = @QuantityValue, 
+                          Unit = @Unit
+                      WHERE IngredientsRecipsId = @IngredientsRecipsId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(IngredientsRecips entity)
         {
             return new SqlParameter[]
             {
-                // Adicionada a tipagem Decimal para consistência e precisão
-                new SqlParameter("@QuantityValue", System.Data.SqlDbType.Decimal)
-                {
-                    Value = entity.QuantityValue,
-                    Precision = 10,
-                    Scale = 4
-                },
+                new SqlParameter("@QuantityValue", entity.QuantityValue),
                 new SqlParameter("@Unit", entity.Unit),
-                new SqlParameter("@Id", entity.GetId())
+                new SqlParameter("@IngredientsRecipsId", entity.GetId())
             };
         }
 
@@ -81,39 +68,21 @@ namespace Repo.Repository
         {
             List<IngredientsRecips> items = new List<IngredientsRecips>();
 
-            string sql = $@"
-                SELECT IngredientsRecipsId, RecipesId, IngredientsId, QuantityValue, Unit, IsActive
-                FROM {_tableName}
-                WHERE RecipesId = @RecipesId AND IsActive = 1
-                ORDER BY IngredientsId";
+            string sql = $@"SELECT IngredientsRecipsId, RecipesId, IngredientsId, QuantityValue, Unit
+                            FROM {_tableName}
+                            WHERE RecipesId = @RecipesId
+                            ORDER BY IngredientsId";
 
             SqlParameter paramRecipesId = new SqlParameter("@RecipesId", recipeId);
 
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramRecipesId))
-                {
-                    while (reader.Read())
-                    {
-                        items.Add(MapFromReader(reader));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetByRecipeIdAsync: {ex.Message}");
-                throw;
-            }
-
-            return items;
+            return (await ExecuteListAsync(sql, paramRecipesId)).ToList();
         }
 
         public async Task<bool> IsIngredientUsedInRecipeAsync(int recipeId, int ingredientId)
         {
-            string sql = $@"
-                    SELECT COUNT(IngredientsRecipsId)
-                    FROM {_tableName}
-                    WHERE RecipesId = @RecipesId AND IngredientsId = @IngredientsId AND IsActive = 1";
+            string sql = $@"SELECT COUNT(1)
+                            FROM {_tableName}
+                            WHERE RecipesId = @RecipesId AND IngredientsId = @IngredientsId";
 
             SqlParameter[] parameters = new SqlParameter[]
             {
@@ -121,52 +90,20 @@ namespace Repo.Repository
                 new SqlParameter("@IngredientsId", ingredientId)
             };
 
-            try
-            {
-                object? result = await SQL.ExecuteScalarAsync(sql, parameters);
-
-                if (result != null && result != DBNull.Value)
-                {
-                    return Convert.ToInt32(result) > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório IsIngredientUsedInRecipeAsync: {ex.Message}");
-                throw;
-            }
-
-            return false;
+            var result = await SQL.ExecuteScalarAsync(sql, parameters);
+            return Convert.ToInt32(result) > 0;
         }
 
         public async Task<bool> IsIngredientUsedInAnyRecipeAsync(int ingredientId)
         {
-            string sql = $@"
-                    SELECT COUNT(IngredientsRecipsId)
-                    FROM {_tableName}
-                    WHERE IngredientsId = @IngredientsId AND IsActive = 1";
+            string sql = $@"SELECT COUNT(1)
+                            FROM {_tableName}
+                            WHERE IngredientsId = @IngredientsId";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@IngredientsId", ingredientId)
-            };
+            SqlParameter param = new SqlParameter("@IngredientsId", ingredientId);
 
-            try
-            {
-                object? result = await SQL.ExecuteScalarAsync(sql, parameters);
-
-                if (result != null && result != DBNull.Value)
-                {
-                    return Convert.ToInt32(result) > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório IsIngredientUsedInAnyRecipeAsync: {ex.Message}");
-                throw;
-            }
-
-            return false;
+            var result = await SQL.ExecuteScalarAsync(sql, param);
+            return Convert.ToInt32(result) > 0;
         }
     }
 }

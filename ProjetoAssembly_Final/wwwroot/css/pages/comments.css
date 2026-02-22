@@ -6,7 +6,7 @@
 }
 
 /* --- CARDS DE COMENTÁRIOS --- */
-.comentario-card {
+.comment-card {
     background: var(--card-bg);
     border-radius: 16px;
     padding: 25px;
@@ -18,7 +18,7 @@
     color: var(--text-color);
 }
 
-.comentario-card:hover {
+.comment-card:hover {
     transform: translateY(-5px) scale(1.01);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-left-color: #218838;
@@ -43,7 +43,7 @@
     font-weight: bold;
 }
 
-.user-id {
+.user-display-id {
     font-weight: 700;
     color: var(--text-color);    
 }
@@ -54,7 +54,7 @@
     color: #a0aec0
 }
 
-.comment-text {
+.comment-body {
     font-size: 1.05rem;    
     background: rgba(0, 0, 0, 0.03);
     padding: 15px;
@@ -94,7 +94,7 @@
 }
 
 /* --- FORMULÁRIO DE ENVIO --- */
-.comentarios-form-section {
+.comment-form-section {
     background: var(--card-bg);
     padding: 30px;
     border-radius: 20px;    

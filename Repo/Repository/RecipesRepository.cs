@@ -303,6 +303,7 @@ namespace Repo.Repository
 
                 recipe.SetUser(Users.Reconstitute(
                    id: reader.GetInt32(reader.GetOrdinal("UserId")),
+                   name: reader.IsDBNull(reader.GetOrdinal("UserName")) ? "Utilizador" : reader.GetString(reader.GetOrdinal("UserName")),
                    userName: reader.GetString(reader.GetOrdinal("UserName")),
                    email: reader.IsDBNull(reader.GetOrdinal("Email")) ? "" : reader.GetString(reader.GetOrdinal("Email")),
                    passwordHash: "",

@@ -7,23 +7,39 @@ namespace ProjetoAssembly_Final.Pages
 {
     public class perfilModel : PageModel
     {
-        public int TotalCriadas { get; set; }
-        public int TotalFavoritos { get; set; }
-
-
         private readonly IRecipesService _recipesService;
+        private readonly IUsersService _usersService;
 
-        public perfilModel(IRecipesService recipesService)
+        public int TotalCreated{ get; set; }
+        public int TotalFavorites { get; set; }
+        public Users? CurrentUser { get; set; }
+        public IEnumerable<Recipes>? MyRecipes { get; set; }
+        
+
+        public perfilModel(IRecipesService recipesService, IUsersService usersService)
         {
             _recipesService = recipesService;
+            _usersService = usersService;
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-            var userId = 3;
+            var userResult = await _usersService.GetCurrentUserAsync();
 
-            TotalCriadas = await _recipesService.GetTotalRecipesByUserAsync(userId);
-            TotalFavoritos = await _recipesService.GetTotalFavoritesByUserAsync(userId);
+            if (!userResult.IsSuccessful)
+            {
+                return RedirectToPage("/Login");
+            }
+
+            CurrentUser = userResult.Value;            
+
+            TotalCreated = await _recipesService.GetTotalRecipesByUserAsync(CurrentUser.UserId);
+            TotalFavorites = await _recipesService.GetTotalFavoritesByUserAsync(CurrentUser.UserId);
+
+            var recipesResult = await _recipesService.GetRecipesByUserIdAsync(CurrentUser.UserId);
+            MyRecipes = recipesResult.IsSuccessful ? recipesResult.Value : new List<Recipes>();
+
+            return Page();
         }
     }
 }

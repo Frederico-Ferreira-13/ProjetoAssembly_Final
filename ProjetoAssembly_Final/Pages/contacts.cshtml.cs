@@ -7,17 +7,17 @@ namespace ProjetoAssembly_Final.Pages
     public class contactsModel : PageModel
     {
         [BindProperty]
-        [Display(Name = "Nome")]
-        public string? Nome { get; set; }
+        [Required(ErrorMessage = "O nome é obrigatório.")]
+        public string? Name { get; set; }
 
         [BindProperty]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage = "O email é obrigatório")]
         [EmailAddress(ErrorMessage = "Por favor, insira um email válido.")]
         public string? Email { get; set; }
 
         [BindProperty]
-        [Display(Name = "Mensagem")]
-        public string? Mensagem { get; set; }
+        [Required(ErrorMessage = "A mensagem não pode estar vazia.")]
+        public string? Message { get; set; }
 
         public void OnGet()
         {

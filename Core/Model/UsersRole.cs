@@ -8,40 +8,33 @@ namespace Core.Model
 {
     public class UsersRole : IEntity
     {
-        public int UsersRoleId { get; private set; }
-        public bool IsActive { get; private set; }
+        public int UsersRoleId { get; private set; }        
         public string RoleName { get; private set; } = string.Empty;
 
-        private UsersRole()
-        {
-            this.UsersRoleId = default;
-            this.IsActive = true;
-        }
+        private UsersRole() { }
 
         public UsersRole(string roleName)
         {
             ValidateRole(roleName);
-
-            this.UsersRoleId = default;
-            this.IsActive = true;
-            this.RoleName = roleName;
+            
+            RoleName = roleName;
+            UsersRoleId = default;            
         }
 
-        private UsersRole(int id, bool isActive, string name)
+        protected UsersRole(int id, string name)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("O ID do Nível de Acesso é inválido.", nameof(id));
             }
 
-            UsersRoleId = id;
-            IsActive = isActive;
+            UsersRoleId = id;            
             RoleName = name;
         }
 
-        public static UsersRole Reconstitute(int id, bool isActive, string name)
+        public static UsersRole Reconstitute(int id, string name)
         {
-            return new UsersRole(id, isActive, name);
+            return new UsersRole(id, name);
         }
 
         public void UpdateName(string newRoleName)
@@ -64,15 +57,7 @@ namespace Core.Model
             {
                 throw new ArgumentException("O nome do Nível de Acesso não pode exceder 100 caracteres.", nameof(name));
             }
-        }
-
-        public void Deactivate()
-        {
-            if (this.IsActive)
-            {
-                this.IsActive = false;
-            }
-        }
+        }        
 
         public int GetId() => UsersRoleId;
 
@@ -85,6 +70,6 @@ namespace Core.Model
             UsersRoleId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

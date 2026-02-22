@@ -12,8 +12,7 @@ namespace Core.Model
         public int FavoritesId { get; set; }
         public int UserId { get; set; }
         public int RecipesId { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; }        
 
         public Users? User { get; set; }
         public Recipes? Recipe { get; set; }
@@ -33,15 +32,14 @@ namespace Core.Model
             }
 
             CreatedAt = DateTime.UtcNow;
-            IsActive = true;
+           
             UserId = userId;
             RecipesId = recipesId;
-            CreatedAt = DateTime.UtcNow;
-            IsActive = true;
+            CreatedAt = DateTime.UtcNow;            
         }
 
         [SetsRequiredMembers]
-        public Favorites(int id, int userId, int recipesId, DateTime createdAt, bool isActive)
+        public Favorites(int id, int userId, int recipesId, DateTime createdAt)
         {
             if (id < 0)
             {
@@ -51,13 +49,12 @@ namespace Core.Model
             FavoritesId = id;
             UserId = userId;
             RecipesId = recipesId;
-            CreatedAt = createdAt;
-            IsActive = isActive;
+            CreatedAt = createdAt;            
         }
 
-        public static Favorites Reconstitute(int id, int userId, int recipesId, DateTime createdAt, bool isActive)
+        public static Favorites Reconstitute(int id, int userId, int recipesId, DateTime createdAt)
         {
-            return new Favorites(id, userId, recipesId, createdAt, isActive);
+            return new Favorites(id, userId, recipesId, createdAt);
         }
 
         public bool IsValid()
@@ -74,16 +71,8 @@ namespace Core.Model
                 throw new InvalidOperationException("Não é permitido alterar o ID de uma Entidade que já possui um ID.");
             }
             FavoritesId = id;
-        }
+        }      
 
-        public void Deactivate()
-        {
-            if (IsActive)
-            {
-                IsActive = false;               
-            }
-        }
-
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

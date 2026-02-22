@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Core.Model;
 using Contracts.Service;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace ProjetoAssembly_Final.Pages
 {
@@ -12,7 +14,6 @@ namespace ProjetoAssembly_Final.Pages
         public editRecipeModel(IRecipesService recipesService)
         {
             _recipesService = recipesService;
-
             Input = null!;
         }
 
@@ -25,15 +26,28 @@ namespace ProjetoAssembly_Final.Pages
 
             if(result == null || !result.IsSuccessful || result.Value == null)
             {
-                Input = Recipes.Reconstitute(id, 1, 1, 1, "Receita Exemplo", "...", 10, 20, "4 pessoas", null, DateTime.Now, null, true);
-                return Page();
+                TempData["ErrorMessage"] = "Receita não encontrada.";
+                return RedirectToPage("/Index");
             }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Administrador");
+
+            string ownerId = result.Value.UserId.ToString() ?? string.Empty;
+            bool isOwner = !string.IsNullOrEmpty(currentUserId) && ownerId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
+
+            if (!isAdmin && !isOwner) 
+            {
+                TempData["ErrorMessage"] = $"Acesso Negado. User: {currentUserId} | IsAdmin: {isAdmin}";
+                return RedirectToPage("/view_recipes", new { id = id });
+            } 
 
             Input = result.Value;
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string?[] unit, string?[] ingredientName, string?[] ingredientDetail)
+        public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {

@@ -11,59 +11,80 @@
     <link rel="stylesheet" href="~/css/pages/perfil.css" asp-append-version="true" />
 }
 
-<div class="container-perfil">
-    <section class="perfil-header">
-        <div class="perfil-flex">
-            <<div class="img-perfil-wrapper">
-                <img src="~/img/user.icon.png" alt="Foto de Perfil" class="img-perfil-grande">
+<div class="profile-container">
+    <section class="profile-header">
+        <div class="profile-flex">
+            <<div class="profile-img-wrapper">
+                <img src="~/img/user.icon.png" alt="Foto de Perfil" class="profile-img-large">
             </div>            
-            <div class="info-user">
-                <h1>@Localizer["Olá, Frederico!"]</h1>
-                <p>@Localizer["Membro desde: Janeiro de 2026"]</p>
-                <a asp-page="/perfilEdit" class="btn-principal">
+           
+            <div class="user-info">
+                <h1>@Localizer["Olá"], @(Model.CurrentUser?.UserName ?? Localizer["Utilizador"])!</h1>
+
+                <p>@Localizer["Membro desde"]: @Model.CurrentUser?.CreatedAt.ToString("MMMM yyyy")</p>
+                
+                <a asp-page="/perfilEdit" class="btn-manage edit" style="max-width: 200px;">
                     <i class="fa-solid fa-user-gear"></i>@Localizer["Editar Dados"]
                 </a>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">@Model.TotalCreated</span>
+                        <span class="stat-label">@Localizer["Criadas"]</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">@Model.TotalFavorites</span>
+                        <span class="stat-label">@Localizer["Favoritos"]</span>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
-
-    <div class="user-stats-container">
-        <div class="stat-card">
-            <h3 class="status-value">@Model.TotalCriadas</h3>
-            <span class="stat-label">@Localizer["Receitas Criadas"]</span>
-        </div>
-        <div class="stat-card">
-            <h3 class="status-value color-fav">@Model.TotalFavoritos</h3>
-            <span class="stat-label">@Localizer["Favoritos"]</span>
-        </div>
-    </div>   
+    </section>    
 
     <h2 class="section-subtitle">
         <i class="fa-solid fa-utensils"></i> @Localizer["As Minhas Receitas"]
     </h2>    
 
-    <section class="grid-perfil">
-        <article class="receitas-card-perfil">
-            <img src="~/img/bacalhau.jpg" alt="@Localizer["Bacalhau à Brás"]" class="card-img-perfil">
-            <div class="card-info-perfil">
-                <h3>@Localizer["Bacalhau à Brás"]</h3>
-                
-                <div class="acoes-perfil">
-                    <a href="/EditarReceita?id=3" class="btn-gestao editar">
-                        <i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar"]
-                    </a>
-                    <button onclick="confirmarEliminar(3)" class="btn-gestao eliminar">
-                        <i class="fa-solid fa-trash"></i> @Localizer["Apagar"]
-                    </button>
-                </div>
+    <section class="profile-grid">
+        @if(Model.MyRecipes != null && Model.MyRecipes.Any())
+        {
+            @foreach(var recipe in Model.MyRecipes)
+            {
+                <articl class="profile-recipe-card">
+                    <img src="@(string.IsNullOrEmpty(recipe.ImageUrl) ? "/img/default.jpg" : recipe.ImageUrl)"
+                         alt="@recipe.Title" class="profile-card-img">
+                    
+                    <div class="profile-card-info">
+                        <h3>@recipe.Title</h3>
+
+                        <div class="profile-actions">
+                            <a href="/editRecipe?id=@recipe.RecipesId" class="btn-manage edit">
+                                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]
+                            </a>
+
+                            <button onclick="confirmDelete(@recipe.RecipesId)" class="btn-manage delete">
+                                <i class="fa-solid fa-trash"></i> @Localizer["Apagar"]
+                            </button>
+                        </div>
+                    </div>
+                </articl> 
+            }
+        }
+        else
+        {
+            <div class="empty-state-notice">
+                <i class="fa-solid fa-utensils"></i>
+                <p>@Localizer["Ainda não criaste nenhuma receita."]</p>
+                <a asp-page="/create_recipe" class="btn-manage edit" style="display: inline-flex; width: auto;">
+                    @Localizer["Criar a minha primeira receita"]
+                </a>
             </div>
-        </article>
+        }
     </section>
 </div>
 
 @section Scripts {
     <script>
-        function confirmarEliminar(id) {
+        function confirmDelete(id) {
             if (confirm("Tem a certeza que deseja eliminar esta receita?")) {
                 console.log("Eliminar receita ID: " + id);                
             }

@@ -1,6 +1,6 @@
 ﻿/* --- auth.css --- */
 /* --- ESTILOS DE AUTENTICAÇÃO (LOGIN & REGISTO) --- */
-.Login-page {
+.auth-page {
     background-image: url('/img/BackgroundImageLogin.avif');
     background-size: cover;
     background-repeat: no-repeat;
@@ -14,7 +14,7 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.login-container {
+.auth-container {
     width: 100%;
     max-width: 400px;
     background: rgba(0, 0, 0, 0.6);
@@ -27,7 +27,7 @@
     margin: 20px;
 }
 
-.login-container h1 {
+.auth-container h1 {
     color: white;
     font-size: 2.2rem;
     margin-bottom: 30px;
@@ -62,32 +62,31 @@
 }
 
 .input-group input:focus {
-    background: #fff;
-    border-color: var(--primary-green);
+    background: #fff;    
     box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
 }
 
 /* Links de Alternância (Ex: Não tem conta? Regieste-se */
-.signup-link {
+.toggle-auth-link {
     margin-top: 25px;
     display: block; /* Garante que cada link fica na sua linha se necessário */
     color: #ffffff;
     font-size: 0.95rem;    
 }
 
-.signup-link a {
+.toggle-auth-link a {
     color: #4cd137;
     text-decoration: none;
     font-weight: bold;
     transition: 0.3s;
 }
 
-.signup-link a:hover {
+.toggle-auth-link a:hover {
     color: white;
     text-decoration: underline;
 }
 
-.link-back-home {
+.home-link {
     display: inline-block;
     margin-top: 15px;
     color: #ecf0f1;
@@ -96,7 +95,30 @@
     text-decoration: none;
 }
 
-.link-back-home:hover {
+.home-link:hover {
     opacity: 1;
     text-decoration: underline;
+}
+
+.btn-auth {
+    width: 100%;
+    padding: 14px;
+    background-color: #4cd137;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    margin-top: 10px;
+}
+
+.btn-auth:hover {
+    background-color: #44bd32;
+    transform: translateY(-2px);
+}
+
+.btn-auth:active {
+    transform: translateY(0);
 }

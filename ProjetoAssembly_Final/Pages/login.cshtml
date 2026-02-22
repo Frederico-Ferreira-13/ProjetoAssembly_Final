@@ -12,19 +12,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+    <title>@ViewData["Title"]</title>    
     <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
 </head>
-<body class="Login-page">
-    <div class="login-container">
-        <h1>@Localizer["Entrar"]</h1>
-        
-        <div asp-validation-summary="All" class="alert alert-danger"></div>
+<body class="auth-page">
+    <div class="auth-container">
         
         <form method="post">
             <h1>@Localizer["Entrar"]</h1>
+            
+            @if(!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+                                
+            }
+
             <div class="input-group">
                 <label asp-for="Input.UserName">@Localizer["Utilizador"]</label>
                 <input asp-for="Input.UserName" type="text" required placeholder="@Localizer["O seu nome de Utilizador"]" />
@@ -37,12 +41,17 @@
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
 
-            <button type="submit">@Localizer["Entrar"]</button>
+            <button type="submit" class="btn-auth">@Localizer["Entrar"]</button>
 
-            <p>@Localizer["Não tem conta?"]<a asp-page="/regist">@Localizer["Registe-se aqui"]</a></p>
-            <p><a asp-page="/Index" style="font-weight: normal; opacity: 0.7">@Localizer["Voltar à Home"]</a></p>
+            <p class="toggle-auth-link">
+                @Localizer["Não tem conta?"]
+                <a asp-page="/regist">@Localizer["Registe-se aqui"]</a>
+            </p>
+
+            <a asp-page="/Index" class="home-link">@Localizer["Voltar à Home"]</a>
         </form>
     </div>
+
     <partial name="_ValidationScriptsPartial" />
 </body>
 </html>

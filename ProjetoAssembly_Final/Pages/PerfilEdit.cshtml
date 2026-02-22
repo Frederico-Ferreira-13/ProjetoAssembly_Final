@@ -11,36 +11,44 @@
     <link rel="stylesheet" href="~/css/pages/perfilEdit.css" asp-append-version="true"/>
 }
 
-<div class="container-edit-perfil">
-    <div class="header-edit-top">
+<div class="profile-edit-wrapper">
+    <div class="edit-header-top">
         <h2><i class="fa-solid fa-user-gear"></i> @Localizer["Configurações da Conta"]</h2>
         <p>@Localizer["Gere as tuas informações pessoais e preferências."]</p>
     </div>
 
     <div class="edit-card">
         <form method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="CurrentUser.UserId" />
+            <input type="hidden" asp-for="CurrentUser.CreatedAt" />
+            <input type="hidden" asp-for="CurrentUser.PasswordHash" />
+
             <div class="edit-grid-layout">
 
-                <div class="foto-edit-section">
+                <div class="photo-edit-section">
                     <div class="avatar-wrapper">
-                        <img src="~/img/user.icon.png" id="previewImg" class="img-edit-perfil" alt="Avatar" />
+                        <img src="/img/@(string.IsNullOrEmpty(Model.CurrentUser.ProfilePicture) ? "user.icon.png" : Model.CurrentUser.ProfilePicture)"
+                             id="previewImg" class="profile-edit-img" alt="Avatar" />
+
                         <label for="foto" class="btn-change-photo">
                             <i class="fa-solid fa-camera"></i>
                         </label>
-                        <input type="file" id="foto" name="FotoPerfil" style="display:none;" accept="image/*" onchange="previewFile()"/>
+                        <input type="file" id="foto" name="ProfilePicture" style="display:none;" accept="image/*" onchange="previewFile()" />
                     </div>
                     <p class="photo-hint">@Localizer["Alterar foto de perfil"]</p>
                 </div>
 
                 <div class="inputs-sections">
-                    <div class="form-group-edit">
-                        <label>@Localizer["Nome de Utilizador"]</label>
-                        <input type="text" class="input-edit" value="Frederico" placeholder="@Localizer["Teu nome"]" />
+                    <div class="edit-form-group">
+                        <label asp-for="CurrentUser.UserName">@Localizer["Nome de Utilizador"]</label>
+                        <input asp-for="CurrentUser.UserName" class="edit-input" placeholder="@Localizer["Teu nome"]" />
+                        <span asp-validation-for="CurrentUser.UserName" class="text-danger"></span>
                     </div>
 
-                    <div class="form-group-edit">
-                        <label>@Localizer["E-mail"]</label>
-                        <input type="email" class="input-edit" value="fredericocrf87@hotmail.com" />
+                    <div class="edit-form-group">
+                        <label asp-for="CurrentUser.Email">@Localizer["E-mail"]</label>
+                        <input asp-for="CurrentUser.Email" class="edit-input" />
+                        <span asp-validation-for="CurrentUser.Email" class="text-danger"></span>
                     </div>
 
                     <div class="edit-actions">
@@ -56,6 +64,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" /> @* Para validação no lado do cliente *@
     <script>
         function previewFile() {
             const preview = document.querySelector('#previewImg');

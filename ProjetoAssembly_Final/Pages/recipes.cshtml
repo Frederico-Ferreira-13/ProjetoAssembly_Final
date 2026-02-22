@@ -9,43 +9,38 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
-    <style>
-        .pagination-container { display: flex; justify-content: center; gap: 8px; margin: 40px 0; }
-        .btn-pag { padding: 10px 18px; border: 1px solid #28a745; color: #28a745; border-radius: 6px; text-decoration: none; transition: 0.3s; }
-        .btn-pag.active { background-color: #28a745; color: white; font-weight: bold; }
-        .btn-pag:hover:not(.active) { background-color: #e9f5ec; }
-        .btn-pag.disabled { border-color: #ccc; color: #ccc; pointer-events: none; }
-    </style>
+    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />    
 }
 
-@Html.AntiForgeryToken()
-
-<div class="container-main">
-    <section class="Categorias-filter">
+<div class="main-wrapper">
+    <section class="category-section">
         <h2 class="section-title">@Localizer["Explorar Receitas"]</h2>
-
-        <div class="grid-categorias-nav">
-            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-item @(Request.Query["categoryId"] == "1" ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
-                <span>@Localizer["Sopas"]</span>
-            </a>
-            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-item @(Request.Query["categoryId"] == "2" ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
-                <span>@Localizer["Carne"]</span>
-            </a>
-            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-item @(Request.Query["categoryId"] == "3" ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
-                <span>@Localizer["Peixe"]</span>
-            </a>
-            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-item @(Request.Query["categoryId"] == "4" ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
-                <span>@Localizer["Sobremesas"]</span>
-            </a>
-            <a asp-page="/recipes" class="cat-item all-cat @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")">
+        <div class="category-nav">
+            <a asp-page="/recipes" class="category-item @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")">
                 <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
                 <span>@Localizer["Todas"]</span>
             </a>
+            <a asp-page="/recipes" asp-route-categoryId="9993" class="category-item @(Request.Query["categoryId"] == "1" ? "active" : "")">
+                <div class="category-icon"><i class="fa-solid fa-bowl-food"></i></div>
+                <span>@Localizer["Sopas"]</span>
+            </a>
+            <a asp-page="/recipes" asp-route-categoryId="9992" class="category-item @(Request.Query["categoryId"] == "2" ? "active" : "")">
+                <div class="category-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
+                <span>@Localizer["Carne"]</span>
+            </a>
+            <a asp-page="/recipes" asp-route-categoryId="9994" class="category-item @(Request.Query["categoryId"] == "3" ? "active" : "")">
+                <div class="category-icon"><i class="fa-solid fa-fish"></i></div>
+                <span>@Localizer["Peixe"]</span>
+            </a>
+            <a asp-page="/recipes" asp-route-categoryId="9995" class="category-item @(Request.Query["categoryId"] == "4" ? "active" : "")">
+                <div class="cat-icon"><i class="fa-solid fa-leaf"></i></div>
+                <span>@Localizer["Vegetariano"]</span>
+            </a>
+            <a asp-page="/recipes" asp-route-categoryId="9991" class="category-item @(Request.Query["categoryId"] == "5" ? "active" : "")">
+                <div class="category-icon"><i class="fa-solid fa-cake-candles"></i></div>
+                <span>@Localizer["Sobremesas"]</span>
+            </a>           
         </div>
     </section>
 
@@ -54,12 +49,12 @@
     <section class="results-section">
         @if (!string.IsNullOrEmpty(Model.Search))
         {
-            <div class="search-info">
+            <div class="search-info mb-4">
                 @Localizer["Resultados para: "] <strong>"@Model.Search"</strong>
             </div>
         }
 
-        <div id="container-receitas" class="grid-receitas">
+        <div id="container-recipe" class="recipe-grid">
             @if (Model.ListRecipes != null && Model.ListRecipes.Any())
             {
                 @foreach (var receita in Model.ListRecipes)
@@ -69,10 +64,17 @@
             }
             else
             {
-                <div class="aviso-vazio">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <p>@Localizer["Não encontrámos receitas com esses critérios."]</p>
-                    <a asp-page="/recipes" class="btn-card" style="display:inline-block; width: auto; padding: 12px 30px;">
+                <div class="empty-notice">
+                    <i class="fa-solid fa-utensils-slash fa-4x mb-4" style="color: #28a745;"></i>
+                    <h3>@Localizer["Nenhuma receita encontrada"]</h3>
+                    <p class="text-muted mb-4">
+                        @Localizer["Ainda não temos receitas com esses critérios..."]<br />
+                        @Localizer["Que tal criares uma nova receita incrível?"]
+                    </p>
+                    <a asp-page="/createRecipe" class="btn-card btn-lg" style="padding: 14px 36px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-plus me-2"></i> @Localizer["Criar Receita"]
+                    </a>
+                    <a asp-page="/recipes" class="btn-card mt-3" style="padding: 12px 30px;">
                         @Localizer["Limpar filtros"]
                     </a>
                 </div>

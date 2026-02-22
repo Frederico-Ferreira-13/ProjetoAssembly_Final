@@ -20,11 +20,21 @@ namespace Service.Services
         {
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException("Password não pode ser nula ou vazia.", nameof(password));
+                return Result<HashResult>.Failure(
+                Error.Validation("Password não pode ser nula ou vazia."));
             }
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
-            return new HashResult(hashedPassword, salt);
+            try
+            {
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
+                var result = new HashResult(hashedPassword, salt);
+                return Result<HashResult>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                return Result<HashResult>.Failure(
+                    Error.InternalServer("Erro ao gerar hash da password: " + ex.Message));
+            }
         }
 
         public bool VerifyPassword(string storedHash, string passwordToVerify, string salt)

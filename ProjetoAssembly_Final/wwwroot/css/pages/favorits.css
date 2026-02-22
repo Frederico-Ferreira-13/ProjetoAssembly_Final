@@ -1,19 +1,19 @@
 ﻿/* --- ESPECÍFICO DE FAVORITOS (favorits.css) --- */
 /* --- PÁGINA DE FAVORITOS --- */
-.favoritos-header {
+.favorites-header {
     text-align: center;
     margin-bottom: 40px;
     padding-top: 20px;
 }
 
-.favoritos-header h1 {
+.favorites-header h1 {
     font-size: 2.5rem;
     color: var(--text-color);
     font-weight: 800;
 }
 
 /* --- FILTROS DE CATEGORIAS (Navegação Suave) --- */
-.grid-categorias {
+.category-grid {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -21,7 +21,7 @@
     margin-bottom: 40px;
 }
 
-.cat-card {
+.category-card {
     background: var(--card-bg);
     padding: 15px 25px;
     border-radius: 15px;
@@ -36,25 +36,25 @@
     border: 1px solid var(--border-color);
 }
 
-.cat-card:hover {
+.category-card:hover {
     transform: translateY(-3px);
     border-color: var(--primary-green);
     box-shadow: 0 8px 20px rgba(40, 167, 69, 0.15);
 }
 
 /* Estado Ativo (Categoria Selecionada) */
-.cat-card.active {
+.category-card.active {
     background-color: #28a745 !important;
     color: white !important;
     border-color: var(--primary-green);
     transform: scale(1.05);
 }
 
-.cat-card.active .cat-icon i {
+.category-card.active .category-icon i {
     color: white !important;
 }
 
-.cat-icon {
+.category-icon {
     font-size: 1.8rem;
     margin-bottom: 8px;
     color: var(--primary-green);
@@ -62,7 +62,7 @@
 }
 
 /* --- ESTADO VAZIO --- */
-.aviso-vazio {
+.empty-state-notice {
     grid-column: 1 / -1;
     background: var(--card-bg);
     border: 2px dashed var(--border-color);
@@ -73,14 +73,14 @@
     transition: 0.3s;
 }
 
-.aviso-vazio i {
+.empty-state-notice i {
     font-size: 5rem;
     color: var(--border-color);
     margin-bottom: 25px;
     display: block;
 }
 
-.aviso-vazio p {
+.empty-state-notice p {
     font-size: 1.2rem;
     color: var(--text-color);
     opacity: 0.7;
@@ -88,7 +88,7 @@
 }
 
 /* Botão para incentivar a explorar quando está vazio */
-.btn-explorar {
+.btn-explore {
     display: inline-block;
     padding: 12px 30px;
     background: var(--primary-green);
@@ -99,7 +99,7 @@
     transition: 0.3s;
 }
 
-.btn-explorar:hover {
+.btn-explore:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
 }
@@ -113,7 +113,7 @@
 }
 
 /* Ajuste para a Grelha de Receitas nos Favoritos */
-.favoritos-grid {
+.favorites-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px;

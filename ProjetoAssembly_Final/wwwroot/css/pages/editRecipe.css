@@ -1,6 +1,6 @@
 ﻿/* editrecipe.css*/
 
-.edit-recipe-container {
+.edit-recipe-wrapper {
     max-width: 950px;
     margin: 40px auto;
     padding: 0 20px;
@@ -92,7 +92,7 @@
 }
 
 /* --- LINHA DE INGREDIENTES --- */
-.ingrediente-linha {
+.ingredient-row {
     display: flex;
     gap: 12px;
     margin-bottom: 15px;
@@ -104,22 +104,22 @@
     transition: 0.3s;
 }
 
-.ingrediente-linha:hover {
+.ingredient-row:hover {
     border-color: var(--border-color);
     background: rgba(0, 0, 0, 0.04);
 }
 
-.ingrediente-linha .qtd {
+.ingredient-row .qty {
     width: 90px;
     flex-shrink: 0;
 }
 
-.ingrediente-linha .unit {
+.ingredient-row .unit {
     width: 110px;
     flex-shrink: 0;
 }
 
-.ingrediente-linha .detail {
+.ingredient-row .detail {
     flex: 1;
 }
 
@@ -208,7 +208,7 @@
 @media (max-width: 768px){
     .form-grid { grid-template-columns: 1fr; }
     .full-width { grid-column: span 1; }
-    .ingrediente-linha { flex-wrap: wrap; }
-    .ingrediente-linha input {flex: 1 1 100%; }
+    .ingredient-row { flex-wrap: wrap; }
+    .ingredient-row input {flex: 1 1 100%; }
     .edit-actions { flex-direction: column; }
 }

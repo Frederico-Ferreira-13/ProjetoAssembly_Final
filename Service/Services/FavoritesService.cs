@@ -61,7 +61,7 @@ namespace Service.Services
             }
 
             var existing = await  _unitOfWork.Favorites.GetByUserAndRecipeAsync(currentUserId, favorites.RecipesId);
-            if(existing != null && existing.IsActive)
+            if(existing != null)
             {
                 return Result.Success("Receita já está nos favoritos");
             }
@@ -165,9 +165,8 @@ namespace Service.Services
 
                 bool isNowFavorite;
 
-                if(existing != null && existing.IsActive)
-                {
-                    existing.Deactivate();
+                if(existing != null)
+                {                    
                     await _unitOfWork.Favorites.UpdateAsync(existing);
                     isNowFavorite = false;
                 }

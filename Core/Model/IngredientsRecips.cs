@@ -9,8 +9,7 @@ namespace Core.Model
 {
     public class IngredientsRecips : IEntity
     {
-        public int IngredientsRecipsId { get; private set; }
-        public bool IsActive { get; private set; }
+        public int IngredientsRecipsId { get; private set; }       
 
         public int RecipesId { get; protected set; }
         public int IngredientsId { get; protected set; }
@@ -30,8 +29,7 @@ namespace Core.Model
         {
             Validate(recipesId, ingredientsId, quantityValue, unit);
 
-            this.IngredientsRecipsId = default;
-            this.IsActive = true;
+            IngredientsRecipsId = default;
 
             RecipesId = recipesId;
             IngredientsId = ingredientsId;
@@ -39,11 +37,10 @@ namespace Core.Model
             Unit = unit;
         }
 
-        private IngredientsRecips(int id, bool isActive, int recipesId, int ingredientsId, decimal quantityValue,
+        private IngredientsRecips(int id, int recipesId, int ingredientsId, decimal quantityValue,
              string unit)
         {
-            this.IngredientsRecipsId = id;
-            this.IsActive = isActive;
+            IngredientsRecipsId = id;            
 
             RecipesId = recipesId;
             IngredientsId = ingredientsId;
@@ -51,18 +48,14 @@ namespace Core.Model
             Unit = unit;
         }
 
-        public static IngredientsRecips Reconstitute(int id, bool isActive, int recipesId, int ingredientsId,
+        public static IngredientsRecips Reconstitute(int id, int recipesId, int ingredientsId,
             decimal quantityValue, string unit)
         {
-            return new IngredientsRecips(id, isActive, recipesId, ingredientsId, quantityValue, unit);
+            return new IngredientsRecips(id, recipesId, ingredientsId, quantityValue, unit);
         }
 
         public void Update(decimal newQuantityValue, [NotNull] string newUnit, string? newDetail)
-        {
-            if (!IsActive)
-            {
-                throw new InvalidOperationException("Não é possível atualizar um registo de ingrediente inativo.");
-            }
+        {           
 
             ValidateQuantityAndUnit(newQuantityValue, newUnit);
 
@@ -72,23 +65,7 @@ namespace Core.Model
                 Unit = newUnit;
                 Detail = newDetail;
             }
-        }
-
-        public void Deactivate()
-        {
-            if (this.IsActive)
-            {
-                this.IsActive = false;
-            }
-        }
-
-        public void Activate()
-        {
-            if (!this.IsActive)
-            {
-                this.IsActive = true;
-            }
-        }
+        }      
 
         private static void Validate(int recipesId, int ingredientsId, decimal quantityValue, [NotNull] string? unit)
         {
@@ -138,6 +115,6 @@ namespace Core.Model
             IngredientsRecipsId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

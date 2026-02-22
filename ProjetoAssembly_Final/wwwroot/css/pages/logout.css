@@ -40,7 +40,7 @@
 }
 
 /* --- O BOTÃO DE LOGOUT --- */
-.logoutButton {
+.logout-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,7 +60,7 @@
     position: relative;
     width: 32px;
     height: 32px;
-    perspective: 1000px /* Cria a profundidade da porta */
+    perspective: 1000px; /* Cria a profundidade da porta */
 }
 
 .doorway {
@@ -85,19 +85,19 @@
 }
 
 /* --- INTERAÇÃO --- */
-.logoutButton:hover {
+.logout-btn:hover {
     background: #000;
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 /* Quando passamos o rato por cima do botão, a porta abre */
-.logoutButton:hover .door {
+.logout-btn:hover .door {
     transform: rotateY(-115deg);
     color: var(--primary-green);
 }
 
-.logoutButton:hover .doorway {
+.logout-btn:hover .doorway {
     color: var(--primary-color);   
 }
 
@@ -109,7 +109,7 @@
 }
 
 /* --- BOTÃO CANCELAR / VOLTAR --- */
-.btn-cancelar {
+.cancel-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -124,7 +124,7 @@
     opacity: 0.6;
 }
 
-.btn-cancelar:hover {
+.cancel-btn:hover {
     opacity: 1;
     background: rgba(0, 0, 0, 0.05);
     color: var(--primary-green);

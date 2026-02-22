@@ -5,7 +5,7 @@
 
     <button type="button"
             onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
-            class="btn-fav @(Model.IsFavorite ? "active" : "")">
+            class="btn-favorite @(Model.IsFavorite ? "active" : "")">
         <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
     </button>
    

@@ -18,14 +18,14 @@ namespace Repo.Repository
         {
             int id = reader.GetInt32(reader.GetOrdinal("UserRoleId"));
             string name = reader.GetString(reader.GetOrdinal("RoleName"));
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-
-            return UsersRole.Reconstitute(id, isActive, name);
+            
+            return UsersRole.Reconstitute(id, name);
         }
 
         protected override string BuildInsertSql(UsersRole entity)
         {
-            return $"INSERT INTO {_tableName} (RoleName) VALUES (@RoleName)";
+            return $@"INSERT INTO {_tableName} (RoleName)
+                      VALUES (@RoleName)";
         }
 
         protected override SqlParameter[] GetInsertParameters(UsersRole entity)
@@ -38,7 +38,9 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(UsersRole entity)
         {
-            return $"UPDATE {_tableName} SET RoleName = @RoleName WHERE UsersRoleId = @Id";
+            return $@"UPDATE {_tableName}
+                      SET RoleName = @RoleName 
+                      WHERE UsersRoleId = @UsersRoleId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(UsersRole entity)
@@ -46,13 +48,15 @@ namespace Repo.Repository
             return new SqlParameter[]
             {
                 new SqlParameter("@RoleName", entity.RoleName),
-                new SqlParameter("@Id", entity.GetId())
+                new SqlParameter("@UsersRoleId", entity.GetId())
             };
         }
 
         public async Task<UsersRole?> GetByNameAsync(string userRole)
         {
-            string sql = $"SELECT UserRoleId, RoleName, IsActive FROM {_tableName} WHERE RoleName = @RoleName AND IsActive = 1";
+            string sql = $@"SELECT UserRoleId, RoleName 
+                            FROM {_tableName} 
+                            WHERE RoleName = @RoleName";
 
             SqlParameter[] parameters = new SqlParameter[]
             {

@@ -2,6 +2,7 @@
 using Contracts.Service;
 using Core.Common;
 using Core.Model;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,23 +15,41 @@ namespace Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;        
         private readonly IAuthenticationService _authenticationService;
+        private readonly HashSet<string> _adminEmails;
 
-        public UsersService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IAuthenticationService authenticationService)
+        public UsersService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, 
+            IAuthenticationService authenticationService, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));                       
             _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+
+            var adminEmailsSection = configuration.GetSection("AdminEmails");
+            _adminEmails = new HashSet<string>(
+                adminEmailsSection.GetChildren()
+                    .Select(child => child.Value?.Trim() ?? "")
+                    .Where(v => !string.IsNullOrWhiteSpace(v)),
+                StringComparer.OrdinalIgnoreCase  // ignora maiúsculas/minúsculas
+            );
         }
 
-        public async Task<Result<Users>> RegisterUserAsync(Users newUser, string password)
+        public async Task<Result<Users>> RegisterUserAsync(string userName, string name, string email, string password)
         {
-            if (await _unitOfWork.Users.GetUserByUserNameAsync(newUser.UserName) != null)
+            if(string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                return Result<Users>.Failure(
+                    Error.Validation(
+                        "Todos os campos são obrigatórios."));
+                      
+            }
+
+            if (await _unitOfWork.Users.GetUserByUserNameAsync(userName) != null)
             {
                 return Result<Users>.Failure(
                     Error.Validation("Este nome de utilizador já está em uso. Escolha outro."));
             }
 
-            if (await _unitOfWork.Users.GetByEmailAsync(newUser.Email) != null)
+            if (await _unitOfWork.Users.GetByEmailAsync(email) != null)
             {
                 return Result<Users>.Failure(
                     Error.Validation("Este eail já está registado. Faça login ou use outro."));
@@ -42,44 +61,46 @@ namespace Service.Services
             {
                 var salt = _passwordHasher.GenerateSalt();
                 var hashResult = _passwordHasher.HashPassword(password, salt);
+
                 if (!hashResult.IsSuccessful)
                 {
                     _unitOfWork.Rollback();
                     return Result<Users>.Failure(hashResult.Error);
                 }
 
-                var roleId = (newUser.Email.ToLower() == "fredericocrf87@hotmail.com") ? 1 : 2;
-                var aproved = (roleId == 1);
+                bool isAdminEmail = _adminEmails.Contains(email.ToLowerInvariant());
 
                 var userToSave = new Users(
-                    userName: newUser.UserName,
-                    email: newUser.Email,
-                    passwordHash: hashResult.Value.Hash,
-                    salt: salt,
-                    usersRoleId: roleId,
-                    isApproved: aproved,
-                    accountId: newUser.AccountId
+                    name: name,
+                    userName: userName,                    
+                    email: email,                    
+                    usersRoleId: isAdminEmail ? 1 : 2,
+                    isApproved: isAdminEmail,
+                    accountId: 1
                 );
 
-                await _unitOfWork.Users.CreateAddAsync(userToSave);
+                userToSave.SetPassword(hashResult.Value.Hash, salt);
+
+                await _unitOfWork.Users.CreateAddAsync(userToSave);                
+
+                var savedUser = userToSave;                
+
+                await CreateDefaultSettingsAsync(savedUser.UserId);
+
                 await _unitOfWork.CommitAsync();
 
-                if (userToSave.UserId > 0)
-                {
-                    await CreateDefaultSettingsAsync(userToSave.UserId);
-                }
-
-                return Result<Users>.Success(userToSave);
+                return Result<Users>.Success(savedUser);
             }           
             catch (Exception ex)
             {
+
                 _unitOfWork.Rollback();
-                if(ex.Message.Contains("Violation of UNIQUE KEY") ||
-                    ex.Message.Contains("Cannot insert duplicate key") ||
-                    ex.Message.Contains("duplicate key value"))
+                System.Diagnostics.Debug.WriteLine($"ERRO REGISTO: {ex.Message}");
+
+                if (ex.Message.Contains("Violation of UNIQUE KEY") ||
+                   ex.Message.Contains("duplicate key value"))
                 {
-                    return Result<Users>.Failure(
-                        Error.Validation("Este email ou nome de utilizador já está em uso. Tente outro."));
+                    return Result<Users>.Failure(Error.Validation("Este email ou utilizador já existe."));
                 }
 
                 return Result<Users>.Failure(
@@ -95,7 +116,7 @@ namespace Service.Services
                 return Result<Users>.Failure(authResult.Error);
             }
 
-            var user = await _unitOfWork.Users.ReadByIdAsync(authResult.Value.UserId);
+            var user = await _unitOfWork.Users.ReadByIdAsync(authResult.Value!.UserId);
             if (user == null || !user.IsActive)
             {
                 return Result<Users>.Failure(
@@ -158,6 +179,11 @@ namespace Service.Services
                 if (!string.IsNullOrWhiteSpace(userToUpdate.Email))
                 {
                     existingUser.UpdateEmail(userToUpdate.Email);
+                }
+
+                if (userToUpdate.ProfilePicture != existingUser.ProfilePicture)
+                {
+                    existingUser.UpdateProfilePicture(userToUpdate.ProfilePicture);
                 }
 
                 await _unitOfWork.Users.UpdateAsync(existingUser);
@@ -410,7 +436,7 @@ namespace Service.Services
                 existingSettings.UpdateSettings(
                     settings.Theme,
                     settings.Language,
-                    settings.ReceiveNotifications
+                    settings.NotificationsEnabled
                 );
 
                 await _unitOfWork.UserSettings.UpdateAsync(existingSettings);
@@ -461,7 +487,7 @@ namespace Service.Services
                     userId: userId,
                     theme: "Light",
                     language: "pt-PT",
-                    receiveNotifications: true
+                    notificationsEnabled: true
                 );
 
                 await _unitOfWork.UserSettings.CreateAddAsync(defaultSettings);

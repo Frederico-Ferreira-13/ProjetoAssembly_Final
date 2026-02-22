@@ -186,7 +186,7 @@ namespace Service.Services
 
             try
             {
-                existingComments.DeleteComment();
+                existingComments.Delete();
                 await _commentsRepository.UpdateAsync(existingComments);
                 await _unitOfWork.CommitAsync();
 

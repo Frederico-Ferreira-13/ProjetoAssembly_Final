@@ -17,20 +17,15 @@ namespace Repo.Repository
         protected override Category MapFromReader(SqlDataReader reader)
         {
             int id = reader.GetInt32(reader.GetOrdinal("CategoriesId"));
-
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-
-            int? parentCategoryId = reader.IsDBNull(reader.GetOrdinal("ParentCategoryId"))
-                ? (int?)null
-                : reader.GetInt32(reader.GetOrdinal("ParentCategoryId"));
-
+            int accountId = reader.GetInt32(reader.GetOrdinal("AccountId"));
             string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
             int categoryTypeId = reader.GetInt32(reader.GetOrdinal("CategoryTypeId"));
-            int accountId = reader.GetInt32(reader.GetOrdinal("AccountId"));
+            int? parentCategoryId = reader.IsDBNull(reader.GetOrdinal("ParentCategoryId"))
+                ? (int?)null
+                : reader.GetInt32(reader.GetOrdinal("ParentCategoryId"));            
 
             return Category.Reconstitute(
-                id,
-                isActive,
+                id,                
                 parentCategoryId,
                 categoryName,
                 categoryTypeId,
@@ -40,8 +35,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(Category entity)
         {
-            return $"INSERT INTO {_tableName} (CategoryName, ParentCategoryId, CategoryTypeId, AccountId, CreatedAt, IsActive) " +
-            $"VALUES (@CategoryName, @ParentCategoryId, @CategoryTypeId, @AccountId, GETDATE(), 1)";
+            return $@"INSERT INTO {_tableName} (CategoryName, ParentCategoryId, CategoryTypeId, AccountId)
+                      VALUES (@CategoryName, @ParentCategoryId, @CategoryTypeId, @AccountId)";
         }
 
         protected override SqlParameter[] GetInsertParameters(Category entity)
@@ -61,8 +56,11 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(Category entity)
         {
-            return $"UPDATE {_tableName} SET CategoryName = @CategoryName, ParentCategoryId = @ParentCategoryId, CategoryTypeId = @CategoryTypeId, IsActive = @IsActive " +
-                   $"WHERE CategoriesId = @CategoriesId AND AccountId = @AccountId"; // <<-- AccountId adicionado ao WHERE
+            return $@"UPDATE {_tableName} 
+                      SET CategoryName = @CategoryName, 
+                          ParentCategoryId = @ParentCategoryId, 
+                          CategoryTypeId = @CategoryTypeId,
+                      WHERE CategoriesId = @CategoriesId AND AccountId = @AccountId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Category entity)
@@ -75,22 +73,19 @@ namespace Repo.Repository
             {
                 new SqlParameter("@CategoryName", entity.CategoryName),
                 new SqlParameter("@ParentCategoryId", parentIdValue),
-                new SqlParameter("@CategoryTypeId", entity.CategoryTypeId),
-                new SqlParameter("@IsActive", entity.IsActive),
+                new SqlParameter("@CategoryTypeId", entity.CategoryTypeId),                
                 new SqlParameter("@AccountId", entity.AccountId),
                 new SqlParameter("@CategoriesId", entity.GetId())
             };
         }
-
-        private const string SelectColumns = "CategoriesId, CategoryName, ParentCategoryId, CategoryTypeId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
-
+        
         public async Task<Category?> GetCategoryByNameAndAccount(string categoryName, int accountId)
         {
             // Consulta SQL: Define a lógica de busca. Seleciona as colunas necessárias para o construtor
             // O @ é o mecanismo padrão no C# e SQL Server para lidar com variáveis de entrada de forma segura e eficiente.
-            string sql = $@" SELECT {SelectColumns} 
+            string sql = $@" SELECT CategoriesId, CategoryName, ParentCategoryId, CategoryTypeId, AccountId
                              FROM {_tableName} 
-                             WHERE CategoryName = @CategoryName AND AccountId = @AccountId AND IsActive = 1";
+                             WHERE CategoryName = @CategoryName AND AccountId = @AccountId";
 
             SqlParameter[] parameters = new SqlParameter[]
             {
@@ -98,40 +93,24 @@ namespace Repo.Repository
                 new SqlParameter("@AccountId", accountId)
             };
 
-            try
-            {
-                return await ExecuteSingleAsync(sql, parameters);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetCategoryByName: {ex.Message}");
-                throw;
-            }
+            return await ExecuteSingleAsync(sql, parameters);
         }
 
         public async Task<List<Category>> GetRootCategoriesByAccount(int accountId)
         {
-            string sql = $@" SELECT {SelectColumns} 
+            string sql = $@" SELECT CategoriesId, CategoryName, ParentCategoryId, CategoryTypeId, AccountId
                              FROM {_tableName} 
-                             WHERE ParentCategoryId IS NULL AND AccountId = @AccountId AND IsActive = 1";
+                             WHERE ParentCategoryId IS NULL AND AccountId = @AccountId
+                             ORDER BY CategoryName";
 
-            SqlParameter paramAccountId = new SqlParameter("@AccountId", accountId);
-
-            try
-            {
-                return (await ExecuteListAsync(sql, paramAccountId)).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetRootCategoriesByAccount: {ex.Message}");
-                throw;
-            }
+            return (await ExecuteListAsync(sql, new SqlParameter("@AccountId", accountId))).ToList();        
         }
 
         public async Task<Category?> ReadByIdAndAccountAsync(int id, int accountId)
         {
-            string sql = $@" SELECT {SelectColumns} FROM {_tableName} 
-                             WHERE CategoriesId = @CategoriesId AND AccountId = @AccountId AND IsActive = 1";
+            string sql = $@" SELECT CategoriesId, CategoryName, ParentCategoryId, CategoryTypeId, AccountId
+                             FROM {_tableName} 
+                             WHERE CategoriesId = @CategoriesId AND AccountId = @AccountId";
 
             SqlParameter[] parameters = new SqlParameter[]
             {
@@ -139,46 +118,30 @@ namespace Repo.Repository
                 new SqlParameter("@AccountId", accountId)
             };
 
-            try
-            {
-                return await ExecuteSingleAsync(sql, parameters);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório ReadByIdAndAccount: {ex.Message}");
-                throw;
-            }
+            return await ExecuteSingleAsync(sql, parameters);
         }
 
         public async Task<Category?> GetByIdWithSubCategories(int categoryId, int accountId)
         {
-            Category? parentCategory = await ReadByIdAndAccountAsync(categoryId, accountId);
-
+            var parentCategory = await ReadByIdAndAccountAsync(categoryId, accountId);
             if (parentCategory == null)
             {
                 return null;
             }
 
-            string subCategorySql = $@" SELECT {SelectColumns} 
-                                    FROM {_tableName} 
-                                    WHERE ParentCategoryId = @ParentId AND AccountId = @AccountId AND IsActive = 1";
+            string subSql = $@"SELECT CategoriesId, CategoryName, ParentCategoryId, CategoryTypeId, AccountId
+                               FROM {_tableName}
+                               WHERE ParentCategoryId = @ParentId AND AccountId = @AccountId
+                               ORDER BY CategoryName";
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] subParams = new SqlParameter[]
             {
                 new SqlParameter("@ParentId", categoryId),
                 new SqlParameter("@AccountId", accountId)
             };
 
-            try
-            {
-                IEnumerable<Category> subCategories = await ExecuteListAsync(subCategorySql, parameters);
-                parentCategory.SetSubCategories(subCategories);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetByIdWithSubCategories: {ex.Message}");
-                throw;
-            }
+            var subCategories = await ExecuteListAsync(subSql, subParams);
+            parentCategory.SetSubCategories(subCategories);
 
             return parentCategory;
         }

@@ -20,38 +20,15 @@ namespace Repo.Repository
             int userId = Convert.ToInt32(reader["UserId"]);
             int recipesId = Convert.ToInt32(reader["RecipesId"]);
 
-            DateTime createdAtFav = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
-            bool isActiveFav = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
 
-            var favorite = Favorites.Reconstitute(id, userId, recipesId, createdAtFav, isActiveFav);
-
-            string? imageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl"))
-                        ? "default.jpg"
-                        : reader.GetString(reader.GetOrdinal("ImageUrl"));
-
-            favorite.Recipe = Recipes.Reconstitute(
-                id: recipesId,
-                userId: userId,
-                categoriesId: reader.IsDBNull(reader.GetOrdinal("CategoriesId")) ? 0 : Convert.ToInt32(reader["CategoriesId"]),
-                difficultyId: reader.IsDBNull(reader.GetOrdinal("DifficultyId")) ? 0 : Convert.ToInt32(reader["DifficultyId"]),
-                title: reader.GetString(reader.GetOrdinal("Title")),
-                instructions: reader.GetString(reader.GetOrdinal("Instructions")),
-                prepTimeMinutes: Convert.ToInt32(reader["PrepTimeMinutes"]),
-                cookTimeMinutes: Convert.ToInt32(reader["CookTimeMinutes"]),
-                servings: reader.GetString(reader.GetOrdinal("Servings")),
-                imageUrl: imageUrl,
-                createdAt: DateTime.Now,
-                lastUpdatedAt: null,
-                isActive: true
-            );
-
-            return favorite;
+            return Favorites.Reconstitute(id, userId, recipesId, createdAt);
         }
 
         protected override string BuildInsertSql(Favorites entity)
         {
-            return $"INSERT INTO {_tableName} (UserId, RecipesId, CreatedAt, IsActive) " +
-                $"VALUES (@UserId, @RecipesId, @CreatedAt, @IsActive)";
+            return $@"INSERT INTO {_tableName} (UserId, RecipesId, CreatedAt)
+                      VALUES (@UserId, @RecipesId, GETDATE())";
         }
 
         protected override SqlParameter[] GetInsertParameters(Favorites entity)
@@ -61,37 +38,30 @@ namespace Repo.Repository
             {
                 new SqlParameter("@UserId", entity.UserId),
                 new SqlParameter("@RecipesId", entity.RecipesId),
-                new SqlParameter("@CreatedAt", entity.CreatedAt),
-                new SqlParameter("@IsActive", entity.IsActive)
-
             };
         }
 
         protected override string BuildUpdateSql(Favorites entity)
-        {
-            return $"UPDATE {_tableName} SET IsActive = @IsActive WHERE FavoritesId = @Id";
+        {            
+            return string.Empty;           
         }
 
         protected override SqlParameter[] GetUpdateParameters(Favorites entity)
         {
-            return new SqlParameter[]
-            {
-                new SqlParameter("@IsActive", entity.IsActive),
-                new SqlParameter("@Id", entity.GetId())
-            };
+            return Array.Empty<SqlParameter>();
         }
 
         public async Task<IEnumerable<Favorites>> GetByUserIdAsync(int userId)
         {
             string sql = @"
-                SELECT f.*, 
-                       r.Title, r.Instructions, r.PrepTimeMinutes, 
-                       r.CookTimeMinutes, r.Servings, r.CategoriesId, r.DifficultyId,
-                       r.ImageUrl
+                SELECT f.FavoritesId, f.UserId, f.RecipesId, f.CreatedAt,
+                       r.Title, r.ImageUrl, r.CategoriesId, r.DifficultyId,
+                       r.PrepTimeMinutes, r.CookTimeMinutes, r.Servings
                 FROM Favorites f
                 INNER JOIN Recipes r ON f.RecipesId = r.RecipesId
-                WHERE f.UserId = @UserId AND f.IsActive = 1";
-            
+                WHERE f.UserId = @UserId
+                ORDER BY f.CreatedAt DESC";
+
             SqlParameter param = new SqlParameter("@UserId", userId);
 
             return await ExecuteListAsync(sql, param);
@@ -99,7 +69,7 @@ namespace Repo.Repository
 
         public async Task<bool> ExistsAsync(int userId, int recipeId)
         {
-            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipesId AND IsActive = 1";
+            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipesId";
             SqlParameter[] paramsList =
             {
                 new SqlParameter("@UserId", userId),
@@ -112,33 +82,30 @@ namespace Repo.Repository
 
         public async Task<int> GetCountByRecipeIdAsync(int recipeId)
         {
-            string sql = $"SELECT COUNT(*) FROM {_tableName} WHERE RecipesId = @recipeId AND IsActive = 1";
+            string sql = $"SELECT COUNT(*) FROM {_tableName} WHERE RecipesId = @recipeId";
             SqlParameter param = new SqlParameter("@recipeId", recipeId);
 
             var result = await SQL.ExecuteScalarAsync(sql, param);
             return Convert.ToInt32(result);
         }
 
-        public async Task DeactivateFavoriteAsync(int recipeId, int userId)
+        public async Task DeleteFavoriteAsync(int userId, int recipeId)
         {
-            string sql = $"DELETE FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipeId";
-
-            SqlParameter[] p =
+            string sql = $"DELETE FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipesId";
+            SqlParameter[] parameters = new[]
             {
                 new SqlParameter("@UserId", userId),
-                new SqlParameter("@RecipeId", recipeId)
+                new SqlParameter("@RecipesId", recipeId)
             };
 
-            await SQL.ExecuteScalarAsync(sql, p);
+            await SQL.ExecuteNonQueryAsync(sql, parameters);
         }
 
         public async Task<Favorites?> GetByUserAndRecipeAsync(int userId, int recipesId)
         {
-            string sql = @"
-                SELECT * FROM Favorites 
-                WHERE UserId = @UserId 
-                  AND RecipesId = @RecipesId 
-                  AND IsActive = 1";
+            string sql = $@"SELECT * FROM FavoritesId, UserId, RecipesId, CreatedAt
+                            FROM {_tableName}
+                            WHERE UserId = @UserId AND RecipesId = @RecipesId";
 
             var parameters = new[]
             {
@@ -146,20 +113,7 @@ namespace Repo.Repository
                 new SqlParameter("@RecipesId", recipesId)
             };
 
-            using var reader = await SQL.ExecuteQueryAsync(sql, parameters);
-
-            if (await reader.ReadAsync())
-            {
-                return new Favorites
-                {
-                    FavoritesId = reader.GetInt32(reader.GetOrdinal("FavoritesId")),
-                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                    RecipesId = reader.GetInt32(reader.GetOrdinal("RecipesId")),                    
-                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
-                };
-            }
-
-            return null;
+            return await ExecuteSingleAsync(sql, parameters);
         }
     }
 }

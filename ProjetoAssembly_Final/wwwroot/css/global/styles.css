@@ -2,10 +2,12 @@
 /* --- ESTILOS GERAIS DE CONTEÚDO --- */
 h1, h2, h3 {
     color: #2c3e50;
-    transition: color: 0.3s;
+    transition: color 0.3s;
 }
 
-body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3 {
     color: #fff;
 }
 
@@ -24,10 +26,10 @@ body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
     position: absolute;
     bottom: 0;
     left: 50%;
-    transform: translateY(-50%);
+    transform: translateX(-50%);
 }
 
-.btn, .btn-principal {
+.btn, .btn-primary {
     background-color: var(--primary-green);
     color: white !important;
     padding: 10px 20px;
@@ -40,7 +42,16 @@ body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
     font-weight: bold;
 }
 
-.btn:hover {
+.btn:hover, .btn-primary:hover {
     filter: brightness(90%);
-    transform: translateY(-20px);
+    transform: translateY(-2px);
+}
+
+/* --- UTILITÁRIOS --- */
+.text-center {
+    text-align: center;
+}
+
+.mt-20 {
+    margin-top: 20px;
 }

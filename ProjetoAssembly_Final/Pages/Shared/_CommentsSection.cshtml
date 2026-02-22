@@ -3,16 +3,16 @@
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 
 <div class="comments-section-wrapper">
-    <div id="container-comentarios" class="comentarios-lista">
+    <div id="comments-list-container" class="comments-list">
         @if (Model.ListComments != null && Model.ListComments.Any())
         {
             @foreach (var c in Model.ListComments)
             {
-                <article class="comentario-card">
+                <article class="comment-card">
                     <div class="comment-user-info">
                         <div class="user-avatar-circle"><i class="fa-solid fa-user"></i></div>
                         <div class="user-details">
-                            <strong class="user-id">Utilizador #@c.UserId</strong>
+                            <strong class="user-display-id">User #@c.UserId</strong>
                             <div class="stars-display">
                                 @for (int i = 0; i < c.Rating; i++)
                                 {
@@ -26,7 +26,7 @@
                         </div>
                         <time class="comment-date">@c.CreatedAt.ToString("dd/MM/yyyy")</time>
                     </div>
-                    <div class="comentario-content">
+                    <div class="comment-content">
                         <p class="comment-text">@c.CommentText</p>
                     </div>
                 </article>
@@ -34,22 +34,23 @@
         }
         else
         {
-            <div class="aviso-vazio">
+            <div class="empty-notice">
                 <i class="fa-regular fa-comment-dots"></i>
-                <p>Ainda não há comentários. Seja o primeiro a comentar!</p>
+                <p>@Localizer["Ainda não há comentários. Seja o primeiro a comentar!"]</p>
             </div>
         }
     </div>
 
     @if (User.Identity?.IsAuthenticated ?? false)
     {
-        <section class="comentarios-form-section">
-            <div class="comentarios-form">
+        <section class="comments-form-section">
+            <div class="comment-form">
                 <h3><i class="fa-solid fa-pen-to-square"></i>@Localizer["Deixe a sua opinião"]</h3>
                 <form method="post">
                     <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
+
                     <div class="rating-input-group">
-                        <label>A sua avaliação</label>
+                        <label>@Localizer["A sua avaliação"]</label>
                         <div class="star-rating-control">
                             @for(int i = 5; i >= 1; i--)
                             {
@@ -67,7 +68,7 @@
                     </div>
 
                     <div class="form-footer">
-                        <button type="submit" class="btn-publicar">
+                        <button type="submit" class="btn-submit-comment">
                             <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Comentário"]
                         </button>
                     </div>

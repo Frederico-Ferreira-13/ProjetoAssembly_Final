@@ -9,30 +9,28 @@ namespace Core.Model
 {
     public class Ingredients : IEntity
     {
-        public int IngredientsId { get; private set; }
-        public bool IsActive { get; private set; }
+        public int IngredientsId { get; private set; }        
 
         public string IngredientName { get; protected set; }
 
         public int IngredientsTypeId { get; protected set; }
         public IngredientsType? Type { get; protected set; }
 
-        private Ingredients(int id, bool isActive, string ingredientName, int ingredientsTypeId)
+        private Ingredients(int id, string ingredientName, int ingredientsTypeId)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("O ID do Ingrediente é inválido.", nameof(id));
             }
 
-            this.IngredientsId = id;
-            this.IsActive = isActive;
-            this.IngredientName = ingredientName;
-            this.IngredientsTypeId = ingredientsTypeId;
+            IngredientsId = id;            
+            IngredientName = ingredientName;
+            IngredientsTypeId = ingredientsTypeId;
         }
 
-        public static Ingredients Reconstitute(int id, bool isActive, string ingredientName, int ingredientsTypeId)
+        public static Ingredients Reconstitute(int id, string ingredientName, int ingredientsTypeId)
         {
-            return new Ingredients(id, isActive, ingredientName, ingredientsTypeId);
+            return new Ingredients(id, ingredientName, ingredientsTypeId);
         }
 
         public Ingredients([NotNull] string ingredientName, int ingredientsTypeId)
@@ -44,10 +42,9 @@ namespace Core.Model
                 throw new ArgumentException("O ID do Tipo de Ingrediente é obrigatório e válido.", nameof(ingredientsTypeId));
             }
 
-            this.IngredientsId = default;
-            this.IsActive = true;
-            this.IngredientName = ingredientName;
-            this.IngredientsTypeId = ingredientsTypeId;
+            IngredientsId = default;            
+            IngredientName = ingredientName;
+            IngredientsTypeId = ingredientsTypeId;
         }
 
         public void UpdateDetails(string newIngredientName, int newIngredientsTypeId)
@@ -70,14 +67,6 @@ namespace Core.Model
             }
         }
 
-        public void Deactivate()
-        {
-            if (IsActive)
-            {
-                IsActive = false;
-            }
-        }
-
         private void ValidateIngredients([NotNull] string? ingredientName)
         {
             if (string.IsNullOrWhiteSpace(ingredientName))
@@ -97,6 +86,6 @@ namespace Core.Model
             IngredientsId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

@@ -1,17 +1,17 @@
 ﻿/* perfilEdit.css*/
 
-.container-edit-perfil {
+.profile-edit-wrapper {
     max-width: 800px;
     margin: 40px auto;
     padding: 0 20px;
 }
 
-.header-edit-top {
+.edit-header-top {
     text-align: center;
     margin-bottom: 30px;
 }
 
-.header-edit-top h2 {
+.edit-header-top h2 {
     font-size: 2rem;
     font-weight: 800;
     color: var(--text-color);
@@ -34,7 +34,7 @@
 }
 
 /* --- ÁREA DA FOTO --- */
-.foto-edit-section {
+.photo-edit-section {
     text-align: center;
     margin-bottom: 35px;
     position: relative;
@@ -45,7 +45,7 @@
     display: inline-block;
 }
 
-.img-edit-perfil {
+.profile-edit-img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
@@ -77,11 +77,11 @@
 }
 
 /* --- FORMULÁRIO --- */
-.form-group-edit {
+.edit-form-group {
     margin-bottom: 25px;
 }
 
-.form-group-edit label {
+.edit-form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 700;
@@ -89,7 +89,7 @@
     font-size: 0.95rem;
 }
 
-.input-edit {
+.edit-input {
     width: 100%;
     padding: 12px 15px;
     border-radius: 12px;
@@ -100,7 +100,7 @@
     transition: 0.3s;
 }
 
-.input-edit:focus {
+.edit-input:focus {
     outline: none;
     border-color: var(--primary-green);
     box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
@@ -152,7 +152,7 @@
         grid-template-columns: 1fr;
     }
 
-    .img-edit-perfil {
+    .profile-edit-img {
         width: 150px;
         height: 150px;
     }

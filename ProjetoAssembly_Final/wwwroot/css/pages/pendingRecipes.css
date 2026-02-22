@@ -1,6 +1,6 @@
 ﻿/* pendingRecipes.css */
 /* --- PÁGINA DE RECEITAS PENDENTES --- */
-.pending-container {
+.pending-wrapper {
     min-width: 1100px;
     margin: 40px auto;
     padding: 0 20px;
@@ -16,7 +16,7 @@
 }
 
 /* --- ESTADO INFORMATIVO (ALERTAS) --- */
-.alert-pending-info {
+.pending-info-alert {
     background: rgba(40, 167, 69, 0.1);
     color: var(--primary-green);
     border: 1px solid var(--primary-green);
@@ -30,13 +30,13 @@
 }
 
 /* --- GRID E CARDS DE PENDENTES --- */
-.grid-pending {
+.pending-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 30px;
 }
 
-.card.pending {
+.pending-card {
     border: 1px solid var(--border-color);
     border-radius: 20px;
     overflow: hidden;
@@ -47,7 +47,7 @@
     position: relative;
 }
 
-.card-pending:hover {
+.pending-card:hover {
     transform: translateY(-9px);
     box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
@@ -67,7 +67,7 @@
     z-index: 5;
 }
 
-.card-pending-img {
+.pending-card-img {
     height: 220px;
     width: 100%;
     object-fit: cover;
@@ -75,23 +75,23 @@
     transition: 0.3s;
 }
 
-.card-pending:hover .card-pending-img {
+.pending-card:hover .pending-card-img {
     filter: grayscale(0%);
 }
 
-.card-pending-body {
+.pending-card-body {
     padding: 25px;
     flex-grow: 1;
 }
 
-.card-pending-title {
+.pending-card-title {
     font-size: 1.4rem;
     margin-bottom: 10px;
     color: var(--text-color);
     font-weight: 700;
 }
 
-.card-pending-meta {
+.pending-card-meta {
     font-size: 0.85rem;
     color: #777;
     margin-bottom: 15px;
@@ -127,7 +127,7 @@
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
 
-.btn-view-details {
+.btn-details {
     flex: 1;
     background: var(--bg-color);
     color: var(--text-color);
@@ -140,12 +140,12 @@
     transition: 0.3s;
 }
 
-.btn-view-details:hover {
+.btn-details:hover {
     background: var(--border-color);
 }
 
 /* --- ESTADO VAZIO --- */
-.no-pending {
+.empty-pending-state {
     text-align: center;
     padding: 60px;
     background: var(--card-bg);
@@ -153,7 +153,7 @@
     border: 2px dashed var(--border-color);
 }
 
-.no-pending i {
+.empty-pending-state i {
     font-size: 4rem;
     color: var(--border-color);
     margin-bottom: 20px;
@@ -161,6 +161,6 @@
 
 /* RESPONSIVIDADE */
 @media (max-width: 600px) {
-    .grid-pending { grid-template-columns: 1fr; }
+    .pending-grid { grid-template-columns: 1fr; }
     .pending-actions { flex-direction: column; }
 }

@@ -23,21 +23,21 @@ namespace ProjetoAssembly_Final.Pages
             _ingredientsRecipsRepository = ingredientsRecipsRepository;
         }
         [BindProperty]
-        public string Titulo { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         [BindProperty]
-        public string Descricao { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         [BindProperty]
-        public int CategoriaSelecionada { get; set; }
+        public int SelectedCategory { get; set; }
         [BindProperty]
-        public int DificuldadeSelecionada { get; set; }
+        public int SelectedDifficulty { get; set; }
         [BindProperty]
-        public List<string> Ingredientes { get; set; } = new();
+        public List<string> Ingredients { get; set; } = new();
         [BindProperty]
         public int PrepTime { get; set; } = 10;
         [BindProperty]
         public int CookTime { get; set; } = 10;
         [BindProperty]
-        public string Doses { get; set; } = "2 pessoas";
+        public string Servings { get; set; } = "2 pessoas";
 
         public void OnGet()
         {
@@ -63,13 +63,13 @@ namespace ProjetoAssembly_Final.Pages
 
                 var newRecipe = new Recipes(
                     userId: userId,
-                    categoriesId: CategoriaSelecionada,
-                    difficultyId: DificuldadeSelecionada,
-                    title: Titulo,
-                    instructions: Descricao,
+                    categoriesId: SelectedCategory,
+                    difficultyId: SelectedDifficulty,
+                    title: Title,
+                    instructions: Description,
                     prepTimeMinutes: PrepTime,
                     cookTimeMinutes: CookTime,
-                    servings: Doses,
+                    servings: Servings,
                     isApproved: isApproved
                 );
 

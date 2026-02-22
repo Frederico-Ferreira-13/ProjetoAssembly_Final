@@ -1,8 +1,5 @@
 ﻿using Core.Common;
 using System;
-using System.Collections.Generic;
-using System.Security.Principal;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Core.Model
@@ -15,8 +12,10 @@ namespace Core.Model
         public int UsersRoleId { get; private set; }
 
         // Campos Privados
+        private string _name = string.Empty;
         private string _userName = string.Empty;
         private string _email = string.Empty;
+        private string? _profilePicture;
         private string _passwordHash = string.Empty;
         private string _salt = string.Empty;
 
@@ -30,21 +29,24 @@ namespace Core.Model
         public UsersRole? Role { get; private set; }
 
         // public virtual UserSetting? UserSetting{get; internal set;} = null;
+        public string Name { get => _name; private set => _name = value;  }
         public string UserName { get => _userName; private set => _userName = value; }
         public string Email { get => _email; private set => _email = value; }
         public string PasswordHash { get => _passwordHash; private set => _passwordHash = value; }
         public string Salt { get => _salt; private set => _salt = value; }
+        public string? ProfilePicture { get => _profilePicture; private set => _profilePicture = value; }
 
         private Users()
         {
-            this.UserId = default;
-            this.IsActive = true;
+            // Futuramente para EF core ou para Reconstituição via reflection
         }
 
-        public Users(string userName, string email, string passwordHash, string salt, int usersRoleId,
-             bool isApproved, int accountId)
+        public Users(string name, string userName, string email, int usersRoleId, bool isApproved, int accountId)
         {
-            ValidateUserCreation(userName, email, passwordHash, salt);
+            ValidateName(name, nameof(name));
+            ValidateUserName(userName, nameof(userName));
+            ValidateEmail(email);
+
             if (accountId <= 0)
             {
                 throw new ArgumentException("O Account deve ser positivo", nameof(accountId));
@@ -54,45 +56,40 @@ namespace Core.Model
                 throw new ArgumentException("O Nível de Acesso (UsersRoleId) deve ser positivo", nameof(usersRoleId));
             }
 
-            this.UserId = default;
-            this.IsActive = true;
-
-            UserName = userName;
-            Email = email;
-            PasswordHash = passwordHash;
-            Salt = salt;
+            _name = name;
+            _userName = userName;
+            _email = email;
             UsersRoleId = usersRoleId;
             IsApproved = isApproved;
             AccountId = accountId;
-
-            this.CreatedAt = DateTime.UtcNow;
-            this.LastUpdatedAt = null;
+            IsActive = true;
+            CreatedAt = DateTime.UtcNow;
         }
 
-        protected Users(int id, bool isActive, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
+        protected Users(int id, bool isActive, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
             DateTime createdAt, DateTime? lastUpdatedAt)
         {
-            this.UserId = id;
-            this.IsActive = isActive;
-
+            UserId = id;
+            IsActive = isActive;
+            _name = name;
             _userName = userName;
             _email = email;
             _passwordHash = passwordHash;
             _salt = salt;
-            UsersRoleId = usersRoleId;
             IsApproved = isApproved;
+            UsersRoleId = usersRoleId;
             AccountId = accountId;
-
-            this.CreatedAt = createdAt;
-            this.LastUpdatedAt = lastUpdatedAt;
+            CreatedAt = createdAt;
+            LastUpdatedAt = lastUpdatedAt;            
         }
 
-        public static Users Reconstitute(int id, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
+        public static Users Reconstitute(int id, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
             DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
         {
             return new Users(
-                id,
+                id,                
                 isActive,
+                name,
                 userName,
                 email,
                 passwordHash,
@@ -105,9 +102,83 @@ namespace Core.Model
             );
         }
 
-        private void SetLastUpdatedAt()
+        public void UpdateName(string newName)
         {
-            LastUpdatedAt = DateTime.UtcNow;
+            if (!IsActive)
+            {
+                throw new InvalidOperationException("Utilizador inativo.");
+            } 
+
+            ValidateName(newName, nameof(newName));
+
+            if (_name != newName)
+            {
+                _name = newName;
+                SetLastUpdatedAt();
+            }
+        }
+
+        public void UpdateUserName(string newUserName)
+        {
+            if (!IsActive)
+            {
+                throw new InvalidOperationException("Utilizador inativo.");
+            }
+            
+            ValidateUserName(newUserName, nameof(newUserName));
+
+            if (!string.Equals(UserName, newUserName, StringComparison.OrdinalIgnoreCase))
+            {
+                UserName = newUserName;
+                SetLastUpdatedAt();
+            }
+        }
+
+        public void UpdateEmail(string newEmail)
+        {
+            if (!IsActive)
+            {
+                throw new InvalidOperationException("Utilizador inativo.");
+            }
+
+            ValidateEmail(newEmail);
+
+            if (!string.Equals(Email, newEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                Email = newEmail;
+                SetLastUpdatedAt();
+            }
+        }
+
+        public void SetPassword(string newPasswordHash, string newSalt)
+        {
+            if (!IsActive)
+            {
+                throw new InvalidOperationException("Não é possível atualizar a password de um utilizador inativo.");
+            }
+
+            if(string.IsNullOrWhiteSpace(newPasswordHash) || string.IsNullOrWhiteSpace(newSalt))
+            {
+                throw new ArgumentException("O hash da password e o salt são obrigatórios.");
+            }
+
+            PasswordHash = newPasswordHash;
+            Salt = newSalt;
+            SetLastUpdatedAt();
+        }
+
+        public void UpdateProfilePicture(string? fileName)
+        {
+            if (!IsActive)
+            {
+                throw new InvalidOperationException("Não é possível atualizar a foto de um utilizador inativo.");
+            }
+
+            if (_profilePicture != fileName)
+            {
+                _profilePicture = fileName;
+                SetLastUpdatedAt();
+            }
         }
 
         public void ChangeRole(int newUsersRoleId)
@@ -146,50 +217,19 @@ namespace Core.Model
             }
         }
 
-        public void UpdateUserName(string newUserName)
+        public void Approve()
         {
-            if (!IsActive)
+            if (this.IsApproved)
             {
-                throw new InvalidOperationException("Não é possível atualizar um utilizador inativo.");
+                return;
             }
 
-            ValidateName(newUserName, nameof(newUserName));
-
-            if (!string.Equals(UserName, newUserName, StringComparison.OrdinalIgnoreCase))
+            if (!this.IsActive)
             {
-                UserName = newUserName;
-                SetLastUpdatedAt();
-            }
-        }
-
-        public void UpdateEmail(string newEmail)
-        {
-            if (!IsActive)
-            {
-                throw new InvalidOperationException("Não é possível atualizar um utilizador inativo.");
+                throw new InvalidOperationException("Não é poss´´ivel aprovar um utilizador inativo.");
             }
 
-            ValidateEmail(newEmail);
-
-            if (!string.Equals(Email, newEmail, StringComparison.OrdinalIgnoreCase))
-            {
-                Email = newEmail;
-                SetLastUpdatedAt();
-            }
-        }
-
-        public void SetPassword(string newPasswordHash, string newSalt)
-        {
-            if (!IsActive)
-            {
-                throw new InvalidOperationException("Não é possível atualizar a password de um utilizador inativo.");
-            }
-
-            ValidatePassword(newPasswordHash);
-            ValidateSalt(newSalt);
-
-            PasswordHash = newPasswordHash;
-            Salt = newSalt;
+            IsApproved = true;
             SetLastUpdatedAt();
         }
 
@@ -221,14 +261,6 @@ namespace Core.Model
             Account = account;
         }
 
-        private void ValidateUserCreation(string userName, string email, string passwordHash, string salt)
-        {
-            ValidateName(userName, nameof(userName));
-            ValidateEmail(email);
-            ValidatePassword(passwordHash);
-            ValidateSalt(salt);
-        }
-
         private void ValidateName(string name, string paramName)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -239,6 +271,15 @@ namespace Core.Model
             {
                 throw new ArgumentException("O nome de utilizador não pode exceder 100 caracteres.", paramName);
             }
+        }
+
+        private void ValidateUserName(string userName, string paramName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+                throw new ArgumentException($"O nome de utilizador não pode ser vazio ou nulo ({paramName}).");
+
+            if (userName.Length > 100)
+                throw new ArgumentException("O nome de utilizador não pode exceder 100 caracteres.", paramName);
         }
 
         private void ValidateEmail(string email)
@@ -257,50 +298,15 @@ namespace Core.Model
             }
         }
 
-        private void ValidatePassword(string passwordHash)
-        {
-            if (string.IsNullOrWhiteSpace(passwordHash))
-            {
-                throw new ArgumentException("O hash da password é obrigatório.", nameof(passwordHash));
-            }
-            if (passwordHash.Length < 60)
-            {
-                throw new ArgumentException("O hash da password tem um comprimento inválido.", nameof(passwordHash));
-            }
-        }
-
-        private void ValidateSalt(string salt)
-        {
-            if (string.IsNullOrWhiteSpace(salt))
-            {
-                throw new ArgumentException("O salt da password é obrigatório.", nameof(salt));
-            }
-            if (salt.Length < 16 || salt.Length > 64)
-            {
-                throw new ArgumentException("O salt tem um cumprimento inválido.", nameof(salt));
-            }
-        }
-
         private bool IsValidEmailFormat(string email)
         {
             string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
         }
 
-        public void Approve()
+        private void SetLastUpdatedAt()
         {
-            if (this.IsApproved)
-            {
-                return;
-            }
-
-            if (!this.IsActive)
-            {
-                throw new InvalidOperationException("Não é poss´´ivel aprovar um utilizador inativo.");
-            }
-
-            this.IsApproved = true;
-            SetLastUpdatedAt();
+            LastUpdatedAt = DateTime.UtcNow;
         }
 
         public int GetId() => UserId;
@@ -314,6 +320,6 @@ namespace Core.Model
             UserId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => IsActive;       
     }
 }

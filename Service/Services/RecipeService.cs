@@ -70,6 +70,22 @@ namespace Service.Services
             return Result<Recipes>.Success(recipe);
         }
 
+        public async Task<Result<IEnumerable<Recipes>>> GetRecipesByUserIdAsync(int userId)
+        {
+            try
+            {
+                var allrecipes = await _recipesRepository.ReadAllAsync();
+                var userRecipes = allrecipes.Where(r => r.UserId == userId).ToList();
+                
+                return Result<IEnumerable<Recipes>>.Success(userRecipes);
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<Recipes>>.Failure(
+                    Error.InternalServer($"Erro ao obter receitas do utilizador: {ex.Message}"));
+            }
+        }
+
         public async Task<Result<IEnumerable<Recipes>>> GetAllRecipesAsync()
         {
             var recipes = await _recipesRepository.ReadAllAsync();
@@ -138,7 +154,7 @@ namespace Service.Services
                 var isFavorite = await _favoritesRepository.ExistsAsync(recipeId, userId);
                 if (isFavorite)
                 {
-                    await _favoritesRepository.DeactivateFavoriteAsync(recipeId, userId);
+                    await _favoritesRepository.DeleteFavoriteAsync(recipeId, userId);
                 }
                 else
                 {

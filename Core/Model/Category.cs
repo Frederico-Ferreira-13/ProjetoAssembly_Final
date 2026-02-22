@@ -9,8 +9,7 @@ namespace Core.Model
 {
     public class Category : IEntity
     {
-        public int CategoriesId { get; private set; }
-        public bool IsActive { get; private set; }
+        public int CategoriesId { get; private set; }        
 
         public string CategoryName { get; protected set; }
 
@@ -36,31 +35,29 @@ namespace Core.Model
                 throw new ArgumentException("O ID do Tipo de Categoria é obrigatório.", nameof(categoryTypeId));
             }
 
-            this.CategoriesId = default;
-            this.IsActive = true;
+            CategoriesId = default;            
 
             CategoryName = categoryName;
-            this.CategoryTypeId = categoryTypeId;
+            CategoryTypeId = categoryTypeId;
             ParentCategoryId = parentCategoryId;
             AccountId = accountId;
         }
 
-        private Category(int id, bool isActive, int? parentCategoryId, string categoryName,
+        private Category(int id, int? parentCategoryId, string categoryName,
             int categoryTypeId, int accountId)
         {
-            this.CategoriesId = id;
-            this.IsActive = isActive;
+            CategoriesId = id;           
 
             CategoryName = categoryName;
-            this.CategoryTypeId = categoryTypeId;
+            CategoryTypeId = categoryTypeId;
             ParentCategoryId = parentCategoryId;
             AccountId = accountId;
         }
 
-        public static Category Reconstitute(int id, bool isActive, int? parentCategoryId, string categoryName,
+        public static Category Reconstitute(int id, int? parentCategoryId, string categoryName,
             int categoryTypeId, int accountId)
         {
-            return new Category(id, isActive, parentCategoryId, categoryName, categoryTypeId, accountId);
+            return new Category(id, parentCategoryId, categoryName, categoryTypeId, accountId);
         }
 
         public void UpdateDetails(string newCategoryName, int newCategoryTypeId, int? newParentCategoryId)
@@ -81,15 +78,7 @@ namespace Core.Model
             {
                 ParentCategoryId = newParentCategoryId;
             }
-        }
-
-        public void Deactivate()
-        {
-            if (IsActive)
-            {
-                IsActive = false;
-            }
-        }
+        }     
 
         public void ChangeParent(int? newParentCategoryId)
         {
@@ -162,6 +151,6 @@ namespace Core.Model
             CategoriesId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

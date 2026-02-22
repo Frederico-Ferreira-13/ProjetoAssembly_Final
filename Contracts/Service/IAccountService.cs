@@ -8,7 +8,7 @@ namespace Contracts.Service
 {
     public interface IAccountService
     {
-        Task<Result<Account>> CreateAccountAsync(Account account);
+        Task<Result<Account>> CreateAccountAsync(string accountName, string? subscriptionLevel = null);
         Task<Result<Account>> GetAccountByIdAsync(int id);
         Task<Result<IEnumerable<Account>>> GetAccountsByUserIdAsync(int userId);
         Task<Result<IEnumerable<Account>>> GetUserActiveAccountsAsync(int userId);

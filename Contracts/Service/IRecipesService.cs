@@ -10,6 +10,7 @@ namespace Contracts.Service
     {
 
         Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId);
+        Task<Result<IEnumerable<Recipes>>> GetRecipesByUserIdAsync(int userId);
         Task<Result<IEnumerable<Recipes>>> GetAllRecipesAsync();
 
         Task<Result<Recipes>> CreateRecipeAsync(Recipes newRecipe);

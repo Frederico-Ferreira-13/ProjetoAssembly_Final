@@ -1,41 +1,74 @@
 ﻿@model Core.Model.Recipes
 @using Microsoft.Extensions.Localization
+@using System.Security.Claims
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 
-<article class="receitas-card">
-    <div class="card-img-container" style="position: relative;">       
-         <partial name="_FavoriteButton" model="Model" />      
-        
-         <a href="/view_recipes/@Model.RecipesId">        
-         <img src="~/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)"
-              alt="@Model.Title"
-              class="card-img"
-              onerror="this.onerror=null; this.src='/img/user.icon.png';">
-        </a>      
-    </div>   
+@{
+    var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    string? currentUserId = currentUserIdClaim?.Value;
 
-    <div class="card-info">
-        <span class="card-popularity">
-            <i class="fa-solid fa-heart"></i> @Model.FavoriteCount favoritos
-        </span>
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
-        <h3>@Model.Title</h3>
+    bool isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Administrador"));
 
+    bool isOwner = isAuthenticated
+                   && currentUserId != null
+                   && Model.UserId.HasValue
+                   && Model.UserId.Value.ToString() == currentUserId;
+
+    bool canEdit = isAdmin || isOwner;
+}
+
+<article class="recipe-card">
+    <div class="card-img-wrapper">
+        <partial name="_FavoriteButton" model="Model" />
+
+        @if (canEdit)
+        {
+            <a asp-page="/editRecipe" asp-route-id="@Model.RecipesId" class="btn-edit-overlay" title="@Localizer["Editar Receita"]">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+        }
+
+        <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId">
+            <img src="~/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)"
+                 alt="@Model.Title"
+                 class="card-img"
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='/img/default-recipe.jpg';">
+        </a>
+
+        <div class="card-stats-overlay">
+            <div class="rating-badge">
+                <i class="fa-solid fa-star"></i>
+                <span>@(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "0.0")</span>
+            </div>
+            <div class="favorite-badge">
+                <i class="fa-solid fa-heart"></i>
+                <span>@Model.FavoriteCount</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
         <div class="recipe-meta">
-            @{
-                var difClass = Model.DifficultyId == 1 ? "dif-facil" : (Model.DifficultyId == 2 ? "dif-media" : "dif-dificil");
-                var difLabel = Model.DifficultyId == 1 ? "Fácil" : (Model.DifficultyId == 2 ? "Média" : "Difícil");
-            }
-            <span class="badge-dif @difClass">@difLabel</span>
-
-            <span>
+            <span class="difficulty-badge
+                        @(Model.DifficultyId == 1 ? "dif-easy" :
+                        Model.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
+                @(Model.DifficultyId == 1 ? "FÁCIL" :
+                Model.DifficultyId == 2 ? "MÉDIA" : "DIFÍCIL")
+            </span>
+            <span class="meta-item">
                 <i class="fa-regular fa-clock"></i>
                 @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min
             </span>
         </div>
 
-        <a href="/view_recipes/@Model.RecipesId" class="btn">
+        <h3>@Model.Title</h3>
+
+        <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId" class="btn-card">
             @Localizer["Ver Receita"]
         </a>
     </div>
 </article>
+

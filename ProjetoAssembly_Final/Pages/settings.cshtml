@@ -4,7 +4,7 @@
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = Localizer["Editar o meu Perfil"];
+    ViewData["Title"] = Localizer["Defenições"];
 }
 
 @section Styles {
@@ -15,20 +15,27 @@
     <div class="settings-container">        
         <div class="settings-header">
             <i class="fa-solid fa-user-gear fa-2x"></i>
-            <h2>@Localizer["Editar o Meu Perfil"]</h2>
-        </div>    
+            <h2>@Localizer["Defenições"]</h2>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="error-alert-container">
+                <div asp-validation-summary="All" class="text-danger"></div>
+            </div>
+        }
     
-        <form method="post" enctype="multipart/form-data">
-            @if (!ViewData.ModelState.IsValid)
-            {
-               <div class="alert alert-danger">
-                   <div asp-validation-summary="All"></div>
-               </div>
-            }
-        
-            <div class="perfil-upload-section">
+        <form method="post" enctype="multipart/form-data">        
+            <div class="profile-upload-section">
                 <div class="avatar-wrapper">
-                    <img src="~/img/user.icon.png" id="previewImg" class="img-perfil-grande" alt="Preview">
+                    <img src="~/img/user.icon.png" id="previewImg" class="profile-img-large" alt="Preview">
                     <label for="fileInput" class="btn-change-photo-mini">
                         <i class="fa-solid fa-camera"></i>
                     </label>
@@ -39,13 +46,21 @@
 
             <div class="settings-grid">
                 <div class="form-group">
-                    <label>@Localizer["Nome de Utilizador"]</label>
-                    <input type="text" asp-for="UserName" class="form-control" placeholder=@Localizer["O seu nome"]">
+                    <label>@Localizer["Nome"]</label>
+                    <input type="text" asp-for="Name" class="form-control" placeholder=@Localizer["O seu nome"]">
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Nome de Utilizador (Nickname)"]</label>
+                    <input type="text" asp-for="UserName" class="form-control" placeholder=@Localizer["O seu nickname"]">
+                    
                 </div>
 
                 <div class="form-group">
                     <label>@Localizer["Email"]</label>
                     <input type="email" asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
                 <div class="preferences-section full-width">
@@ -54,7 +69,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>@Localizer["Tema"]</label>
+                    <label asp-for="InputTheme">@Localizer["Tema"]</label>
                     <select asp-for="InputTheme" class="form-control">
                         <option value="Light">@Localizer["Modo Claro"]o</option>
                         <option value="Dark">@Localizer["Modo Escuro"]</option>
@@ -62,7 +77,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>@Localizer["Idioma"]</label>
+                    <label asp-for="InputLanguage">@Localizer["Idioma"]</label>
                     <select asp-for="InputLanguage" class="form-control">
                         <option value="pt-PT">Português (Portugal)</option>
                         <option value="en-US">English (US)</option>
@@ -77,19 +92,31 @@
                 </div>
             </div>
 
-            <div class="settings-actions">
-                <button type="submit" class="btn-guardar">
-                    <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
-                </button>
-
-                <a asp-page="/perfil" class="btn-cancelar">
-                    <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]
-                </a>
+            <div class="form-group full-width">
+                <h4><i class="fa-solid fa-lock"></i> @Localizer["Alterar a Palavra-passe"]</h4>
+                <p class="text-muted">@Localizer["Deixe em branco se não quiser alterar."]</p>
             </div>
 
-            <a href="/Perfil" style="text-align:center; display:block; margin-top:20px; color: #888; text-decoration: none;">
-                <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]
-            </a>            
+            <div class="form-group">
+                <label>@Localizer["Nova Palavra-passe"]</label>
+                <input type="password" asp-for="NewPassword" class="form-control" placeholder="@Localizer["Nova palavra-passe"]" autocomplete="new-password" />
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>@Localizer["Confirmar Nova Palavra-passe"]</label>
+                <input type="password" asp-for="ConfirmPassword" class="form-control" placeholder="@Localizer["Confirme a nova palavra-passe"]" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="settings-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
+                </button>
+                <a asp-page="/perfil" class="btn-cancel">
+                    <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar e Sair"]
+                </a>
+            </div>                    
         </form>
     </div>
 </main>
@@ -107,4 +134,6 @@
             }
         });
     </script>
+
+    <partial name="_ValidationScriptsPartial" />
 }

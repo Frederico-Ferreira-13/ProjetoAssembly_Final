@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/pages/pendingRecipes.css" asp-append-version="true">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">   
 
     @RenderSection("Styles", required: false)
@@ -19,11 +18,11 @@
 <body class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
 
     <nav>
-        <div class="container-nav">
+        <div class="nav-container">
             <div class="logo">
                 <a asp-page="/Index">
                     <span class="logo-icon">👨‍🍳</span>
-                     <span class="logo-text">Frederico <span style="color: var(--primary-green);">Receitas</span></span>
+                     <span class="logo-text">Frederico <span style="color: var(--primary-green);">@Localizer["Receitas"]</span></span>
                 </a>
             </div>
 
@@ -50,26 +49,23 @@
                     title="@Localizer["Receitas Pendentes"]">
                     <i class="~fa-solid fa-bell"></i>
                     @{ var count = ViewData["PendingCount"] as int? ?? 0; }
-                        @if(count > 0)
-                        {
-                            <span class="badge">@count</span>
-                        }
-                    </a>
+                    <span id="pendingCount" class="badge" style="@(count > 0 ? "" : "display:none")">@count</span>
+                </a>
             }
 
             <div class="search-box">
-                <form action="/recipes" method="get">
+                <form action="/recipes" method="get" class="search-form">
                     <input type="text" name="search" class="search-input" placeholder=@Localizer["Procurar Receita..."]>
                     <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
                 </form>
             </div>
 
-            <div class="perfil-menu">
-                <button class="perfil-btn" onclick="toggleMenu()">
+            <div class="profile-menu">
+                <button class="profile-btn" onclick="toggleMenu()">
                     <i class="fa-solid fa-bars"></i>
-                    <img src="/img/user.icon.png" alt="Perfil" class="perfil-img-nav" />
+                    <img src="/img/user.icon.png" alt="Perfil" class="profile-img-nav" />
                 </button>
-                <ul id="dropdown-perfil" class="perfil-dropdown">
+                <ul id="profile-dropdown" class="profile-dropdown">
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
                         <li><a asp-page="/perfil"><i class="fa-solid fa-user"></i> @Localizer["O Meu Perfil"]</a></li>

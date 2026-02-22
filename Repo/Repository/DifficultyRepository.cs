@@ -17,10 +17,9 @@ namespace Repo.Repository
         protected override Difficulty MapFromReader(SqlDataReader reader)
         {
             int id = reader.GetInt32(reader.GetOrdinal("DifficultyId"));
-            string name = reader.GetString(reader.GetOrdinal("DifficultyName"));
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            string name = reader.GetString(reader.GetOrdinal("DifficultyName"));            
 
-            return Difficulty.Reconstitute(id, name, isActive);
+            return Difficulty.Reconstitute(id, name);
         }
 
         protected override string BuildInsertSql(Difficulty entity)
@@ -52,10 +51,10 @@ namespace Repo.Repository
 
         public async Task<Difficulty?> GetByNameAsync(string difficultyName)
         {
-            const string sql = @"
-                SELECT DifficultyId, DifficultyName, IsActive 
-                FROM Difficulty 
-                WHERE DifficultyName = @DifficultyName AND IsActive = 1";
+            string sql = $@"
+                SELECT DifficultyId, DifficultyName
+                FROM {_tableName}
+                WHERE DifficultyName = @DifficultyName";
 
             SqlParameter[] parameters = new SqlParameter[]
             {

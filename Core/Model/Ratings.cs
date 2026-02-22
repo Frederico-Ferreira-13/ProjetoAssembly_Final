@@ -10,8 +10,7 @@ namespace Core.Model
 {
     public class Ratings : IEntity
     {
-        public int RatingsId { get; private set; }
-        public bool IsActive { get; private set; }
+        public int RatingsId { get; private set; }       
 
         public int RecipesId { get; protected set; }
         public int UserId { get; protected set; }
@@ -24,16 +23,14 @@ namespace Core.Model
         [SetsRequiredMembers]
         private Ratings()
         {
-            this.RatingsId = default;
-            this.IsActive = true;
+            RatingsId = default;            
         }
 
         public Ratings(int recipesId, int userId, int ratingValue)
         {
             ValidateRating(recipesId, userId);
 
-            this.RatingsId = default;
-            this.IsActive = true;
+            RatingsId = default;            
 
             RecipesId = recipesId;
             UserId = userId;
@@ -41,31 +38,25 @@ namespace Core.Model
             this.CreatedAt = DateTime.UtcNow;
         }
 
-        private Ratings(int id, DateTime createdAt, bool isActive,
+        private Ratings(int id, DateTime createdAt,
             int recipesId, int userId, StarRating ratingValue)
         {
-            this.RatingsId = id;
-            this.IsActive = isActive;
+            RatingsId = id;            
 
             RecipesId = recipesId;
             UserId = userId;
             RatingValue = ratingValue;
-            this.CreatedAt = createdAt;
+            CreatedAt = createdAt;
         }
 
-        public static Ratings Reconstitute(int id, DateTime createdAt, bool isActive, int recipesId,
+        public static Ratings Reconstitute(int id, DateTime createdAt, int recipesId,
             int userId, StarRating ratingValue)
         {
-            return new Ratings(id, createdAt, isActive, recipesId, userId, ratingValue);
+            return new Ratings(id, createdAt, recipesId, userId, ratingValue);
         }
 
         public void UpdateRating(int newRatingValue)
         {
-            if (!IsActive)
-            {
-                throw new InvalidOperationException("Não é possível atualizar uma avaliação inativa.");
-            }
-
             ValidateRatingValue(newRatingValue);
 
             var newRating = StarRating.Create(newRatingValue);
@@ -108,6 +99,6 @@ namespace Core.Model
             RatingsId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

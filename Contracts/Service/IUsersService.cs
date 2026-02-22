@@ -8,7 +8,7 @@ namespace Contracts.Service
 {
     public interface IUsersService
     {
-        Task<Result<Users>> RegisterUserAsync(Users newUser, string password);
+        Task<Result<Users>> RegisterUserAsync(string userName, string name, string email, string password);
         Task<Result<Users>> AuthenticateUserAsync(string identifier, string password);
         Task<Result<Users>> GetUserByIdAsync(int userId);
         Task<Result<Users>> GetUserByEmailAsync(string email);

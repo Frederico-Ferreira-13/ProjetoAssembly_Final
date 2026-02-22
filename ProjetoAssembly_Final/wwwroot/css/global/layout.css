@@ -35,7 +35,7 @@ nav {
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-.container-nav {
+.nav-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -81,8 +81,9 @@ nav {
     border-radius: 25px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     width: 200px;
-    height: 35px;
+    height: 38px;
     transition: 0.3s;
+    overflow: hidden;
 }
 
 .search-box:focus-within {
@@ -109,12 +110,19 @@ nav {
     cursor: pointer;
 }
 
+.search-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
 /* --- MENU DE PERFIL --- */
-.perfil-menu {
+.profile-menu {
     position: relative;
 }
 
-.perfil-btn {
+.profile-btn {
     background: #2d2d2d;
     border: 1px solid #444;
     color: white;
@@ -126,14 +134,16 @@ nav {
     gap: 8px;    
 }
 
-.perfil-img-nav {
-    width: 28px;
-    height: 28px;
+.profile-img-nav {
+    width: 30px;
+    height: 30px;
     border-radius: 50%;    
-    border: 1px solid var(--primary-green);
+    border: 1.5px solid var(--primary-green);
+    object-fit: cover;
+    display: block;
 }
 
-.perfil-dropdown {
+.profile-dropdown {
     display: none;
     position: absolute;
     right: 0;
@@ -148,11 +158,11 @@ nav {
     border: 1px solid var(--border-color);
 }
 
-.perfil-dropdown.show {
+.profile-dropdown.show {
     display: block;
 }
 
-.perfil-dropdown li a {
+.profile-dropdown li a {
     color: var(--text-color);
     padding: 10px 20px;
     display: flex;
@@ -161,9 +171,14 @@ nav {
     text-decoration: none;   
 }
 
-.perfil-dropdown li a:hover {
+.profile-dropdown li a:hover {
     background: rgba(40, 167, 69, 0.05);
     color: var(--primary-green);
+}
+
+.main-content {
+    min-height: calc(100vh - 150px);
+    padding-top: 20px;
 }
 
 /* --- 5. FOOTER --- */
@@ -173,4 +188,14 @@ footer {
     background: var(--card-bg);
     border-top: 1px solid var(--border-color);
     color: #777;
+}
+
+@media (max-width: 992px) {
+    .nav-links {
+        display: none; /* Mais tarde podes implementar um menu hambúrguer aqui */
+    }
+
+    .search-box {
+        width: 150px;
+    }
 }

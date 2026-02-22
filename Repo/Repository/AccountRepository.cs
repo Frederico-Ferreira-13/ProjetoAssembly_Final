@@ -27,104 +27,73 @@ namespace Repo.Repository
                 : reader.GetInt32(reader.GetOrdinal("CreatorUserId"));
 
             return Account.Reconstitute(
-                id,
-                isActive,
+                id,                
                 accountName,
                 subscriptionLevel,
-                creatorUserId
+                creatorUserId,
+                isActive
             );
         }
 
         protected override string BuildInsertSql(Account entity)
         {
             // Insere apenas os campos necessários (ID é IDENTITY)
-            return $"INSERT INTO {_tableName} (CreatorUserId, AccountName, SubscriptionLevel, IsActive) " +
-                   $"VALUES (@CreatorUserId, @AccountName, @SubscriptionLevel, @IsActive)";
+            return $@"INSERT INTO {_tableName} (AccountName, SubscriptionLevel, IsActive, CreatorUserId)
+                   VALUES (@AccountName, @SubscriptionLevel, @IsActive, @CreatorUserId)";
         }
 
         protected override SqlParameter[] GetInsertParameters(Account entity)
         {
             return new SqlParameter[]
             {
-                new SqlParameter("@AccountName", entity.AccountName),
-                new SqlParameter("@SubscriptionLevel", entity.SubscriptionLevel),
+                new SqlParameter("@AccountName", entity.AccountName ?? (object)DBNull.Value),
+                new SqlParameter("@SubscriptionLevel", entity.SubscriptionLevel ?? (object)DBNull.Value),
                 new SqlParameter("@IsActive", entity.IsActive),
-                new SqlParameter("@CreatorUserId", entity.CreatorUserId)
+                new SqlParameter("@CreatorUserId", entity.CreatorUserId ?? (object)DBNull.Value)
             };
         }
 
         protected override string BuildUpdateSql(Account entity)
         {
             // O UPDATE de uma conta deve ser cauteloso, por isso inclui apenas campos mutáveis.
-            return $"UPDATE {_tableName} SET AccountName = @AccountName, SubscriptionLevel = @SubscriptionLevel, IsActive = @IsActive " +
-                   $"WHERE AccountId = @AccountId";
+            return $@"UPDATE {_tableName}
+                      SET AccountName = @AccountName,
+                        SubscriptionLevel = @SubscriptionLevel,
+                        IsActive = @IsActive,
+                        CreatorUserId = @CreatorUserId
+                   WHERE AccountId = @AccountId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Account entity)
         {
             return new SqlParameter[]
             {
-                new SqlParameter("@AccountName", entity.AccountName),
-                new SqlParameter("@SubscriptionLevel", entity.SubscriptionLevel),
+                new SqlParameter("@AccountName", entity.AccountName ?? (object)DBNull.Value),
+                new SqlParameter("@SubscriptionLevel", entity.SubscriptionLevel ?? (object)DBNull.Value),
                 new SqlParameter("@IsActive", entity.IsActive),
-                new SqlParameter("@AccountId", entity.AccountId)
+                new SqlParameter("@CreatorUserId", entity.CreatorUserId ?? (object)DBNull.Value)
             };
         }
 
         public async Task<Account?> GetByNameAsync(string accountName)
         {
             // O SELECT deve trazer todas as colunas necessárias para o MapFromReader
-            string sql = $@" SELECT AccountId, CreatorUserId, AccountName, SubscriptionLevel, IsActive 
-                             FROM {_tableName} WHERE AccountName = @AccountName AND IsActive = 1";
+            string sql = $@" SELECT AccountId, AccountName, SubscriptionLevel, CreatorUserId, IsActive 
+                             FROM {_tableName} 
+                             WHERE AccountName = @AccountName AND IsActive = 1";
 
-            SqlParameter param = new SqlParameter("@AccountName", accountName);
-
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, param))
-                {
-                    if (reader.Read())
-                    {
-                        return MapFromReader(reader);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetByNameAsync: {ex.Message}");
-                throw;
-            }
-
-            return null;
+            return await ExecuteSingleAsync(sql, new SqlParameter("@AccountName", accountName));            
         }
 
         public async Task<IEnumerable<Account>> GetAccountsByUserIdAsync(int userId)
         {
-            string sql = $@"
-                SELECT A.AccountId, A.CreatorUserId, A.AccountName, A.SubscriptionLevel, A.IsActive
+            string sql = $@"SELECT A.AccountId, A.AccountName, A.CreatorUserId, A.SubscriptionLevel, A.IsActive
                 FROM {_tableName} A
                 INNER JOIN [Users] U ON A.AccountId = U.AccountId
-                WHERE U.UserId = @UserId AND A.IsActive = 1";
+                WHERE U.UserId = @UserId AND A.IsActive = 1
+                ORDER BY A.AccountName";
 
-            SqlParameter param = new SqlParameter("@UserId", userId);
-
-            try
-            {
-                var accounts = new List<Account>();
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, param))
-                {
-                    while (reader.Read())
-                    {
-                        accounts.Add(MapFromReader(reader));
-                    }
-                }
-                return accounts;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetAccountsByUserIdAsync: {ex.Message}");
-                throw;
-            }
+            return await ExecuteListAsync(sql, new SqlParameter("@UserId", userId));         
         }
 
         public async Task<IEnumerable<Account>> GetUserActiveAccountsAsync(int userId)
@@ -135,61 +104,31 @@ namespace Repo.Repository
                 INNER JOIN [Users] U ON A.AccountId = U.AccountId
                 WHERE U.UserId = @UserId AND A.IsActive = 1";
 
-            SqlParameter param = new SqlParameter("@UserId", userId);
-
-            try
-            {
-                var accounts = new List<Account>();
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, param))
-                {
-                    while (reader.Read())
-                    {
-                        accounts.Add(MapFromReader(reader));
-                    }
-                }
-                return accounts;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetUserActiveAccountsAsync: {ex.Message}");
-                throw;
-            }
+            return await GetAccountsByUserIdAsync(userId);
         }
 
         public async Task<bool> AccountNameExistsAsync(string accountName, int? excludeId = null)
         {
-            var parameters = new List<SqlParameter>
+            if (string.IsNullOrWhiteSpace(accountName))
             {
-                new SqlParameter("@AccountName", accountName)
-            };
+                return false;
+            }
 
             string sql = $@"SELECT COUNT(1)
                              FROM {_tableName}
                              WHERE AccountName = @AccountName AND IsActive = 1";
 
+            var parameters = new List<SqlParameter> { new SqlParameter("@AccountName", accountName) };
+
             if (excludeId.HasValue)
             {
-                // Se excludeId tiver um valor, adicionamos a condição de exclusão no WHERE
-                sql += " AND AccountId != @ExcludeId";
-                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
+                sql += " AND AccountId != @ExlcueId";
+                parameters.Add(new SqlParameter("@ExclueId", excludeId.Value));
             }
 
-            try
-            {
-                object? result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
-
-                if (result != null && result != DBNull.Value && Convert.ToInt32(result) > 0)
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório AccountNameExistsAsync: {ex.Message}");
-                throw;
-            }
-
-            return false;
+            var result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            
+            return Convert.ToInt32(result) > 0;
         }
     }
 }

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/pages/editRecipe.css" asp-append-version="true" />
 }
 <main class="container">   
-    <div class="edit-recipe-container">
+    <div class="edit-recipe-wrapper">
         <div class="edit-card">
             <header class="edit-header">
                 <h2><i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar Receita"]</h2>
@@ -68,13 +68,13 @@
                             <i class="fa-solid fa-basket-shopping"></i> @Localizer["Ingredientes"]
                         </label>
 
-                        <div id="lista-ingredientes">
+                        <div id="ingredient-list">
                             @if(Model.Input.Ingredients != null && Model.Input.Ingredients.Any())
                                 {
                                     foreach(var item in Model.Input.Ingredients)
                                     {
-                                        <div class="ingrediente-linha">
-                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
+                                        <div class="ingredient-row">
+                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qty" />
                                             <input type="text" name="Unit[]" value="@item.Unit" placeholder="Unid." class="form-input-custom unit" />
                                             <input type="text" name="IngredientName[]" value="@item.Ingredient?.IngredientName" placeholder="Ingrediente" class="form-input-custom" required />
                                             <input type="text" name="ingredientDetail[]" value="@item.Detail" placeholder="Nota/Tipo" class="form-input-custom detail" />
@@ -87,15 +87,15 @@
                                 }
                                 else
                                 {
-                                    <div class="ingrediente-linha">                                        
-                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qtd" />
+                                    <div class="ingredient-row">                                        
+                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qty" />
                                         <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" />
                                         <input type="text" name="IngredientName[]" placeholder="Ingrediente" class="form-input-custom" required />
                                         <input type="text" name="ingredientDetail[]" placeholder="Nota/Tipo" class="form-input-custom detail" />
                                     </div>
                                 }
                         </div>
-                        <button type="button" id="btn-add-ingrediente" class="btn-secondary">
+                        <button type="button" id="btn-add-ingredient" class="btn-secondary">
                             <i class="fa-solid fa-plus"></i> @Localizer["Adicionar Ingrediente"]
                         </button>
                     </div>
@@ -120,6 +120,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/ingredientes.js"></script>
+    <script src="~/js/ingredients.js"></script>
+    <script src="~/js/script.js"></script>
 }
 

@@ -17,27 +17,25 @@ namespace Repo.Repository
 
         protected override UserSettings MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("UserSettingId"));
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            int id = reader.GetInt32(reader.GetOrdinal("UserSettingId"));            
             int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
             string theme = reader.GetString(reader.GetOrdinal("Theme"));
             string language = reader.GetString(reader.GetOrdinal("Language"));
-            bool receiveNotifications = reader.GetBoolean(reader.GetOrdinal("ReceiveNotifications"));
+            bool notificationsEnabled = reader.GetBoolean(reader.GetOrdinal("NotificationsEnabled"));
 
             return UserSettings.Reconstitute(
-                id,
-                isActive,
+                id,                
                 userId,
                 theme,
                 language,
-                receiveNotifications
+                notificationsEnabled
             );
         }
 
         protected override string BuildInsertSql(UserSettings entity)
         {
-            return $"INSERT INTO {_tableName} (UserId, Theme, Language, ReceiveNotifications, IsActive) " +
-                   $"VALUES (@UserId, @Theme, @Language, @ReceiveNotifications, 1)";
+            return $@"INSERT INTO {_tableName} (UserId, Theme, Language, NotificationsEnabled)
+                      VALUES (@UserId, @Theme, @Language, @NotificationsEnabled)";
         }
 
         protected override SqlParameter[] GetInsertParameters(UserSettings entity)
@@ -47,15 +45,17 @@ namespace Repo.Repository
                 new SqlParameter("@UserId", entity.UserId),
                 new SqlParameter("@Theme", entity.Theme),
                 new SqlParameter("@Language", entity.Language),
-                new SqlParameter("@ReceiveNotifications", entity.ReceiveNotifications)
+                new SqlParameter("@NotificationsEnabled", entity.NotificationsEnabled)
             };
         }
 
         protected override string BuildUpdateSql(UserSettings entity)
         {
-            return $"UPDATE {_tableName} SET Theme = @Theme, Language = @Language, " +
-                   $"ReceiveNotifications = @ReceiveNotifications, LastUpdatedAt = GETDATE() " +
-                   $"WHERE UserSettingId = @Id";
+            return $@"UPDATE {_tableName} 
+                      SET Theme = @Theme, 
+                          Language = @Language,
+                          NotificationsEnabled = @NotificationsEnabled, 
+                      WHERE UserSettingId = @UserSettingId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(UserSettings entity)
@@ -64,14 +64,17 @@ namespace Repo.Repository
             {
                 new SqlParameter("@Theme", entity.Theme),
                 new SqlParameter("@Language", entity.Language),
-                new SqlParameter("@ReceiveNotifications", entity.ReceiveNotifications),
-                new SqlParameter("@Id", entity.GetId())
+                new SqlParameter("@NotificationsEnabled", entity.NotificationsEnabled),
+                new SqlParameter("@UserSettingId", entity.GetId())
             };
         }
 
         public async Task<UserSettings?> GetByUserId(int userId)
         {
-            string sql = $"SELECT * FROM {_tableName} WHERE UserId = @UserId AND IsActive = 1";
+            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, NotificationsEnabled
+                            FROM {_tableName}
+                            WHERE UserId = @UserId";
+            
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", userId)
@@ -82,11 +85,15 @@ namespace Repo.Repository
 
         public async Task<IEnumerable<UserSettings>> GetByLanguageAsync(string language)
         {
-            string sql = $"SELECT * FROM {_tableName} WHERE Language = @Language AND IsActive = 1";
+            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, NotificationsEnabled
+                            FROM {_tableName}
+                            WHERE Language = @Language";
+
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@Language", language)
             };
+
             return await ExecuteListAsync(sql, parameters);
         }
     }

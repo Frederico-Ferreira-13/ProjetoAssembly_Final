@@ -9,22 +9,19 @@ namespace Core.Model
     public class CategoryType : IEntity
     {
         public int CategoryTypeId { get; private set; }
-        public string TypeName { get; private set; } = string.Empty;
-        public bool IsActive { get; private set; }
+        public string TypeName { get; private set; } = string.Empty;        
 
         public CategoryType(string name)
         {
             ValidateName(name);
 
-            TypeName = name;
-            this.IsActive = true;
+            TypeName = name;            
         }
 
-        private CategoryType(int id, string name, bool isActive)
+        private CategoryType(int id, string name)
         {
             CategoryTypeId = id;
-            TypeName = name;
-            this.IsActive = isActive;
+            TypeName = name;            
         }
 
         public void UpdateName(string newName)
@@ -37,17 +34,9 @@ namespace Core.Model
             }
         }
 
-        public void Deactivate()
+        public static CategoryType Reconstitute(int id, string name)
         {
-            if (IsActive)
-            {
-                IsActive = false;
-            }
-        }
-
-        public static CategoryType Reconstitute(int id, string name, bool isActive)
-        {
-            return new CategoryType(id, name, isActive);
+            return new CategoryType(id, name);
         }
 
         private void ValidateName(string name)
@@ -74,6 +63,6 @@ namespace Core.Model
             CategoryTypeId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

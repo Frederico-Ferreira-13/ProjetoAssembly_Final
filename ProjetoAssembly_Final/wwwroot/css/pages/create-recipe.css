@@ -1,6 +1,6 @@
 ﻿/* create-recipe.css */
 /* PÁGINA DE CRIAÇÃO DE RECEITAS */
-.recipe-form-container {
+.recipe-form-wrapper {
     max-width: 850px;
     margin: 40px auto;
     background: var(--card-bg);
@@ -10,7 +10,7 @@
     border: 1px solid var(--border-color);
 }
 
-.recipe-form-container h1 {
+.recipe-form-wrapper h1 {
     text-align: center;
     margin-bottom: 35px;
     color: var(--text-color);
@@ -51,7 +51,7 @@
 }
 
 /* --- INGREDIENTES DINÂMICOS --- */
-.ingredientes-section {
+.ingredients-section {
     background: rgba(0, 0, 0, 0.02);
     padding: 20px;
     border-radius: 15px;
@@ -59,7 +59,7 @@
     border: 1px dashed var(--border-color);
 }
 
-.ingrediente-linha {
+.ingredient-row {
     display: flex;
     gap: 12px;
     margin-bottom: 15px;
@@ -68,7 +68,7 @@
 }
 
 /* Classes para controlar a largura dos campos na linha */
-.input-qtd {
+.input-qty {
     width: 85px !important;
     flex: none;
 }
@@ -85,7 +85,7 @@
     flex: 1;
 }
 
-.btn-remove-ing {
+.btn-remove-ingredient {
     background: #ff4757;
     color: white;
     border: none;
@@ -99,13 +99,13 @@
     justify-content: center;
 }
 
-.btn-remove-ing:hover {
+.btn-remove-ingredient:hover {
     background: #ff6b81;
     transform: scale(1.05);
 }
 
 /* Botão Adicionar (Tracejado) */
-#btn-add-ingrediente {
+#btn-add-ingredient {
     background-color: transparent;
     color: var(--primary-green);
     border: 2px dashed var(--primary-green);
@@ -122,13 +122,13 @@
     gap: 8px;
 }
 
-#btn-add-ingrediente:hover {
+#btn-add-ingredient:hover {
     background-color: rgba(40, 167, 69, 0.05);
     transform: translateY(-2px);
 }
 
 /* --- BOTÃO GUARDAR FINAL */
-.btn-guardar-recipes {
+.btn-save-recipe {
     background-color: var(--primary-green);
     color: white;
     width: 100%;
@@ -142,7 +142,7 @@
     margin-top: 20px;
 }
 
-.btn-guardar-recipes:hover {
+.btn-save-recipe:hover {
     background-color: #218836;
     box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
     transform: translateY(-3px);
@@ -153,16 +153,16 @@
     to { opacity: 1; transform: translateY(0); }
 }
 @media (max-width: 600px) {
-    .recipe-form-container {
+    .recipe-form-wrapper {
         margin: 10px;
         padding: 20px;
     }
 
-    .ingrediente-linha {
+    .ingredient-row {
         flex-wrap: wrap;
     }
 
-    .input-qtd, .input-unit {
+    .input-qty, .input-unit {
         width: 48% !important;
     }
 

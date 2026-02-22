@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="~/css/pages/pendingRecipes.css" asp-append-version="true" />
 }
 
-<div class="pending-container">
+<div class="pending-wrapper">
     <h1 class="section-title">
         <i class="fa-solid fa-clock-rotate-left"></i> @Localizer["Receitas Pendentes"]
     </h1>
@@ -18,41 +18,42 @@
 
 @if(TempData["Success"] != null)
 {
-    <div class="alert-pending-info">
+    <div class="pending-info-alert">
         <i class="fa-solid fa-circle-check"></i>@TempData["Success"]
     </div>
 }
 
 @if (Model.PendingRecipes.Any())
 {
-    <div class="grid-pending">
+    <div class="pending-grid">
         @foreach (var recipe in Model.PendingRecipes)
         {
-            <article class="card-pending">
-                <span class="status-badge">A aguardar</span>
+            <article class="pending-card">
+                <span class="status-badge">@Localizer["A aguardar"]</span>
+
                 <a href="/view_recipes/@recipe.RecipesId">
                     <img src="/img/@(string.IsNullOrEmpty(recipe.ImageUrl) ? "default.jpg" : recipe.ImageUrl)"
-                         class="card-pending-img"
+                         class="pending-card-img"
                          alt="@recipe.Title" />                      
                 </a>
 
-                <div class="card-pending-body">
-                    <h3 class="card-pending-title">@recipe.Title</h3>
+                <div class="pending-card-body">
+                    <h3 class="pending-card-title">@recipe.Title</h3>
 
-                    <div class="card-pending-meta">
+                    <div class="pending-card-meta">
                         <span><i class="fa-solid fa-user"></i> @(recipe.User?.UserName ?? "Utilizador")</span>
                         <span><i class="fa-solid fa-calendar-days"></i> @recipe.CreatedAt.ToString("dd/MM/yyyy")</span>
                     </div>
 
                     <div class="pending-actions">
-                        <a href="/view_recipes/@recipe.RecipesId" class="btn-view-details" title="Rever Conteúdo">
-                            <i class="fa-solid fa-eye"></i>    
+                        <a href="/view_recipes/@recipe.RecipesId" class="btn-details" title="@Localizer["Rever Conteúdo"]">
+                            <i class="fa-solid fa-eye"></i> @Localizer["Rever"]   
                         </a>
 
-                        <form method="post" asp-page-handler="Approve">
+                        <form method="post" asp-page-handler="Approve" style="flex: 2;">
                             <input type="hidden" name="id" value="@recipe.RecipesId" />
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="fa-solid fa-check"></i> Autorizar
+                            <button type="submit" class="btn-approve">
+                                <i class="fa-solid fa-check"></i> @Localizer["Autorizar"]
                             </button>
                         </form>
                     </div>
@@ -63,7 +64,8 @@
 }
 else
 {
-    <div class="alert alert-info text-center">
-        Não há receitas pendentes de aprovação no momento.
+    <div class="empty-pending-state"> 
+        <i class="fa-solid fa-inbox"></i>
+        <p>@Localizer["Não há receitas pendentes de aprovação no momento."]</p>
     </div>
 }            

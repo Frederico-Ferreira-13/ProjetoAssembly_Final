@@ -9,8 +9,7 @@ namespace Core.Model
     public class Difficulty : IEntity
     {
         public int DifficultyId { get; private set; }
-        public string DifficultyName { get; private set; } = string.Empty;
-        public bool IsActive { get; private set; }
+        public string DifficultyName { get; private set; } = string.Empty;        
 
         public Difficulty(string name)
         {
@@ -19,11 +18,10 @@ namespace Core.Model
                 throw new ArgumentException("O nome da dificuldade é obrigatório.", nameof(name));
             }
 
-            DifficultyName = name;
-            this.IsActive = true;
+            DifficultyName = name;            
         }
 
-        private Difficulty(int id, string name, bool isActive)
+        private Difficulty(int id, string name)
         {
             if (id <= 0)
             {
@@ -36,8 +34,7 @@ namespace Core.Model
             }
 
             DifficultyId = id;
-            DifficultyName = name;
-            this.IsActive = isActive;
+            DifficultyName = name;            
         }
 
         public void UpdateName(string newName)
@@ -49,17 +46,9 @@ namespace Core.Model
             DifficultyName = newName;
         }
 
-        public void Deactivate()
+        public static Difficulty Reconstitute(int id, string name)
         {
-            if (IsActive)
-            {
-                IsActive = false;
-            }
-        }
-
-        public static Difficulty Reconstitute(int id, string name, bool isActive) // 🎯 CORREÇÃO 4: Adicionar isActive ao Reconstitute
-        {
-            return new Difficulty(id, name, isActive);
+            return new Difficulty(id, name);
         }
 
         public int GetId() => DifficultyId;
@@ -73,6 +62,6 @@ namespace Core.Model
             DifficultyId = id;
         }
 
-        public bool GetIsActive() => IsActive;
+        public bool GetIsActive() => true;
     }
 }

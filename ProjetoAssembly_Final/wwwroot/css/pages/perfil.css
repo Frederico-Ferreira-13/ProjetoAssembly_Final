@@ -1,14 +1,14 @@
 ﻿/* perfil.css */
 /* --- PÁGINA DE PERFIL (DASHBOARD DO UTILIZADOR --- */
 
-.container-perfil {
+.profile-container {
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 20px;
 }
 
 /* --- HEADER DO PERFIL --- */
-.perfil-header {
+.profile-header {
     background: var(--card-bg);
     padding: 40px;
     border-radius: 25px;
@@ -17,18 +17,18 @@
     border: 1px solid var(--border-color);
 }
 
-.perfil-flex {
+.profile-flex {
     display: flex;
     align-items: center;
     gap: 35px;
     flex-wrap: wrap;
 }
 
-.img-perfil-wrapper {
+.profile-img-wrapper {
     position: relative;
 }
 
-.img-perfil-grande {
+.profile-img-large {
     width: 140px;
     height: 140px;
     border-radius: 50%;
@@ -37,14 +37,14 @@
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
 }
 
-.info-user h1 {
+.user-info h1 {
     margin: 0 0 8px 0;
     color: var(--text-color);
     font-size: 2.5rem;
     font-weight: 800;
 }
 
-.info-user p {
+.user-info p {
     color: var(--text-color);
     opacity: 0.6;
     font-size: 1.1rem;
@@ -66,7 +66,7 @@
     border: 1px solid var(--border-color);
 }
 
-.status-value {
+.stat-value {
     display: block;
     font-weight: 800;
     color: var(--primary-green);
@@ -88,13 +88,13 @@
     font-weight: 700;
 }
 
-.grid-perfil {
+.profile-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fil, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
 }
 
-.receitas-card-perfil {
+.profile-recipe-card {
     background: var(--card-bg);
     border-radius: 20px;
     overflow: hidden;
@@ -104,36 +104,36 @@
     flex-direction: column;
 }
 
-.receitas-card-perfil:hover {
+.profile-recipe-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
-.card-img-perfil {
+.profile-card-img {
     width: 100%;
-    height: 100px;
+    height: 180px;
     object-fit: cover;
 }
 
-.card-info-perfil {
+.profile-card-info {
     padding: 25px;
     flex-grow: 1;
 }
 
-.card-info-perfil h3 {
+.profile-card-info h3 {
     margin: 0 0 15px 0;
     color: var(--text-color);
     font-size: 1.3rem;
 }
 
 /* --- BOTÕES DE GESTÃO --- */
-.acoes-perfil {
+.profile-actions {
     display: flex;
     gap: 12px;
     margin-top: 10px;
 }
 
-.btn-gestao {
+.btn-manage {
     flex: 1;
     padding: 12px;
     border: none;
@@ -149,31 +149,31 @@
     transition: 0.3s;
 }
 
-.btn-gestao.editar {
+.btn-manage.edit {
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
 }
 
-.btn-gestao.editar:hover {
+.btn-manage.edit:hover {
     background-color: var(--primary-green);
     color: white;
     border-color: var(--primary-green);
 }
 
-btn-gestao.eliminar {
+btn-manage.delete {
     background-color: #fff5f5;
     color: #ff4757;
     border: 1px solid #ffcccc;
 }
 
-.btn-gestao.elimnar:hover {
+.btn-manage.delete:hover {
     background-color: #ff4757;
     color: white;
 }
 
 @media (max-width: 768px) {
-    .perfil-flex {
+    .profile-flex {
         justify-content: center;
         text-align: center;
     }
@@ -182,7 +182,7 @@ btn-gestao.eliminar {
         justify-content: center;
     }
 
-    .info-user h1 {
+    .user-info h1 {
         font-size: 2rem;
     }
 }

@@ -13,8 +13,7 @@ namespace Contracts.Service
         Task<Result<IEnumerable<Category>>> GetCategoriesByUserIdAsync();
         Task<Result<IEnumerable<Category>>> GetUserActiveCategoriesAsync();
         Task<bool> CategoryNameExistsForUserAsync(string categoryName, int userId, int? excludeCategoryId = null);
-        Task<Result<Category>> UpdateCategoryAsync(Category updateCategory);
-        Task<Result<Category>> DeactivateCategoryAsync(int categoryId);
+        Task<Result<Category>> UpdateCategoryAsync(Category updateCategory);        
 
         Task<Result<CategoryType>> GetCategoryTypeByIdAsync(int id);
         Task<Result<CategoryType>> GetCategoryTypeByNameAsync(string name);

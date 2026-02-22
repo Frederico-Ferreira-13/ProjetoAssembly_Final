@@ -28,7 +28,6 @@ namespace Service.Services
         public async Task<Result<Account>> GetAccountByIdAsync(int id)
         {
             var account = await _unitOfWork.Accounts.ReadByIdAsync(id);
-
             if (account == null)
             {
                 // Devolve NotFound
@@ -38,7 +37,6 @@ namespace Service.Services
                     $"Conta com ID {id} não encontrada.")
                 );
             }
-
 
             return Result<Account>.Success(account);
         }
@@ -78,44 +76,38 @@ namespace Service.Services
         public async Task<Result<IEnumerable<Account>>> GetCurrentUserAccountsAsync()
         {
             var currentUserIdResult = await _authService.GetCurrentUserIdAsync();
-
             if (!currentUserIdResult.IsSuccessful)
             {
                 return Result<IEnumerable<Account>>.Failure(
-                    Error.Conflict(
-                    currentUserIdResult.ErrorCode ?? ErrorCodes.AuthUnauthorized,
-                    currentUserIdResult.Message ?? "Nenhum utilizador autenticado encontrado.")
-                );
+                    Error.Unauthorized(
+                        ErrorCodes.AuthUnauthorized, 
+                        "Nenhum utilizador autenticado encontrado."));
             }
 
             int currentUserId = currentUserIdResult.Value;
             return await GetAccountsByUserIdAsync(currentUserId);
         }
 
-        public async Task<Result<Account>> CreateAccountAsync(Account account)
+        public async Task<Result<Account>> CreateAccountAsync(string accountName, string? subscriptionLevel = null)
         {
             var currentUserIdResult = await _authService.GetCurrentUserIdAsync();
             if (!currentUserIdResult.IsSuccessful)
             {
                 return Result<Account>.Failure(
                     Error.Unauthorized(
-                    currentUserIdResult.ErrorCode ?? ErrorCodes.AuthUnauthorized,
-                    currentUserIdResult.Message ?? "Nenhum utilizador autenticado encontrado para criar a conta.")
-                );
+                        ErrorCodes.AuthUnauthorized, 
+                        "Nenhum utilizador autenticado encontrado para criar a conta."));
             }
 
             int currentUserId = currentUserIdResult.Value;
 
-            var existingAccount = await _unitOfWork.Accounts.GetByNameAsync(account.AccountName);
-            if (existingAccount != null)
+            var existingAccount = await _unitOfWork.Accounts.AccountNameExistsAsync(accountName);
+            if (existingAccount)
             {
                 return Result<Account>.Failure(
                     Error.Conflict(
-                        ErrorCodes.AlreadyExists,
-                        $"Já existe uma conta ativa com o Nome '{account.AccountName}'.",
-                        new Dictionary<string, string[]> { { nameof(account.AccountName), new[] { "O nome da conta já está em uso." } } }
-                    )
-                );
+                        ErrorCodes.AlreadyExists, 
+                        $"Já existe uma conta com o nome '{accountName}'."));
             }
 
             await _unitOfWork.BeginTransactionAsync(); //Início da transação
@@ -123,9 +115,9 @@ namespace Service.Services
             try
             {
                 var newAccount = new Account(
-                    accountName: account.AccountName,
-                    subscriptionLevel: account.SubscriptionLevel,
-                    userId: currentUserId
+                    accountName: accountName,
+                    subscriptionLevel: subscriptionLevel ?? "Free",
+                    creatorUserId: currentUserId
                 );
 
                 await _unitOfWork.Accounts.CreateAddAsync(newAccount);
@@ -237,7 +229,7 @@ namespace Service.Services
 
             try
             {
-                accountToDeactivate.Deactive();
+                accountToDeactivate.Deactivate();
                 await _unitOfWork.Accounts.UpdateAsync(accountToDeactivate);
                 await _unitOfWork.CommitAsync();
 

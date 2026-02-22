@@ -15,10 +15,9 @@ namespace Repo.Repository
         protected override CategoryType MapFromReader(SqlDataReader reader)
         {
             int id = reader.GetInt32(reader.GetOrdinal("CategoryTypeId"));
-            string name = reader.GetString(reader.GetOrdinal("TypeName"));
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            string name = reader.GetString(reader.GetOrdinal("TypeName"));            
 
-            return CategoryType.Reconstitute(id, name, isActive);
+            return CategoryType.Reconstitute(id, name);
         }
 
         protected override string BuildInsertSql(CategoryType entity)
@@ -50,10 +49,10 @@ namespace Repo.Repository
 
         public async Task<CategoryType?> GetByNameAsync(string typeName)
         {
-            const string sql = @"
-                SELECT CategoryTypeId, TypeName, IsActive 
+            string sql = @"
+                SELECT CategoryTypeId, TypeName 
                 FROM CategoryType 
-                WHERE TypeName = @TypeName AND IsActive = 1";
+                WHERE TypeName = @TypeName";
 
             SqlParameter[] parameters = new SqlParameter[]
             {

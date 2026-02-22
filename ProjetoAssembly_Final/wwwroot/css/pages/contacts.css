@@ -21,7 +21,7 @@
 }
 
 /* CARDS DE INFORMAÇÃO */
-.contact-info-cards {
+.contact-info-grid {
     display: flex;
     flex-direction: row;
     gap: 25px;
@@ -68,7 +68,7 @@
     opacity: 0.7;
 }
 
-.btn-contact-link {
+.contact-link-btn {
     display: inline-block;
     margin-top: 20px;
     color: var(--primary-green);
@@ -77,15 +77,15 @@
     transition: 0.3s;
 }
 
-.btn-contact-link:hover {
+.contact-link-btn:hover {
     text-decoration: underline;
     letter-spacing: 0.3px;
 }
 
 /* FORMULÁRIO DE CONTACTO */
-.contact-form-container {
-    max-width: 800px;
-    margin: 0 auto;
+.contact-form-wrapper {
+    max-width: 650px;
+    margin: 0 auto 60px;
     background: var(--card-bg);
     padding: 40px;
     border-radius: 20px;
@@ -93,7 +93,48 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
-.btn-send {
+.form-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: inherit;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* --- BOTÃO DE SUBMISSÃO --- */
+.btn-submit {
     background-color: var(--primary-green);
     color: white;
     border: none;
@@ -110,18 +151,41 @@
     transition: 0.3s ease;
 }
 
-.btn-send:hover {
+.btn-submit:hover {
     background-color: #218838;
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
 
+/* --- ALERTAS E VALIDAÇÃO --- */
+.alert-success {
+    padding: 15px;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid #c3e6cb;
+}
+
+.text-danger {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
-    .contact-info-cards {
+    .contact-info-grid {
         flex-direction: column;       
     }
 
     .contact-header h1 {
         font-size: 2rem;
+    }
+
+    .contact-form-wrapper {
+        padding: 25px;
+        margin: 0 15px 60px;
     }
 }

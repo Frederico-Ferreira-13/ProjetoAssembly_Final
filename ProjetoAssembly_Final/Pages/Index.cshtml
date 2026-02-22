@@ -9,9 +9,11 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
 }
 
-<link rel="preload" as="image" href="~/img/hero.jpg">
+<link rel="preload" as="image" href="@Url.Content("~/img/hero.jpg")">
 
 <header class="hero">
     <div class="hero-content">
@@ -22,24 +24,28 @@
 </header>
 
 <main class="container">
-    <section id="categorias" class="categorias-home">        
-        <div class="grid-categorias">
-            <a asp-page="/recipes" asp-route-categoryId="1" class="cat-card">
+    <section id="categorias" class="category-section">        
+        <div class="category-grid">
+            <a asp-page="/recipes" asp-route-categoryId="9993" class="category-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>@Localizer["Sopas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="2" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="9992" class="category-card">
                 <div class="cat-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>@Localizer["Carne"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="3" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="9994" class="category-card">
                 <div class="cat-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>@Localizer["Peixe"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="4" class="cat-card">
+            <a asp-page="/recipes" asp-route-categoryId="9995" class="category-card">
+                <div class="cat-icon"><i class="fa-solid fa-leaf"></i></div>
+                <span>@Localizer["Vegetariano"]</span>
+            </a>
+            <a asp-page="/recipes" asp-route-categoryId="9991" class="category-card">
                 <div class="cat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>@Localizer["Sobremesas"]</span>
-            </a>
+            </a>           
         </div>
     </section>
 
@@ -48,23 +54,28 @@
         <div class="slideshow-wrapper">
             <div class="mySlides fade">
                 <img src="img/bacalhau.jpg" alt="Bacalhau à Brás">
-                <div class="slide-badge">Tradicional</div>
-                <div class="slide-text-overlay">Bacalhau à Brás</div>
+                <div class="slide-badge">@Localizer["Tradicional"]</div>
+                <div class="slide-text-overlay">@Localizer["Bacalhau à Brás"]</div>
             </div>
             <div class="mySlides fade">
-                <img src="img/sopa.jpg" alt="Sopa de Legumes">
-                <div class="slide-badge">Saudável</div>
-                <div class="slide-text-overlay">Sopa de Legumes - Saudável e Caseira</div>
+                <img src="img/sopa.jpg" alt="@Localizer["Sopa de Legumes"]">
+                <div class="slide-badge">@Localizer["Saudável"]</div>
+                <div class="slide-text-overlay">@Localizer["Sopa de Legumes - Saudável e Caseira"]</div>
             </div>
             <div class="mySlides fade">
-                <img src="img/arroz-de-pato.jpg" alt="Arroz de Pato">
-                <div class="slide-badge">Saudável</div>
-                <div class="slide-text-overlay"> Arroz de Pato</div>
+                <img src="img/arroz-de-pato.jpg" alt="@Localizer["Arroz de Pato"]">
+                <div class="slide-badge">@Localizer["Tradicional"]</div>
+                <div class="slide-text-overlay"> @Localizer["Arroz de Pato"]</div>
+            </div>
+            <div class="mySlides fade">
+                <img src="img/bolo-de-chocolate-vegan.jpg" alt="@Localizer["Bolo de Chocolate Vegan"]">
+                <div class="slide-badge">@Localizer["Saudável"]</div>
+                <div class="slide-text-overlay"> @Localizer["Bolo de Chocolate Vegan"]</div>
             </div>
             <div class="mySlides fade">
                 <img src="img/arroz-doce.jpg" alt="Arroz Doce">
-                <div class="slide-badge">Saudável</div>
-                <div class="slide-text"> Arroz Doce</div>
+                <div class="slide-badge">@Localizer["Saudável"]</div>
+                <div class="slide-text-overlay"> @Localizer["Arroz Doce"]</div>
             </div>
 
             <button class="prev" onclick="plusDivs(-1)">&#10094;</button>
@@ -72,26 +83,14 @@
         </div>
     </section>
 
-    <section class="destaques-home">
+    <section class="recipe-section">
         <h2 class="section-title">@Localizer["Receitas Recentes"]</h2>
-        <div id="container-receitas" class="grid-receitas">
-            @if (Model.ListaReceitas != null)
+        <div id="recipe-container" class="recipe-grid">
+            @if (Model.RecipeList != null)
             {
-                @foreach (var receita in Model.ListaReceitas.Take(4))
+                @foreach (var recipe in Model.RecipeList.Take(4))
                 {
-                    <article class="receitas-card">
-                        <div class="card-image-wrapper">
-                            <img src="/img/@(string.IsNullOrEmpty(receita.ImageUrl) ? "default.jpg" : receita.ImageUrl)" alt="@receita.Title">
-                        </div>                        
-                        <div class="card-info">
-                            <h3>@receita.Title</h3>
-                            <div class="card-meta">
-                                <span><i class="fa-solid fa-gauge"></i> @(receita.DifficultyId == 1 ? Localizer["Fácil"] : Localizer["Média"])</span>
-                                <span><i class="fa-solid fa-clock"></i> @((receita.PrepTimeMinutes) + (receita.CookTimeMinutes)) min</span>
-                            </div>                            
-                            <a asp-page="/view_recipes" asp-route-id="@receita.RecipesId" class="btn">Ver Receita</a>
-                        </div>
-                    </article>
+                    <partial name="_RecipesCard" model="recipe" />
                 }
             }
         </div>

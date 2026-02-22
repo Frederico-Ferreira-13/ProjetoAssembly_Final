@@ -1,0 +1,128 @@
+﻿@page "{id:int}"
+@model ProjetoAssembly_Final.Pages.view_recipesModel
+@using Microsoft.Extensions.Localization
+@using System.Security.Claims
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
+@{
+    Layout = "_layout";
+    ViewData["Title"] = Model.Recipe?.Title;
+
+    var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    string? currentUserId = currentUserIdClaim?.Value;
+
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    bool isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Administrator"));
+    bool isOwner = isAuthenticated 
+                   && currentUserId != null 
+                   && Model.Recipe?.UserId != null 
+                   && Model.Recipe.UserId.Value.ToString() == currentUserId;
+
+    bool canEdit = isAdmin || isOwner;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/comments.css" asp-append-version="true" />
+}
+
+<main class="main-wrapper">
+    @if (Model.IsReviewMode)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <i class="fa-solid fa-circle-exclamation fa-lg me-2"></i>
+                <strong>@Localizer["Modo de Revisão"]</strong> @Localizer["Esta receita aguarda aprovação."]
+            </div>
+            <div class="d-flex gap-2">
+                <form method="post" asp-page="/PendingRecipes" asp-page-handler="Approve">
+                    <input type="hidden" name="id" value="@Model.Recipe?.RecipesId" />
+                    <button type="submit" class="btn-card" style="padding: 5px 15px; font-size: 0.8rem;">
+                        <i class="fa-solid fa-check"></i> @Localizer["Aprovar"]
+                    </button>
+                </form>
+                <a asp-page="/PendingRecipes" class="btn-pagination">@Localizer["Sair"]</a>
+            </div>
+        </div>
+    }
+
+    <h1 class="section-title">@Model.Recipe?.Title</h1>
+
+    @if(!Model.IsReviewMode && canEdit)
+    {
+        <div class="category-nav" style="justify-content: flex-end;">
+            <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-card" style="width: auto;">
+                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar Receita"]
+            </a>
+        </div>
+    }       
+
+    <div class="recipe-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">        
+        <div class="recipe-card">
+            <div class="card-img-wrapper">
+                <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)"
+                     alt="@Model.Recipe?.Title" class="card-img">
+            </div>
+            
+            <div class="card-body">
+                <div class="recipe-meta">
+                    <div class="meta-item">
+                        <i class="fa-solid fa-users"></i> @Model.Recipe?.Servings @Localizer["Doses"]
+                    </div>
+                    <div class="meta-item">
+                        <i class="fa-regular fa-clock"></i> @(Model.Recipe?.PrepTimeMinutes + Model.Recipe?.CookTimeMinutes) min
+                    </div>
+                </div>
+                <div class="meta-item" style="justify-content: center;">
+                    <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : "dif-medium")">
+                         @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : "Média")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="comment-card" style="border-left: 6px solid var(--primary-green);">
+            <h3><i class="fa-solid fa-list-ul"></i> @Localizer["Ingredientes"]</h3>
+            <ul class="lista-ingredientes" style="list-style: none; padding: 15px 0;">
+                @if (Model.Recipe?.Ingredients != null)
+                {
+                    @foreach (var ing in Model.Recipe.Ingredients)
+                    {
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                            <i class="fa-solid fa-check" style="color: var(--primary-green);"></i>
+                            @ing.QuantityValue @ing.Unit @Localizer["de"] @(ing.Ingredient?.IngredientName ?? "Ingrediente")
+                        </li>
+                    }
+                }
+            </ul>
+
+            <h3 class="mt-4"><i class="fa-solid fa-mitten"></i> @Localizer["Modo de Preparação"]</h3>
+            <div class="comment-body">
+                @Model.Recipe?.Instructions
+            </div>
+        </div>
+    </div>
+
+    <hr class="separator-light">          
+
+    <section class="comment-form-section">
+        <h2 class="section-title"><i class="fa-solid fa-comments"></i> @Localizer["Comentários"]</h2>
+        
+        @if (!(User.Identity?.IsAuthenticated ?? false))
+        {
+            <div class="empty-notice">
+                <i class="fa-solid fa-lock"></i>
+                <h4>@Localizer["Quer deixar a sua opinião?"]</h4>
+                <p>@Localizer["Apenas utilizadores registados podem comentar."]</p>
+                <div class="category-nav">
+                    <a asp-page="/Login" class="btn-card">@Localizer["Entrar"]</a>
+                </div>
+            </div>
+        }
+         
+        <partial name="_CommentsSection" model='new ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel { 
+            ListComments = Model.ListComments, 
+            RecipeId = Model.Recipe?.RecipesId ?? 0 
+        }' />
+    </section>
+</main>

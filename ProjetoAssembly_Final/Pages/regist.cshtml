@@ -17,18 +17,28 @@
     <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true" />
 </head>
-<body class="Login-page">
-    <div class="login-container">
-        <h1>@Localizer["Criar Conta"]</h1>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="back-to-home">
+            <a asp-page="/Index" class="home-link">← @Localizer["Voltar à HomePage"]</a>
+        </div>
 
+        <h1>@Localizer["Criar Conta"]</h1>
+       
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success">@TempData["Success"]</div>
-        }
+        }       
 
         <div asp-validation-summary="All" class="alert alert-danger"></div>
 
         <form id="registerForm" method="post">
+            <div class="input-group">
+                <label asp-for="Name">@Localizer["Primeiro e Último nome"]</label>
+                <input asp-for="Name" type="text" required placeholder="Ex: Frederico Ferreira">
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
             <div class="input-group">
                 <label asp-for="UserName">@Localizer["Nome de Utilizador"]</label>
                 <input asp-for="UserName" type="text" required placeholder="Ex: frederico_chef">
@@ -47,11 +57,10 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <button type="submit">@Localizer["Registar"]</button>
+            <button type="submit" class="btn-auth">@Localizer["Registar"]</button>
 
-            <div class="signup-link">
-                <p>@Localizer["Já tem conta?"]<a href="/Login">@Localizer["Faça login aqui"]</a></p>
-                <p><a asp-page="/Index" style="font-weight: normal; opacity: 0.7;">>@Localizer["Voltar à HomePage"]</a></p>
+            <div class="toggle-auth-link">
+                <p>@Localizer["Já tem conta?"]<a href="/Login">@Localizer["Faça login aqui"]</a></p>                
             </div>           
         </form>
     </div>

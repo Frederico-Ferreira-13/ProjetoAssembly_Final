@@ -13,7 +13,7 @@ namespace Core.Model
         public bool IsActive { get; private set; }
         public bool IsApproved { get; private set; }
 
-        public int UserId { get; protected set; }
+        public int? UserId { get; protected set; }
         public int CategoriesId { get; protected set; }
 
         public int DifficultyId { get; protected set; }
@@ -27,6 +27,7 @@ namespace Core.Model
 
         public int FavoriteCount { get; set; } = 0;
         public bool IsFavorite { get; set; } = false;
+        public double AverageRating { get; set; } = 0.0;
 
         public DateTime CreatedAt { get; protected set; }
         public DateTime? LastUpdatedAt { get; protected set; }
@@ -96,10 +97,14 @@ namespace Core.Model
 
         public static Recipes Reconstitute(int id, int userId, int categoriesId, int difficultyId, string title, string instructions,
                                          int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
-                                         DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
+                                         DateTime createdAt, DateTime? lastUpdatedAt, bool isActive, 
+                                         int favoriteCount = 0, double averageRating = 0)
         {            
             var recipe = new Recipes(id, isActive, userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes, cookTimeMinutes, servings,
                               imageUrl, createdAt, lastUpdatedAt);
+
+            recipe.FavoriteCount = favoriteCount;
+            recipe.AverageRating = averageRating;
 
             return recipe;
         }
