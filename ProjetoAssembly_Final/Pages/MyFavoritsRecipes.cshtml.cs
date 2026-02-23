@@ -40,27 +40,43 @@ namespace ProjetoAssembly_Final.Pages
                 .ToList();
         }
 
+        [HttpPost]
         public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)
-        {
-            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-            if (!userIdResult.IsSuccessful)
+        {           
+            if (!User.Identity?.IsAuthenticated ?? false)
             {
                 return Unauthorized();
             }
 
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            if (!userIdResult.IsSuccessful)
+            {
+                return BadRequest("Não foi possível identificar o utilizador.");
+            }
+
+            var userId = userIdResult.Value;
+
             try
             {
                 var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
-                if (result.IsSuccessful)
+                if (!result.IsSuccessful)
                 {
-                    return new JsonResult(result.Value);
-                }   
-                
-                return BadRequest(result.Error);                
+                    return BadRequest(result.Message ?? "Erro ao alternar favorito.");
+                }
+
+                var updatedCount = await _recipesService.GetFavoriteCountAsync(recipeId);
+
+                return new JsonResult(new
+                {
+                    isFavorite = result.Value,  // assume que result.Value é bool (true = favorited)
+                    newCount = updatedCount
+                });
             }
             catch (Exception ex)
-            {                
-                return BadRequest(ex.Message);
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, "Erro interno ao processar favorito: " + ex.Message);
             }
         }
     }

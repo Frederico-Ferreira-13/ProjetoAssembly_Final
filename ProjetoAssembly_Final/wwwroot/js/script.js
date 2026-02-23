@@ -108,35 +108,38 @@ window.onclick = function (event) {
 // --- COMUNICAÇÃO COM API / HANDLERS ---
 
 // Lógica de Favoritos via AJAX
-async function handleToggleFavorite(event, btn, recipeId) {    
-
+async function handleToggleFavorite(event, btn, recipeId) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
 
-    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-    if (!token) {
-        console.error("Token não encontrado!");
-        return;
-    }
+    const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    const token = tokenElement ? tokenElement : null;
 
-    const formData = new FormData();
-    formData.append("__RequestVerificationToken", token);
+    if (!token) {
+        console.error("Token antiforgery não encontrado!");
+        alert("Erro interno. Tenta recarregar a página.");
+        return;
+    }   
 
     try {
-        const response = await fetch(`?handler=ToggleFavorite&recipeId=${recipeId}`, {
-            method: 'POST',
-            body: formData,
+        const response = await fetch(`/view_recipes?handler=ToggleFavorite`, {
+            method: 'POST',            
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                'RequestVerificationToken': token,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recipeId: recipeId })
         });
 
         if (response.ok) {
             const data = await response.json();
+            console.log("Sucesso", data);
+
             const icon = btn.querySelector('i');
-            const card = btn.closest('.recipe-card');
+            const badge = btn.querySelector('.fav-badge');
 
             if (data.isFavorite) {
                 btn.classList.add('active');
@@ -144,32 +147,43 @@ async function handleToggleFavorite(event, btn, recipeId) {
             } else {
                 btn.classList.remove('active');
                 icon.classList.replace('fa-solid', 'fa-regular');
+            }
 
-                if (window.location.pathname.includes("MyFavoritsRecipes")) {
-                    card.style.transition = "all 0.4s ease";
+            if (badge && data.newCount !== undefined) {
+                badge.textContent = data.newCount;
+            }
+
+            icon.style.transform = 'scale(1.4)';
+            setTimeout(() => icon.style.transform = 'scale(1)', 200);
+
+            if (window.location.pathname.includes("MyFavoritsRecipes") && !data.isFavorite) {
+                const card = btn.closest('.recipe-card');
+                if (card) {
+                    card.style.transition = "all 0.4s esse";
                     card.style.opacity = "0";
-                    card.style.transform = "scale(0.8)";
-
+                    card.style.transform = "scale(0.9)";
                     setTimeout(() => {
                         card.remove();
                         const grid = document.getElementById('recipe-container');
                         if (grid && grid.querySelectorAll('.recipe-card').length === 0) {
-                            location.reload();
+                            grid.innerHTML = `
+                                <div class="empty-state-notice">
+                                    <i class="fa-regular fa-heart"></i>
+                                    <p>Ainda não guardaste nenhuma receita como favorita.</p>
+                                    <a asp-page="/recipes" class="btn-explore">Explorar Receitas</a>
+                                </div>
+                            `;
                         }
                     }, 400);
                 }
             }
-
-            const countLabel = card.querySelector('.card-popularity');
-            if (countLabel && data.newCount !== undefined) {
-                countLabel.innerHTML = `<i class="fa-solid fa-heart"></i> ${data.newCount} favoritos`;
-            }
-        } else if (response.status === 401) {
-            alert("Precisa de iniciar sessão para guardar favoritos!");
-            window.location.href = "/Login";
+        } else {
+            const.errorText = await response.text();
+            console.error("Erro do servidor", response.status, errorText);
         }
     } catch (error) {
-        console.error("Erro ao processar favorito:", error);
+        console.error("Erro na chamada AJAX:", error);
+        alert("Erro de conexão ou servidor indisponível. Verifica a internet.");
     }
 }
 

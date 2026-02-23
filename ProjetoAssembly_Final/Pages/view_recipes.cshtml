@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/comments.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
 }
 
 <main class="main-wrapper">
@@ -48,22 +49,44 @@
 
     <h1 class="section-title">@Model.Recipe?.Title</h1>
 
-    @if(!Model.IsReviewMode && canEdit)
+    @if (!Model.IsReviewMode && canEdit)
     {
-        <div class="category-nav" style="justify-content: flex-end;">
+        <div class="category-nav" style="justify-content: flex-end; margin-bottom: 20px;">
             <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-card" style="width: auto;">
-                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar Receita"]
+                <i class="fa-solid fa-pen-to-square me-2"></i> @Localizer["Editar Receita"]
             </a>
         </div>
-    }       
+    }
 
-    <div class="recipe-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">        
+    <div class="recipe-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
         <div class="recipe-card">
             <div class="card-img-wrapper">
                 <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)"
                      alt="@Model.Recipe?.Title" class="card-img">
+
+                <!-- Botão Favorito no canto superior esquerdo da foto -->
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    bool isFav = Model.Recipe?.IsFavorite ?? false;
+
+                    <button type="button"
+                            class="btn-favorite-wook @(isFav ? "active" : "")"
+                            onclick="handleToggleFavorite(event, this, @Model.Recipe?.RecipesId)"
+                            title="@(isFav ? Localizer["Remover dos favoritos"] : Localizer["Adicionar aos favoritos"])">
+                        <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
+                        <span class="fav-badge">@Model.Recipe?.FavoriteCount</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="btn-favorite-wook disabled"
+                            title="@Localizer["Inicia sessão para guardar"]">
+                        <i class="fa-regular fa-heart"></i>
+                        <span class="fav-badge">@Model.Recipe?.FavoriteCount</span>
+                    </button>
+                }
             </div>
-            
+
             <div class="card-body">
                 <div class="recipe-meta">
                     <div class="meta-item">
@@ -75,7 +98,7 @@
                 </div>
                 <div class="meta-item" style="justify-content: center;">
                     <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : "dif-medium")">
-                         @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : "Média")
+                        @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : "Média")
                     </span>
                 </div>
             </div>
@@ -103,11 +126,11 @@
         </div>
     </div>
 
-    <hr class="separator-light">          
+    <hr class="separator-light">
 
     <section class="comment-form-section">
         <h2 class="section-title"><i class="fa-solid fa-comments"></i> @Localizer["Comentários"]</h2>
-        
+
         @if (!(User.Identity?.IsAuthenticated ?? false))
         {
             <div class="empty-notice">
@@ -119,10 +142,10 @@
                 </div>
             </div>
         }
-         
-        <partial name="_CommentsSection" model='new ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel { 
-            ListComments = Model.ListComments, 
-            RecipeId = Model.Recipe?.RecipesId ?? 0 
+
+        <partial name="_CommentsSection" model='new ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel {
+            ListComments = Model.ListComments,
+            RecipeId = Model.Recipe?.RecipesId ?? 0
         }' />
     </section>
 </main>

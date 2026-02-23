@@ -7,6 +7,6 @@
             onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
             class="btn-favorite @(Model.IsFavorite ? "active" : "")">
         <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
-    </button>
-   
+        <span class="fav-count">@Model.FavoriteCount</span>
+    </button>   
 }

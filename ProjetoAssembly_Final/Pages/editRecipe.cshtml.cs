@@ -21,21 +21,50 @@ namespace ProjetoAssembly_Final.Pages
         public Recipes Input { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
-        {
+        {            
+
             var result = await _recipesService.GetRecipeByIdAsync(id);
 
-            if(result == null || !result.IsSuccessful || result.Value == null)
+            Recipes? recipe = null;
+
+            if (result?.IsSuccessful == true && result.Value != null)
+            {
+                recipe = result.Value;
+            }
+            else if (id >= 9991 && id <= 9995)
+            {
+                // Carrega o mock (igual ao view_recipes)
+                switch (id)
+                {
+                    case 9991:
+                        recipe = Recipes.Reconstitute(9991, 1, 1, 1, "Arroz Doce Cremoso", "...", 10, 45, "6 pessoas", "arroz-doce.jpg", DateTime.Now, null, true, 12, 4.8);
+                        break;
+                    case 9992:
+                        recipe = Recipes.Reconstitute(9992, 1, 2, 2, "Arroz de Pato", "...", 30, 90, "4 pessoas", "arroz-de-pato.jpg", DateTime.Now, null, true, 7, 3.8);
+                        break;
+                    case 9993:
+                        recipe = Recipes.Reconstitute(9993, 1, 3, 1, "Sopa de Legumes Caseira e Reconfortante", "...", 15, 35, "6 pessoas", "sopa.jpg", DateTime.Now, null, true, 20, 5.0);
+                        break;
+                    case 9994:
+                        recipe = Recipes.Reconstitute(9994, 1, 4, 2, "Bacalhau à Brás", "...", 20, 25, "4 pessoas", "bacalhau.jpg", DateTime.Now, null, true, 15, 4.7);
+                        break;
+                    case 9995:
+                        recipe = Recipes.Reconstitute(9995, 1, 5, 3, "Bolo de Chocolate Vegan Fofinho", "...", 15, 35, "10 fatias", "bolo-de-chocolate-vegan.jpg", DateTime.Now, null, true, 15, 4.6);
+                        break;
+                }
+            }
+
+            if (recipe == null)
             {
                 TempData["ErrorMessage"] = "Receita não encontrada.";
                 return RedirectToPage("/Index");
             }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Administrador");
-
-            string ownerId = result.Value.UserId.ToString() ?? string.Empty;
-            bool isOwner = !string.IsNullOrEmpty(currentUserId) && ownerId.Equals(currentUserId, StringComparison.OrdinalIgnoreCase);
+            string ownerId = recipe.UserId?.ToString() ?? string.Empty;
+            bool isOwner = !string.IsNullOrEmpty(currentUserId) && ownerId == currentUserId;
+            
 
             if (!isAdmin && !isOwner) 
             {
@@ -43,7 +72,7 @@ namespace ProjetoAssembly_Final.Pages
                 return RedirectToPage("/view_recipes", new { id = id });
             } 
 
-            Input = result.Value;
+            Input = recipe;
             return Page();
         }
 

@@ -20,9 +20,10 @@
 
 /* Imagem e botão de Favorito */
 .card-img-wrapper {
-    height: 220px;
-    overflow: hidden;
     position: relative;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
 }
 
 .card-img {
@@ -215,25 +216,6 @@
     color: #e74c3c !important;
 }
 
-/* Animação do coração */
-@keyframes heartPop {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.4);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.btn-favorite.active {
-    animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
 /* Estatísticas (se ainda usares no corpo do card) */
 .recipe-stats-row {
     display: flex;
@@ -262,7 +244,7 @@
 /* Mobile */
 @media (max-width: 576px) {
     .card-img-wrapper {
-        height: 180px;
+        height: 220px; /* Menor em mobile para não ficar gigante */
     }
     .card-stats-overlay {
         top: 8px;
