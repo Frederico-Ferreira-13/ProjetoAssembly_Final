@@ -21,7 +21,7 @@ namespace Core.Model
             DifficultyName = name;            
         }
 
-        private Difficulty(int id, string name)
+        public Difficulty(int id, string name)
         {
             if (id <= 0)
             {
@@ -44,12 +44,7 @@ namespace Core.Model
                 throw new ArgumentException("O novo nome da dificuldade é obrigatório.", nameof(newName));
             }
             DifficultyName = newName;
-        }
-
-        public static Difficulty Reconstitute(int id, string name)
-        {
-            return new Difficulty(id, name);
-        }
+        }       
 
         public int GetId() => DifficultyId;
 

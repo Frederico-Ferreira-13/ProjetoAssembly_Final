@@ -19,7 +19,7 @@ namespace Contracts.Service
         Task<Result<CategoryType>> GetCategoryTypeByNameAsync(string name);
         Task<Result<IEnumerable<CategoryType>>> GetAllCategoryTypesAsync();
         Task<Result<CategoryType>> CreateCategoryTypeAsync(CategoryType categoryType);
-        Task<Result> UpdateCategoryTypeAsync(CategoryType updateCategoryType);
+        Task<Result<CategoryType>> UpdateCategoryTypeAsync(CategoryType updateCategoryType);
         Task<Result> DeleteCategoryTypeAsync(int id);
     }
 }

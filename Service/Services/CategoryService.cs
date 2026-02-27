@@ -59,25 +59,61 @@ namespace Service.Services
 
             int accountId = accountIdResult.Value;
 
+            if (string.IsNullOrWhiteSpace(newCategory.CategoryName))
+            {
+                return Result<Category>.Failure(
+                    Error.Validation("O nome da categoria é obrigatório.", new Dictionary<string, string[]> { { nameof(newCategory.CategoryName), new[] { "Campo obrigatório" } } })
+                );
+            }
+
+            if (newCategory.CategoryName.Length > 255)
+            {
+                return Result<Category>.Failure(
+                    Error.Validation("O nome da categoria não pode exceder 255 caracteres.", new Dictionary<string, string[]> { { nameof(newCategory.CategoryName), new[] { "Máximo 255 caracteres" } } })
+                );
+            }
+
             if (await CategoryNameExistsForAccountAsync(newCategory.CategoryName, accountId))
             {
                 return Result<Category>.Failure(
                     Error.Conflict(
                     ErrorCodes.AlreadyExists,
                     $"Já existe uma categoria ativa com o nome '{newCategory.CategoryName}' para a sua conta.",
-                    new Dictionary<string, string[]> { { nameof(newCategory.CategoryName), new[] { "O nome da categoria já está em uso." } } })
+                    new Dictionary<string, string[]> { { nameof(newCategory.CategoryName), new[] 
+                    { "O nome da categoria já está em uso." } } })
+                );
+            }
+
+            if (newCategory.CategoryTypeId <= 0)
+            {
+                return Result<Category>.Failure(
+                    Error.Validation("Tipo de categoria inválido.", 
+                    new Dictionary<string, string[]> { { nameof(newCategory.CategoryTypeId), new[] { "ID inválido" } } })
+                );
+            }
+
+            var categoryType = await _unitOfWork.CategoryType.ReadByIdAsync(newCategory.CategoryTypeId);
+            if (categoryType == null)
+            {
+                return Result<Category>.Failure(
+                    Error.NotFound(ErrorCodes.NotFound, $"Tipo de categoria com ID {newCategory.CategoryTypeId} não encontrado.")
                 );
             }
 
             if (newCategory.ParentCategoryId.HasValue)
             {
-                var parentCategory = await _unitOfWork.Category.ReadByIdAndAccountAsync(newCategory.ParentCategoryId.Value, accountId);
-                if (parentCategory == null)
+                if (newCategory.ParentCategoryId.Value == 0)
                 {
                     return Result<Category>.Failure(
-                        Error.Validation(
-                        $"A categoria pai com ID {newCategory.ParentCategoryId.Value} não existe ou está inativa.",
-                        new Dictionary<string, string[]> { { nameof(newCategory.ParentCategoryId), new[] { "Categoria pai inválida." } } })
+                        Error.Validation("Categoria pai inválida.", new Dictionary<string, string[]> { { nameof(newCategory.ParentCategoryId), new[] { "ID inválido" } } })
+                    );
+                }
+
+                var parent = await _categoryRepository.ReadByIdAndAccountAsync(newCategory.ParentCategoryId.Value, accountId);
+                if (parent == null)
+                {
+                    return Result<Category>.Failure(
+                        Error.Validation($"Categoria pai com ID {newCategory.ParentCategoryId.Value} não existe ou não pertence à sua conta.", new Dictionary<string, string[]> { { nameof(newCategory.ParentCategoryId), new[] { "Categoria pai inválida" } } })
                     );
                 }
             }
@@ -120,19 +156,17 @@ namespace Service.Services
 
         public async Task<Result<Category>> GetCategoryByIdAsync(int categoryId)
         {
-            var accountId = await GetCurrentAccountIdAsync();
-            if (!accountId.IsSuccessful)
+            var accountIdResult = await GetCurrentAccountIdAsync();
+            if (!accountIdResult.IsSuccessful)
             {
-                return Result<Category>.Failure(accountId.Error);
+                return Result<Category>.Failure(accountIdResult.Error);
             }
 
-            var category = await _categoryRepository.ReadByIdAndAccountAsync(categoryId, accountId.Value);
+            var category = await _categoryRepository.ReadByIdAndAccountAsync(categoryId, accountIdResult.Value);
             if (category == null)
             {
                 return Result<Category>.Failure(
-                    Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Categoria com ID {categoryId} não encontrada.")
+                    Error.NotFound(ErrorCodes.NotFound, $"Categoria com ID {categoryId} não encontrada ou não pertence à sua conta.")
                 );
             }
 
@@ -165,8 +199,11 @@ namespace Service.Services
                 {
                     return Result<Category>.Failure(
                         Error.Conflict(
-                            ErrorCodes.AlreadyExists, 
-                            $"Já existe outra categoria com o nome '{updateCategory.CategoryName}'."));
+                            ErrorCodes.AlreadyExists,
+                            $"Já existe outra categoria com o nome '{updateCategory.CategoryName}'.",
+                            new Dictionary<string, string[]> { { nameof(updateCategory.CategoryName), new[] { "Nome já em uso" } } }
+                        )
+                    );
                 }
             }
 
@@ -176,16 +213,22 @@ namespace Service.Services
                 {
                     return Result<Category>.Failure(
                         Error.BusinessRuleViolation(
-                            ErrorCodes.BizInvalidOperation, 
-                            "Uma categoria não pode ser a sua própria pai."));
+                            ErrorCodes.BizInvalidOperation,
+                            "Uma categoria não pode ser a sua própria pai.",
+                            new Dictionary<string, string[]> { { nameof(updateCategory.ParentCategoryId), new[] { "Ciclo inválido" } } }
+                        )
+                    );
                 }
 
-                var parentCategory = await _categoryRepository.ReadByIdAndAccountAsync(updateCategory.ParentCategoryId.Value, accountId);
-                if (parentCategory == null)
+                var parent = await _categoryRepository.ReadByIdAndAccountAsync(updateCategory.ParentCategoryId.Value, accountId);
+                if (parent == null)
                 {
                     return Result<Category>.Failure(
                         Error.Validation(
-                            $"A categoria pai com ID {updateCategory.ParentCategoryId.Value} não existe ou não pertence à sua conta."));
+                            $"Categoria pai com ID {updateCategory.ParentCategoryId.Value} não existe ou não pertence à sua conta.",
+                            new Dictionary<string, string[]> { { nameof(updateCategory.ParentCategoryId), new[] { "Categoria pai inválida" } } }
+                        )
+                    );
                 }
             }
 
@@ -223,27 +266,19 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<Category>>> GetCategoriesByUserIdAsync()
         {
-            var accountId = await GetCurrentAccountIdAsync();
-            if (!accountId.IsSuccessful)
+            var accountIdResult = await GetCurrentAccountIdAsync();
+            if (!accountIdResult.IsSuccessful)
             {
-                return Result<IEnumerable<Category>>.Failure(accountId.Error);
+                return Result<IEnumerable<Category>>.Failure(accountIdResult.Error);
             }
 
-            var categories = await _categoryRepository.GetRootCategoriesByAccount(accountId.Value);
+            var categories = await _categoryRepository.GetRootCategoriesByAccount(accountIdResult.Value);
             return Result<IEnumerable<Category>>.Success(categories);
         }
 
         public async Task<Result<IEnumerable<Category>>> GetUserActiveCategoriesAsync()
         {
-            var accountId = await GetCurrentAccountIdAsync();
-            if (!accountId.IsSuccessful)
-            {
-                return Result<IEnumerable<Category>>.Failure(accountId.Error);
-            }
-
-            var categories = await _categoryRepository.GetRootCategoriesByAccount(accountId.Value);           
-
-            return Result<IEnumerable<Category>>.Success(categories);
+            return await GetCategoriesByUserIdAsync();
         }
 
         public async Task<bool> CategoryNameExistsForUserAsync(string categoryName, int userId, int? excludeCategoryId = null)
@@ -256,8 +291,17 @@ namespace Service.Services
 
         public async Task<Result<CategoryType>> GetCategoryTypeByNameAsync(string name)
         {
-            var categoryType = await _unitOfWork.CategoryType.GetByNameAsync(name);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return Result<CategoryType>.Failure(
+                    Error.Validation(
+                        "Nome do tipo de categoria é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(name), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
 
+            var categoryType = await _unitOfWork.CategoryType.GetByNameAsync(name);
             if (categoryType == null)
             {
                 return Result<CategoryType>.Failure(
@@ -273,7 +317,6 @@ namespace Service.Services
         public async Task<Result<CategoryType>> GetCategoryTypeByIdAsync(int id)
         {
             var categoryType = await _unitOfWork.CategoryType.ReadByIdAsync(id);
-
             if (categoryType == null)
             {
                 return Result<CategoryType>.Failure(
@@ -289,12 +332,31 @@ namespace Service.Services
         public async Task<Result<IEnumerable<CategoryType>>> GetAllCategoryTypesAsync()
         {
             var categoryTypes = await _unitOfWork.CategoryType.ReadAllAsync();
-
             return Result<IEnumerable<CategoryType>>.Success(categoryTypes);
         }
 
         public async Task<Result<CategoryType>> CreateCategoryTypeAsync(CategoryType categoryType)
         {
+            if (string.IsNullOrWhiteSpace(categoryType.TypeName))
+            {
+                return Result<CategoryType>.Failure(
+                     Error.Validation(
+                         "O nome do tipo de categoria é obrigatório.",
+                         new Dictionary<string, string[]> { { nameof(categoryType.TypeName), new[] { "Campo obrigatório" } } }
+                     )
+                 );
+            }
+
+            if (categoryType.TypeName.Length > 50)
+            {
+                return Result<CategoryType>.Failure(
+                    Error.Validation(
+                        "O nome do tipo de categoria não pode exceder 50 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(categoryType.TypeName), new[] { "Máximo 50 caracteres" } } }
+                    )
+                );
+            }
+
             if (await _unitOfWork.CategoryType.GetByNameAsync(categoryType.TypeName) != null)
             {
                 return Result<CategoryType>.Failure(
@@ -333,56 +395,47 @@ namespace Service.Services
             }
         }
 
-        public async Task<Result> UpdateCategoryTypeAsync(CategoryType updateCategoryType)
+        public async Task<Result<CategoryType>> UpdateCategoryTypeAsync(CategoryType updateCategoryType)
         {
             var existingType = await _unitOfWork.CategoryType.ReadByIdAsync(updateCategoryType.CategoryTypeId);
-
             if (existingType == null)
             {
-                return Result.Failure(Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Tipo de Categoria com ID {updateCategoryType.CategoryTypeId} não encontrado.")
+                return Result<CategoryType>.Failure(
+                    Error.NotFound(ErrorCodes.NotFound, $"Tipo de categoria com ID {updateCategoryType.CategoryTypeId} não encontrado.")
                 );
+            }
+
+            if (!string.Equals(existingType.TypeName, updateCategoryType.TypeName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (await _unitOfWork.CategoryType.GetByNameAsync(updateCategoryType.TypeName) != null)
+                {
+                    return Result<CategoryType>.Failure(
+                        Error.Conflict(
+                            ErrorCodes.AlreadyExists,
+                            $"O nome '{updateCategoryType.TypeName}' já está em uso.",
+                            new Dictionary<string, string[]> { { nameof(updateCategoryType.TypeName), new[] { "Nome já em uso" } } }
+                        )
+                    );
+                }
             }
 
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                bool changed = false;
-
-                if (existingType.TypeName != updateCategoryType.TypeName)
-                {
-                    if (await _unitOfWork.CategoryType.GetByNameAsync(updateCategoryType.TypeName) != null)
-                    {
-                        _unitOfWork.Rollback();
-
-                        return Result<CategoryType>.Failure(
-                            Error.Validation(
-                                $"O nome do Tipo de Categoria '{updateCategoryType.TypeName}' já está em uso.",
-                                new Dictionary<string, string[]> { { nameof(updateCategoryType.TypeName), new[] { "Nome já em uso" } } }));
-                    }
-
-                    existingType.UpdateName(updateCategoryType.TypeName);
-                    changed = true;
-                }
-
-                if (changed)
-                {
-                    await _unitOfWork.CategoryType.UpdateAsync(existingType);
-                    await _unitOfWork.CommitAsync();
-                }
+                existingType.UpdateName(updateCategoryType.TypeName);
+                await _unitOfWork.CategoryType.UpdateAsync(existingType);
+                await _unitOfWork.CommitAsync();
 
                 return Result<CategoryType>.Success(existingType);
             }
             catch (ArgumentException ex)
             {
                 _unitOfWork.Rollback();
-                string fieldName = ex.ParamName ?? "Geral";
                 return Result<CategoryType>.Failure(
-                    Error.Validation(
-                        "Dados de entrada inválidos para a atualização do tipo de categoria.",
-                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
+                    Error.Validation("Dados inválidos para atualizar tipo de categoria.", 
+                    new Dictionary<string, string[]> { { ex.ParamName ?? "Geral", new[] { ex.Message } } })
+                );
             }
             catch (Exception ex)
             {
@@ -395,10 +448,9 @@ namespace Service.Services
         public async Task<Result> DeleteCategoryTypeAsync(int id)
         {
             var existingType = await _unitOfWork.CategoryType.ReadByIdAsync(id);
-
             if (existingType == null)
             {
-                return Result.Success($"Tipo de Categoria com ID {id} não encontrado (Idempotência).");
+                return Result.Success();
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -407,7 +459,6 @@ namespace Service.Services
             {
                 await _unitOfWork.CategoryType.RemoveAsync(existingType);
                 await _unitOfWork.CommitAsync();
-
                 return Result.Success("Tipo de Categoria eliminado com sucesso.");
             }
             catch (Exception ex)

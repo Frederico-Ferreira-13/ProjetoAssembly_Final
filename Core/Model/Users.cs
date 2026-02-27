@@ -66,8 +66,8 @@ namespace Core.Model
             CreatedAt = DateTime.UtcNow;
         }
 
-        protected Users(int id, bool isActive, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
-            DateTime createdAt, DateTime? lastUpdatedAt)
+        public Users(int id, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
+            DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
         {
             UserId = id;
             IsActive = isActive;
@@ -81,26 +81,7 @@ namespace Core.Model
             AccountId = accountId;
             CreatedAt = createdAt;
             LastUpdatedAt = lastUpdatedAt;            
-        }
-
-        public static Users Reconstitute(int id, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
-            DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
-        {
-            return new Users(
-                id,                
-                isActive,
-                name,
-                userName,
-                email,
-                passwordHash,
-                salt,
-                isApproved,
-                usersRoleId,
-                accountId,
-                createdAt,
-                lastUpdatedAt
-            );
-        }
+        }       
 
         public void UpdateName(string newName)
         {

@@ -22,7 +22,6 @@ namespace Repo.Repository
         protected abstract SqlParameter[] GetInsertParameters(TEntity entity);
         protected abstract string BuildUpdateSql(TEntity entity);
         protected abstract SqlParameter[] GetUpdateParameters(TEntity entity);
-
         protected abstract string PrimaryKeyName { get; }
 
         public async Task CreateAddAsync(TEntity entity)
@@ -50,16 +49,21 @@ namespace Repo.Repository
             }
         }
 
-        public async Task<TEntity?> ReadByIdAsync(int id)
+        public async Task<TEntity?> ReadByIdAsync(int id, bool? onlyActive = true)
         {
             string sql = $"SELECT * FROM {_tableName} WHERE {PrimaryKeyName} = @Id AND IsActive = 1";
-            SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@Id", id) };
+            var parameters = new List<SqlParameter> { new SqlParameter("@Id", id) };
+
+            if(onlyActive == true)
+            {
+                sql += " AND IsActive = 1";
+            }
 
             try
             {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
+                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters.ToArray()))
                 {
-                    if (reader.Read())
+                    if (await reader.ReadAsync())
                     {
                         return MapFromReader(reader);
                     }
@@ -67,22 +71,30 @@ namespace Repo.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro no Repositório RETRIEVE: {ex.Message}");
+                Console.WriteLine($"Erro no Repositório RETRIEVE ({_tableName}): {ex.Message}");
                 throw;
             }
 
             return default;
         }
 
-        public async Task<IEnumerable<TEntity>> ReadAllAsync()
+        // Lê todas as entidades. Por default, só retorna as com IsActive = 1,
+        // Para ignorar o filtro, passe onlyActive: false.
+        public async Task<IEnumerable<TEntity>> ReadAllAsync(bool? onlyActive = true)
         {
             var entities = new List<TEntity>();
-            string sql = $"SELECT * FROM {_tableName} WHERE IsActive = 1";
+
+            string sql = $"SELECT * FROM {_tableName}";
+            var parameters = new List<SqlParameter>();
+
+            if (onlyActive == true)
+            {
+                sql += " WHERE IsActive = 1";
+            }
 
             try
-            {
-                // Chama o método estático para obter o DataReader.
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql))
+            {                
+                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters.ToArray()))
                 {
                     while (reader.Read())
                     {
@@ -92,7 +104,7 @@ namespace Repo.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro no Repositório ReadAll: {ex.Message}");
+                Console.WriteLine($"Erro no Repositório ReadAll ({_tableName}): {ex.Message}");
                 throw;
             }
             return entities;
@@ -104,8 +116,7 @@ namespace Repo.Repository
             SqlParameter[] parameters = GetUpdateParameters(entity);
 
             try
-            {
-                // Chama o método estático.
+            {                
                 await SQL.ExecuteNonQueryAsync(sql, parameters);
             }
             catch (Exception ex)

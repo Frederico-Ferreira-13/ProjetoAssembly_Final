@@ -42,7 +42,7 @@ namespace Core.Model
             AccountId = default;            
         }
 
-        protected Account(int id, string accountName, string subscriptionLevel, int? creatorUserId, bool isActive, DateTime? lastUpdatedAt = null)
+        public Account(int id, string accountName, string subscriptionLevel, int? creatorUserId, bool isActive, DateTime? lastUpdatedAt = null)
         {
             AccountId = id;
             AccountName = accountName;
@@ -50,12 +50,7 @@ namespace Core.Model
             CreatorUserId = creatorUserId;
             IsActive = isActive;
             LastUpdatedAt = lastUpdatedAt;
-        }
-
-        public static Account Reconstitute(int id, string accountName, string subscriptionLevel, int? creatorUserId, bool isActive, DateTime? lastUpdatedAt = null)
-        {
-            return new Account(id, accountName, subscriptionLevel, creatorUserId, isActive, lastUpdatedAt);
-        }
+        }        
 
         public void UpdateDetails(string newAccountName, string newSubscriptionLevel)
         {

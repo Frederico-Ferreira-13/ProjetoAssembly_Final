@@ -18,7 +18,7 @@ namespace Core.Model
             TypeName = name;            
         }
 
-        private CategoryType(int id, string name)
+        public CategoryType(int id, string name)
         {
             CategoryTypeId = id;
             TypeName = name;            
@@ -32,12 +32,7 @@ namespace Core.Model
             {
                 TypeName = newName;
             }
-        }
-
-        public static CategoryType Reconstitute(int id, string name)
-        {
-            return new CategoryType(id, name);
-        }
+        }        
 
         private void ValidateName(string name)
         {

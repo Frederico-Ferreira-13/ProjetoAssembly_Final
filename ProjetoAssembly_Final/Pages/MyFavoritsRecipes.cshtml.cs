@@ -39,8 +39,7 @@ namespace ProjetoAssembly_Final.Pages
                 })
                 .ToList();
         }
-
-        [HttpPost]
+        
         public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)
         {           
             if (!User.Identity?.IsAuthenticated ?? false)
@@ -68,7 +67,7 @@ namespace ProjetoAssembly_Final.Pages
 
                 return new JsonResult(new
                 {
-                    isFavorite = result.Value,  // assume que result.Value é bool (true = favorited)
+                    isFavorite = result.Value,
                     newCount = updatedCount
                 });
             }

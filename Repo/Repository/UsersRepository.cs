@@ -18,7 +18,7 @@ namespace Repo.Repository
 
         protected override Users MapFromReader(SqlDataReader reader)
         {
-            return Users.Reconstitute(
+            return new Users(
                 id: reader.GetInt32(reader.GetOrdinal("UserId")),
                 name: reader.GetString(reader.GetOrdinal("Name")),
                 userName: reader.GetString(reader.GetOrdinal("UserName")),
@@ -75,9 +75,8 @@ namespace Repo.Repository
 
         public async Task<bool> ExistsByIdAsync(int id)
         {
-            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserId = @Id AND IsActive = 1";
-            object? result = await SQL.ExecuteScalarAsync(sql, new SqlParameter("@Id", id));
-            return result != null && Convert.ToInt32(result) > 0;
+            var user = await ReadByIdAsync(id, onlyActive: true);
+            return user != null;
         }
 
         public async Task<Users?> GetByEmailAsync(string email)
@@ -103,8 +102,8 @@ namespace Repo.Repository
                 parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
 
-            object? result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
-            return result != null && Convert.ToInt32(result) > 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            return Convert.ToInt32(count) > 0;
         }
 
         public async Task<bool> ExistsByUserNameAsync(string userName, int? excludeId = null)
@@ -118,15 +117,16 @@ namespace Repo.Repository
                 parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
 
-            object? result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
-            return result != null && Convert.ToInt32(result) > 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            return Convert.ToInt32(count) > 0;
         }
 
         public async Task<List<Users>> GetByApprovalStatusAsync(bool isApproved)
         {
-            string sql = $"SELECT {SelectColumns} FROM {_tableName} WHERE IsApproved = @IsApproved AND IsActive = 1";
-            var result = await ExecuteListAsync(sql, new SqlParameter("@IsApproved", isApproved));
-                        
+            string sql = $"SELECT {SelectColumns} FROM Users WHERE IsApproved = @IsApproved AND IsActive = 1";
+            var parameters = new SqlParameter[] { new SqlParameter("@IsApproved", isApproved) };
+
+            var result = await ExecuteListAsync(sql, parameters);
             return result.ToList();
         }
     }

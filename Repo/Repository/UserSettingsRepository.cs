@@ -9,26 +9,18 @@ namespace Repo.Repository
 {
     public class UserSettingsRepository : Repository<UserSettings>, IUserSettingsRepository
     {
-        public UserSettingsRepository() : base("UserSettings")
-        {
-        }
+        public UserSettingsRepository() : base("UserSettings") { }
 
         protected override string PrimaryKeyName => "UserSettingId";
 
         protected override UserSettings MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("UserSettingId"));            
-            int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
-            string theme = reader.GetString(reader.GetOrdinal("Theme"));
-            string language = reader.GetString(reader.GetOrdinal("Language"));
-            bool notificationsEnabled = reader.GetBoolean(reader.GetOrdinal("NotificationsEnabled"));
-
-            return UserSettings.Reconstitute(
-                id,                
-                userId,
-                theme,
-                language,
-                notificationsEnabled
+            return new UserSettings(
+                id: reader.GetInt32(reader.GetOrdinal("UserSettingId")),
+                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                theme: reader.GetString(reader.GetOrdinal("Theme")),
+                language: reader.GetString(reader.GetOrdinal("Language")),
+                notificationsEnabled: reader.GetBoolean(reader.GetOrdinal("NotificationsEnabled"))
             );
         }
 
@@ -54,7 +46,7 @@ namespace Repo.Repository
             return $@"UPDATE {_tableName} 
                       SET Theme = @Theme, 
                           Language = @Language,
-                          NotificationsEnabled = @NotificationsEnabled, 
+                          NotificationsEnabled = @NotificationsEnabled                          
                       WHERE UserSettingId = @UserSettingId";
         }
 
@@ -74,11 +66,8 @@ namespace Repo.Repository
             string sql = $@"SELECT UserSettingId, UserId, Theme, Language, NotificationsEnabled
                             FROM {_tableName}
                             WHERE UserId = @UserId";
-            
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@UserId", userId)
-            };
+
+            var parameters = new SqlParameter[] { new SqlParameter("@UserId", userId) };
 
             return await ExecuteSingleAsync(sql, parameters);
         }
@@ -89,10 +78,7 @@ namespace Repo.Repository
                             FROM {_tableName}
                             WHERE Language = @Language";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@Language", language)
-            };
+            var parameters = new SqlParameter[] { new SqlParameter("@Language", language) };
 
             return await ExecuteListAsync(sql, parameters);
         }

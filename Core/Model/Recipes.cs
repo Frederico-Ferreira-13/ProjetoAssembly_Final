@@ -74,7 +74,7 @@ namespace Core.Model
             this.LastUpdatedAt = null;
         }
 
-        private Recipes(int id, bool isActive, int userId, int categoriesId, int difficultyId, string title,
+        public Recipes(int id, bool isActive, int userId, int categoriesId, int difficultyId, string title,
             string instructions, int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
             DateTime createdAt, DateTime? lastUpdatedAt)
         {
@@ -94,20 +94,7 @@ namespace Core.Model
             this.CreatedAt = createdAt;
             this.LastUpdatedAt = lastUpdatedAt;
         }
-
-        public static Recipes Reconstitute(int id, int userId, int categoriesId, int difficultyId, string title, string instructions,
-                                         int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
-                                         DateTime createdAt, DateTime? lastUpdatedAt, bool isActive, 
-                                         int favoriteCount = 0, double averageRating = 0)
-        {            
-            var recipe = new Recipes(id, isActive, userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes, cookTimeMinutes, servings,
-                              imageUrl, createdAt, lastUpdatedAt);
-
-            recipe.FavoriteCount = favoriteCount;
-            recipe.AverageRating = averageRating;
-
-            return recipe;
-        }
+        
 
         public void ChangeDifficulty(int newDefficultyId)
         {

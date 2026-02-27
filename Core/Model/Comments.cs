@@ -25,59 +25,43 @@ namespace Core.Model
         [SetsRequiredMembers]
         private Comments() { }
 
-        public Comments(int recipesId, int userId, string commentText, int rating)
+        public Comments(int commentsId ,int recipesId, int userId, string commentText, int rating, DateTime createdAt, 
+            DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
         {
-            if (recipesId <= 0) 
+            if (recipesId <= 0)
             {
                 throw new ArgumentException("ID da receita inválido.", nameof(recipesId));
             }
 
-            if (userId <= 0) 
+            if (userId <= 0)
             {
                 throw new ArgumentException("ID do utilizador inválido.", nameof(userId));
             }
-            if (string.IsNullOrWhiteSpace(commentText)) 
+            if (string.IsNullOrWhiteSpace(commentText))
             {
                 throw new ArgumentException("Comentário não pode ser vazio.", nameof(commentText));
             }
-            if (commentText.Length > 500) 
+            if (commentText.Length > 500)
             {
                 throw new ArgumentException("Comentário não pode exceder 500 caracteres.", nameof(commentText));
             }
-            if (rating < 1 || rating > 5) 
+            if (rating < 1 || rating > 5)
             {
                 throw new ArgumentException("Rating deve ser entre 1 e 5.", nameof(rating));
             }
 
+            CommentsId = commentsId;
             RecipesId = recipesId;
             UserId = userId;
             CommentText = commentText;
             OriginalComment = commentText;
             Rating = rating;
             CreatedAt = DateTime.UtcNow;
+            LastUpdatedAt = DateTime.UtcNow;
             IsEdited = false;
             IsDeleted = false;
-        }       
-
-        public static Comments Reconstitute(int id, int recipesId, int userId, string? commentText, int rating, 
-            DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
-        {
-            var comment = new Comments
-            {
-                CommentsId = id,
-                RecipesId = recipesId,
-                UserId = userId,
-                CommentText = commentText,
-                Rating = rating,
-                CreatedAt = createdAt,
-                LastUpdatedAt = lastUpdatedAt,
-                IsEdited = isEdited,
-                IsDeleted = isDeleted,
-                OriginalComment = originalComment
-            };
-
-            return comment;
-        }
+            OriginalComment = OriginalComment;
+        }        
 
         public void UpdateComment([NotNull] string newCommentText)
         {

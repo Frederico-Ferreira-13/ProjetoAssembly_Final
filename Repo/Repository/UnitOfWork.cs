@@ -24,7 +24,7 @@ namespace Repo.Repository
         public IIngredientsRecipsRepository IngredientsRecips { get; }
         public IRatingRepository Rating { get; }
         public IRecipesRepository Recipes { get; }
-        public IUserRoleReposiotry UsersRole { get; }
+        public IUserRoleRepository UsersRole { get; }
         public IUserSettingsRepository UserSettings { get; }
         public IUsersRepository Users { get; }
         public IFavoritesRepository Favorites { get; }
@@ -32,7 +32,7 @@ namespace Repo.Repository
         public UnitOfWork(IConfiguration configuration, IAccountRepository accounts, ICategoryRepository category, ICategoryTypeRepository categoryType, ICommentsRepository comments,
                           IDifficultyRepository dificulty, IIngredientsRepository ingredients, IIngredientsTypeRepository ingredientsType,
                           IIngredientsRecipsRepository ingredientsRecips, IRatingRepository rating, IRecipesRepository recipes,
-                          IUserSettingsRepository userSettings, IUsersRepository users, IUserRoleReposiotry userRole, IFavoritesRepository favoritesRepository)
+                          IUserSettingsRepository userSettings, IUsersRepository users, IUserRoleRepository userRole, IFavoritesRepository favoritesRepository)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 

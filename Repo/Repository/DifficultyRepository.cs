@@ -19,7 +19,7 @@ namespace Repo.Repository
             int id = reader.GetInt32(reader.GetOrdinal("DifficultyId"));
             string name = reader.GetString(reader.GetOrdinal("DifficultyName"));            
 
-            return Difficulty.Reconstitute(id, name);
+            return new Difficulty(id, name);
         }
 
         protected override string BuildInsertSql(Difficulty entity)

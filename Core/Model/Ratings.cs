@@ -38,7 +38,7 @@ namespace Core.Model
             this.CreatedAt = DateTime.UtcNow;
         }
 
-        private Ratings(int id, DateTime createdAt,
+        public Ratings(int id, DateTime createdAt,
             int recipesId, int userId, StarRating ratingValue)
         {
             RatingsId = id;            
@@ -47,13 +47,7 @@ namespace Core.Model
             UserId = userId;
             RatingValue = ratingValue;
             CreatedAt = createdAt;
-        }
-
-        public static Ratings Reconstitute(int id, DateTime createdAt, int recipesId,
-            int userId, StarRating ratingValue)
-        {
-            return new Ratings(id, createdAt, recipesId, userId, ratingValue);
-        }
+        }        
 
         public void UpdateRating(int newRatingValue)
         {

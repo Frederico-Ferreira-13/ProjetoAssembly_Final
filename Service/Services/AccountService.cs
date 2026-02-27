@@ -59,18 +59,7 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<Account>>> GetUserActiveAccountsAsync(int userId)
         {
-            var userExists = await _unitOfWork.Users.ReadByIdAsync(userId) != null;
-            if (!userExists)
-            {
-                return Result<IEnumerable<Account>>.Failure(
-                    Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"O utilizador com ID {userId} não existe.")
-                );
-            }
-
-            var accounts = await _unitOfWork.Accounts.GetUserActiveAccountsAsync(userId);
-            return Result<IEnumerable<Account>>.Success(accounts);
+            return await GetAccountsByUserIdAsync(userId);
         }
 
         public async Task<Result<IEnumerable<Account>>> GetCurrentUserAccountsAsync()
@@ -90,6 +79,46 @@ namespace Service.Services
 
         public async Task<Result<Account>> CreateAccountAsync(string accountName, string? subscriptionLevel = null)
         {
+            if (string.IsNullOrWhiteSpace(accountName))
+            {
+                return Result<Account>.Failure(
+                    Error.Validation(
+                        "O nome da conta é obrigatório.",
+                        new Dictionary<string, string[]>
+                        {
+                            { nameof(accountName), new[] { "Campo obrigatório" } }
+                        }
+                    )
+                );
+            }
+
+            if(accountName.Length > 255)
+            {
+                return Result<Account>.Failure(
+                    Error.Validation(
+                        "O nome da conta não pode exceder 255 caracteres.",
+                        new Dictionary<string, string[]>
+                        {
+                            { nameof(accountName), new[] { "Máximo 255 caracteres" } }
+                        }
+                    )
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(subscriptionLevel) &&
+                subscriptionLevel != "Free" && subscriptionLevel != "Premium" && subscriptionLevel != "Enterprise")
+            {
+                return Result<Account>.Failure(
+                    Error.Validation(
+                        "Nível de subscrição inválido.",
+                        new Dictionary<string, string[]>
+                        {
+                            { nameof(subscriptionLevel), new[] { "Valores permitidos: Free, Premium, Enterprise" } }
+                        }
+                    )
+                );
+            }
+
             var currentUserIdResult = await _authService.GetCurrentUserIdAsync();
             if (!currentUserIdResult.IsSuccessful)
             {
@@ -102,7 +131,7 @@ namespace Service.Services
             int currentUserId = currentUserIdResult.Value;
 
             var existingAccount = await _unitOfWork.Accounts.AccountNameExistsAsync(accountName);
-            if (existingAccount)
+            if (await _unitOfWork.Accounts.AccountNameExistsAsync(accountName))
             {
                 return Result<Account>.Failure(
                     Error.Conflict(
@@ -149,6 +178,14 @@ namespace Service.Services
 
         public async Task<Result<Account>> UpdateAccountAsync(Account updateAccount)
         {
+            if(updateAccount == null)
+            {
+                return Result<Account>.Failure(
+                    Error.Validation(
+                        "Conta inválida para atualização.")
+                );
+            }
+
             var existingAccount = await _unitOfWork.Accounts.ReadByIdAsync(updateAccount.AccountId);
             if (existingAccount == null)
             {
@@ -162,14 +199,10 @@ namespace Service.Services
             if (!string.Equals(existingAccount.AccountName, updateAccount.AccountName, StringComparison.OrdinalIgnoreCase))
             {
                 var nameExists = await _unitOfWork.Accounts.AccountNameExistsAsync(updateAccount.AccountName, updateAccount.AccountId);
-                if (nameExists)
+                if (await _unitOfWork.Accounts.AccountNameExistsAsync(updateAccount.AccountName, updateAccount.AccountId))
                 {
                     return Result<Account>.Failure(
-                        Error.Conflict(
-                            ErrorCodes.AlreadyExists,
-                            $"Já existe outra conta ativa com o Nome '{updateAccount.AccountName}'.",
-                            new Dictionary<string, string[]> { { nameof(updateAccount.AccountName), new[] { "O nome da conta já está em uso por outra conta." } } }
-                        )
+                        Error.Conflict(ErrorCodes.AlreadyExists, $"Já existe outra conta com o nome '{updateAccount.AccountName}'.")
                     );
                 }
             }
@@ -192,12 +225,10 @@ namespace Service.Services
             {
                 _unitOfWork.Rollback();
 
-                string fieldName = ex.ParamName ?? "Geral";
                 return Result<Account>.Failure(
                     Error.Validation(
-                    "Dados de entrada inválidos para a atualização da conta.",
-                    new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }
-                    )
+                        "Dados inválidos para atualizar a conta.", 
+                        new Dictionary<string, string[]> { { ex.ParamName ?? "Geral", new[] { ex.Message } } })
                 );
             }
             catch (Exception ex)
@@ -210,8 +241,8 @@ namespace Service.Services
 
         public async Task<Result<Account>> DesactivateAccountAsync(int accountId)
         {
-            var accountToDeactivate = await _unitOfWork.Accounts.ReadByIdAsync(accountId);
-            if (accountToDeactivate == null)
+            var account = await _unitOfWork.Accounts.ReadByIdAsync(accountId);
+            if (account == null)
             {
                 return Result<Account>.Failure(
                     Error.NotFound(
@@ -220,20 +251,20 @@ namespace Service.Services
                 );
             }
 
-            if (!accountToDeactivate.IsActive)
+            if (!account.IsActive)
             {                
-                return Result<Account>.Success(accountToDeactivate, "A conta já se encontra desativada.");
+                return Result<Account>.Success(account, "A conta já se encontra desativada.");
             }
 
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                accountToDeactivate.Deactivate();
-                await _unitOfWork.Accounts.UpdateAsync(accountToDeactivate);
+                account.Deactivate();
+                await _unitOfWork.Accounts.UpdateAsync(account);
                 await _unitOfWork.CommitAsync();
 
-                return Result<Account>.Success(accountToDeactivate);
+                return Result<Account>.Success(account);
             }
             catch (Exception ex)
             {

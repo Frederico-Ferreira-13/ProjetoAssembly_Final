@@ -16,7 +16,7 @@ namespace Contracts.Repository
         IIngredientsRecipsRepository IngredientsRecips { get; }
         IRatingRepository Rating { get; }
         IRecipesRepository Recipes { get; }
-        IUserRoleReposiotry UsersRole { get; }
+        IUserRoleRepository UsersRole { get; }
         IUserSettingsRepository UserSettings { get; }
         IUsersRepository Users { get; }
         IFavoritesRepository Favorites { get; }

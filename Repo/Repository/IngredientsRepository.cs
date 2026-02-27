@@ -14,16 +14,16 @@ namespace Repo.Repository
 
         protected override Ingredients MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("IngredientsId"));
-            string ingredientsName = reader.GetString(reader.GetOrdinal("IngredientName"));
-            int ingredientsTypeId = reader.GetInt32(reader.GetOrdinal("IngredientsTypeId"));
-
-            return Ingredients.Reconstitute(id, ingredientsName, ingredientsTypeId);
+            return new Ingredients(
+                id: reader.GetInt32(reader.GetOrdinal("IngredientsId")),
+                ingredientName: reader.GetString(reader.GetOrdinal("IngredientName")),
+                ingredientsTypeId: reader.GetInt32(reader.GetOrdinal("IngredientsTypeId"))
+            );
         }
 
         protected override string BuildInsertSql(Ingredients entity)
         {
-            return  @$"INSERT INTO {_tableName} (IngredientName, IngredientsTypeId)
+            return @$"INSERT INTO {_tableName} (IngredientName, IngredientsTypeId)
                        VALUES (@IngredientName, @IngredientsTypeId)";
         }
 
@@ -61,9 +61,10 @@ namespace Repo.Repository
                             WHERE IngredientName LIKE @SearchIngredient 
                             ORDER BY IngredientName ASC";
 
-            SqlParameter param = new SqlParameter("@SearchIngredient", $"%{searchIngredient}%");
+            var parameter = new SqlParameter("@SearchIngredient", $"%{searchIngredient}%");
 
-            return (await ExecuteListAsync(sql, param)).ToList();
+            var result = await ExecuteListAsync(sql, parameter);
+            return result.ToList();
         }
 
         public async Task<Ingredients?> GetByNameAsync(string ingredientsName)
@@ -72,9 +73,9 @@ namespace Repo.Repository
                             FROM {_tableName}
                             WHERE IngredientName = @IngredientName";
 
-            SqlParameter paramName = new SqlParameter("@IngredientName", ingredientsName);
+            var parameter = new SqlParameter("@IngredientName", ingredientsName);
 
-            return await ExecuteSingleAsync(sql, paramName);
+            return await ExecuteSingleAsync(sql, parameter);
         }
 
         public async Task<bool> IsIngredientUnique(string ingredientUnique, int? excludeId = null)
@@ -89,8 +90,8 @@ namespace Repo.Repository
                 parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
 
-            var result = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
-            return Convert.ToInt32(result) == 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
+            return Convert.ToInt32(count) == 0;
         }
     }
 }

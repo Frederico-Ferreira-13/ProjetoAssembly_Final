@@ -10,16 +10,14 @@ namespace Repo.Repository
     public class IngredientsTypeRepository : Repository<IngredientsType>, IIngredientsTypeRepository
     {
         protected override string PrimaryKeyName => "IngredientsTypeId";
-        public IngredientsTypeRepository() : base("IngredientsType")
-        {
-        }
+        public IngredientsTypeRepository() : base("IngredientsType") { }
 
         protected override IngredientsType MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("IngredientsTypeId"));
-            string name = reader.GetString(reader.GetOrdinal("IngredientsTypeName"));
-
-            return IngredientsType.Reconstitute(id, name);
+            return new IngredientsType(
+                id: reader.GetInt32(reader.GetOrdinal("IngredientsTypeId")),
+                name: reader.GetString(reader.GetOrdinal("IngredientsTypeName"))
+            );
         }
 
         protected override string BuildInsertSql(IngredientsType entity)
@@ -58,10 +56,7 @@ namespace Repo.Repository
                             FROM {_tableName} 
                             WHERE IngredientsTypeName = @IngredientsTypeName";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@IngredientsTypeName", typeName)
-            };
+            var parameters = new SqlParameter[] { new SqlParameter("@IngredientsTypeName", typeName) };
 
             return await ExecuteSingleAsync(sql, parameters);
         }

@@ -7,19 +7,17 @@ using System.Text;
 
 namespace Repo.Repository
 {
-    public class UserRoleRepository : Repository<UsersRole>, IUserRoleReposiotry
+    public class UserRoleRepository : Repository<UsersRole>, IUserRoleRepository
     {
         protected override string PrimaryKeyName => "UsersRoleId";
-        public UserRoleRepository() : base("UsersRole")
-        {
-        }
+        public UserRoleRepository() : base("UsersRole") { }
 
         protected override UsersRole MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("UserRoleId"));
-            string name = reader.GetString(reader.GetOrdinal("RoleName"));
-            
-            return UsersRole.Reconstitute(id, name);
+            return new UsersRole(
+                id: reader.GetInt32(reader.GetOrdinal("UsersRoleId")),
+                name: reader.GetString(reader.GetOrdinal("RoleName"))
+            );
         }
 
         protected override string BuildInsertSql(UsersRole entity)
@@ -58,10 +56,7 @@ namespace Repo.Repository
                             FROM {_tableName} 
                             WHERE RoleName = @RoleName";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@RoleName", userRole)
-            };
+            var parameters = new SqlParameter[] { new SqlParameter("@RoleName", userRole) };
 
             return await ExecuteSingleAsync(sql, parameters);
         }

@@ -10,19 +10,16 @@ namespace Repo.Repository
     public class FavoritesRepository : Repository<Favorites>, IFavoritesRepository
     {
         protected override string PrimaryKeyName => "FavoritesId";
-        public FavoritesRepository() : base("Favorites")
-        {
-        }
+        public FavoritesRepository() : base("Favorites") { }
 
         protected override Favorites MapFromReader(SqlDataReader reader)
         {
-            int id = Convert.ToInt32(reader["FavoritesId"]);
-            int userId = Convert.ToInt32(reader["UserId"]);
-            int recipesId = Convert.ToInt32(reader["RecipesId"]);
-
-            DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
-
-            return Favorites.Reconstitute(id, userId, recipesId, createdAt);
+            return new Favorites(
+                id: reader.GetInt32(reader.GetOrdinal("FavoritesId")),
+                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+            );
         }
 
         protected override string BuildInsertSql(Favorites entity)
@@ -59,40 +56,46 @@ namespace Repo.Repository
                        r.PrepTimeMinutes, r.CookTimeMinutes, r.Servings
                 FROM Favorites f
                 INNER JOIN Recipes r ON f.RecipesId = r.RecipesId
-                WHERE f.UserId = @UserId
-                ORDER BY f.CreatedAt DESC";
+                WHERE f.UserId = @UserId";
 
-            SqlParameter param = new SqlParameter("@UserId", userId);
 
-            return await ExecuteListAsync(sql, param);
+            var parameters = new SqlParameter[] { new SqlParameter("@UserId", userId) };
+
+            return await ExecuteListAsync(sql, parameters);
         }
 
         public async Task<bool> ExistsAsync(int userId, int recipeId)
         {
-            string sql = $"SELECT COUNT(1) FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipesId";
-            SqlParameter[] paramsList =
+            string sql = $@"SELECT COUNT(1) FROM {_tableName}
+                            WHERE UserId = @UserId AND RecipesId = @RecipesId";
+
+            var parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@RecipesId", recipeId)
             };
 
-            var result = await SQL.ExecuteScalarAsync(sql, paramsList);
-            return Convert.ToInt32(result) > 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters);
+            return Convert.ToInt32(count) > 0;
         }
 
         public async Task<int> GetCountByRecipeIdAsync(int recipeId)
         {
-            string sql = $"SELECT COUNT(*) FROM {_tableName} WHERE RecipesId = @recipeId";
-            SqlParameter param = new SqlParameter("@recipeId", recipeId);
+            string sql = $@"SELECT COUNT(*) FROM {_tableName}
+                            WHERE RecipesId = @RecipeId";
 
-            var result = await SQL.ExecuteScalarAsync(sql, param);
+            var parameter = new SqlParameter("@RecipeId", recipeId);
+
+            var result = await SQL.ExecuteScalarAsync(sql, parameter);
             return Convert.ToInt32(result);
         }
 
         public async Task DeleteFavoriteAsync(int userId, int recipeId)
         {
-            string sql = $"DELETE FROM {_tableName} WHERE UserId = @UserId AND RecipesId = @RecipesId";
-            SqlParameter[] parameters = new[]
+            string sql = $@"DELETE FROM {_tableName}
+                            WHERE UserId = @UserId AND RecipesId = @RecipesId";
+
+            var parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@RecipesId", recipeId)

@@ -50,12 +50,7 @@ namespace Core.Model
             UserId = userId;
             RecipesId = recipesId;
             CreatedAt = createdAt;            
-        }
-
-        public static Favorites Reconstitute(int id, int userId, int recipesId, DateTime createdAt)
-        {
-            return new Favorites(id, userId, recipesId, createdAt);
-        }
+        }        
 
         public bool IsValid()
         {

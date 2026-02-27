@@ -8,21 +8,23 @@ using System.Text;
 namespace Repo.Repository
 {
     public class CategoryTypeRepository : Repository<CategoryType>, ICategoryTypeRepository
-    {
-        protected override string PrimaryKeyName => "CategoryTypeId";
+    {        
         public CategoryTypeRepository() : base("CategoryType") { }
+
+        protected override string PrimaryKeyName => "CategoryTypeId";
 
         protected override CategoryType MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("CategoryTypeId"));
-            string name = reader.GetString(reader.GetOrdinal("TypeName"));            
-
-            return CategoryType.Reconstitute(id, name);
+            return new CategoryType(
+                id: reader.GetInt32(reader.GetOrdinal("CategoryTypeId")),
+                name: reader.GetString(reader.GetOrdinal("TypeName"))
+            );
         }
 
         protected override string BuildInsertSql(CategoryType entity)
         {
-            return $"INSERT INTO {_tableName} (TypeName) VALUES (@TypeName)";
+            return $@"INSERT INTO {_tableName} (TypeName)
+                      VALUES (@TypeName)";
         }
 
         protected override SqlParameter[] GetInsertParameters(CategoryType entity)
@@ -35,7 +37,9 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(CategoryType entity)
         {
-            return $"UPDATE {_tableName} SET TypeName = @TypeName WHERE CategoryTypeId = @CategoryTypeId";
+            return $@"UPDATE {_tableName}
+                      SET TypeName = @TypeName
+                      WHERE CategoryTypeId = @CategoryTypeId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(CategoryType entity)
@@ -49,15 +53,11 @@ namespace Repo.Repository
 
         public async Task<CategoryType?> GetByNameAsync(string typeName)
         {
-            string sql = @"
-                SELECT CategoryTypeId, TypeName 
-                FROM CategoryType 
-                WHERE TypeName = @TypeName";
+            string sql = $@"SELECT CategoryTypeId, TypeName
+                            FROM {_tableName}
+                            WHERE TypeName = @TypeName";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@TypeName", typeName)
-            };
+            var parameters = new SqlParameter[] { new SqlParameter("@TypeName", typeName) };
 
             return await ExecuteSingleAsync(sql, parameters);
         }

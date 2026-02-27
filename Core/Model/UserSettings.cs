@@ -38,7 +38,7 @@ namespace Core.Model
             NotificationsEnabled = notificationsEnabled;
         }
 
-        private UserSettings(int id, int userId, string theme, string language,
+        public UserSettings(int id, int userId, string theme, string language,
             bool notificationsEnabled)
         {
             UserSettingId = id;            
@@ -47,13 +47,7 @@ namespace Core.Model
             Theme = theme;
             Language = language;
             NotificationsEnabled = notificationsEnabled;
-        }
-
-        public static UserSettings Reconstitute(int id, int userId, string theme, string language,
-            bool notificationsEnabled)
-        {
-            return new UserSettings(id, userId, theme, language, notificationsEnabled);
-        }
+        }      
 
         public void UpdateSettings(string newTheme, string newLanguage, bool newNotificationsEnabled)
         {            

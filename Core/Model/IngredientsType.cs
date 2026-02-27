@@ -21,7 +21,7 @@ namespace Core.Model
             IngredientsTypeName = name;
         }
 
-        private IngredientsType(int id, string name)
+        public IngredientsType(int id, string name)
         {
             ValidateName(name);
 
@@ -46,12 +46,7 @@ namespace Core.Model
             {
                 throw new ArgumentException("O nome do Tipo de Ingrediente não pode exceder 50 caracteres.", nameof(name));
             }
-        }
-
-        public static IngredientsType Reconstitute(int id, string name)
-        {
-            return new IngredientsType(id, name);
-        }
+        }       
 
         public int GetId() => IngredientsTypeId;
 

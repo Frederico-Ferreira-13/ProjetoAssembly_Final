@@ -21,7 +21,7 @@ namespace Core.Model
             UsersRoleId = default;            
         }
 
-        protected UsersRole(int id, string name)
+        public UsersRole(int id, string name)
         {
             if (id <= 0)
             {
@@ -30,12 +30,7 @@ namespace Core.Model
 
             UsersRoleId = id;            
             RoleName = name;
-        }
-
-        public static UsersRole Reconstitute(int id, string name)
-        {
-            return new UsersRole(id, name);
-        }
+        }       
 
         public void UpdateName(string newRoleName)
         {

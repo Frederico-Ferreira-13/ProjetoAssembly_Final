@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Contracts.Repository
 {
-    public interface IUserRoleReposiotry : IRepository<UsersRole>
+    public interface IUserRoleRepository : IRepository<UsersRole>
     {
         Task<UsersRole?> GetByNameAsync(string roleName);
     }

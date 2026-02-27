@@ -14,25 +14,19 @@ namespace Repo.Repository
 
         protected override IngredientsRecips MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("IngredientsRecipsId"));
-            int recipesId = reader.GetInt32(reader.GetOrdinal("RecipesId"));
-            int ingredientsId = reader.GetInt32(reader.GetOrdinal("IngredientsId"));
-            decimal quantityValue = reader.GetDecimal(reader.GetOrdinal("QuantityValue"));
-            string unit = reader.GetString(reader.GetOrdinal("Unit"));
-
-            return IngredientsRecips.Reconstitute(
-                id,               
-                recipesId,
-                ingredientsId,
-                quantityValue,
-                unit
+            return new IngredientsRecips(
+                id: reader.GetInt32(reader.GetOrdinal("IngredientsRecipsId")),
+                recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                ingredientsId: reader.GetInt32(reader.GetOrdinal("IngredientsId")),
+                quantityValue: reader.GetDecimal(reader.GetOrdinal("QuantityValue")),
+                unit: reader.GetString(reader.GetOrdinal("Unit"))
             );
         }
 
         protected override string BuildInsertSql(IngredientsRecips entity)
         {
             return @$"INSERT INTO {_tableName} (RecipesId, IngredientsId, QuantityValue, Unit)
-                   VALUES (@RecipesId, @IngredientsId, @QuantityValue, @Unit)";
+                        VALUES (@RecipesId, @IngredientsId, @QuantityValue, @Unit)";
         }
 
         protected override SqlParameter[] GetInsertParameters(IngredientsRecips entity)
@@ -66,16 +60,15 @@ namespace Repo.Repository
 
         public async Task<List<IngredientsRecips>> GetByRecipesIdAsync(int recipeId)
         {
-            List<IngredientsRecips> items = new List<IngredientsRecips>();
-
             string sql = $@"SELECT IngredientsRecipsId, RecipesId, IngredientsId, QuantityValue, Unit
                             FROM {_tableName}
                             WHERE RecipesId = @RecipesId
                             ORDER BY IngredientsId";
 
-            SqlParameter paramRecipesId = new SqlParameter("@RecipesId", recipeId);
+            var parameters = new SqlParameter[] { new SqlParameter("@RecipesId", recipeId) };
 
-            return (await ExecuteListAsync(sql, paramRecipesId)).ToList();
+            var result = await ExecuteListAsync(sql, parameters);
+            return result.ToList();
         }
 
         public async Task<bool> IsIngredientUsedInRecipeAsync(int recipeId, int ingredientId)
@@ -84,14 +77,14 @@ namespace Repo.Repository
                             FROM {_tableName}
                             WHERE RecipesId = @RecipesId AND IngredientsId = @IngredientsId";
 
-            SqlParameter[] parameters = new SqlParameter[]
+            var parameters = new SqlParameter[]
             {
                 new SqlParameter("@RecipesId", recipeId),
                 new SqlParameter("@IngredientsId", ingredientId)
             };
 
-            var result = await SQL.ExecuteScalarAsync(sql, parameters);
-            return Convert.ToInt32(result) > 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters);
+            return Convert.ToInt32(count) > 0;
         }
 
         public async Task<bool> IsIngredientUsedInAnyRecipeAsync(int ingredientId)
@@ -100,9 +93,9 @@ namespace Repo.Repository
                             FROM {_tableName}
                             WHERE IngredientsId = @IngredientsId";
 
-            SqlParameter param = new SqlParameter("@IngredientsId", ingredientId);
+            var parameters = new SqlParameter[] { new SqlParameter("@IngredientsId", ingredientId) };
 
-            var result = await SQL.ExecuteScalarAsync(sql, param);
+            var result = await SQL.ExecuteScalarAsync(sql, parameters);
             return Convert.ToInt32(result) > 0;
         }
     }

@@ -134,27 +134,34 @@ async function handleToggleFavorite(event, btn, recipeId) {
             body: JSON.stringify({ recipeId: recipeId })
         });
 
-        if (response.ok) {
-            const data = await response.json();
+        const data = await response.json();
+
+        if (response.ok) {            
             console.log("Sucesso", data);
 
             const icon = btn.querySelector('i');
             const badge = btn.querySelector('.fav-badge');
 
-            if (data.isFavorite) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-regular', 'fa-solid');
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-solid', 'fa-regular');
+            if (icon && badge) {
+                if (data.isFavorite) {
+                    btn.classList.add('active');
+                    icon.classList.replace('fa-regular', 'fa-solid');
+                } else {
+                    btn.classList.remove('active');
+                    icon.classList.replace('fa-solid', 'fa-regular');
+                }
+
+                badge.textContent = data.newCount;
             }
 
             if (badge && data.newCount !== undefined) {
                 badge.textContent = data.newCount;
             }
 
-            icon.style.transform = 'scale(1.4)';
-            setTimeout(() => icon.style.transform = 'scale(1)', 200);
+            if (icon) {
+                icon.style.transform = 'scale(1.4)';
+                setTimeout(() => icon.style.transform = 'scale(1)', 200);
+            }
 
             if (window.location.pathname.includes("MyFavoritsRecipes") && !data.isFavorite) {
                 const card = btn.closest('.recipe-card');

@@ -43,7 +43,7 @@ namespace Core.Model
             AccountId = accountId;
         }
 
-        private Category(int id, int? parentCategoryId, string categoryName,
+        public Category(int id, int? parentCategoryId, string categoryName,
             int categoryTypeId, int accountId)
         {
             CategoriesId = id;           
@@ -52,13 +52,7 @@ namespace Core.Model
             CategoryTypeId = categoryTypeId;
             ParentCategoryId = parentCategoryId;
             AccountId = accountId;
-        }
-
-        public static Category Reconstitute(int id, int? parentCategoryId, string categoryName,
-            int categoryTypeId, int accountId)
-        {
-            return new Category(id, parentCategoryId, categoryName, categoryTypeId, accountId);
-        }
+        }      
 
         public void UpdateDetails(string newCategoryName, int newCategoryTypeId, int? newParentCategoryId)
         {

@@ -2,9 +2,8 @@
 using Core.Model;
 using Core.Model.ValueObjects;
 using Microsoft.Data.SqlClient;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Repo.Repository
 {
@@ -15,20 +14,12 @@ namespace Repo.Repository
 
         protected override Ratings MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("RatingsId"));
-            int recipesId = reader.GetInt32(reader.GetOrdinal("RecipesId"));
-            int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
-            int ratingValueInt = reader.GetInt32(reader.GetOrdinal("RatingValue"));
-            DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
-            
-            StarRating starRating = StarRating.Create(ratingValueInt);
-
-            return Ratings.Reconstitute(
-                id,
-                createdAt,                
-                recipesId,
-                userId,
-                starRating
+            return new Ratings(
+                id: reader.GetInt32(reader.GetOrdinal("RatingsId")),
+                createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                ratingValue: StarRating.Create(reader.GetInt32(reader.GetOrdinal("RatingValue")))
             );
         }
 
@@ -70,11 +61,11 @@ namespace Repo.Repository
                             FROM {_tableName}
                             WHERE UserId = @UserId AND RecipesId = @RecipesId";
 
-            SqlParameter[] parameters = new SqlParameter[]
-            {
+            var parameters = new SqlParameter[]
+             {
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@RecipesId", recipesId)
-            };
+             };
 
             return await ExecuteSingleAsync(sql, parameters);
         }
@@ -85,24 +76,24 @@ namespace Repo.Repository
 
             string sql = $@"SELECT RatingsId, RecipesId, UserId, RatingValue, CreatedAt
                     FROM {_tableName}
-                    WHERE RecipesId = @RecipeId
-                    ORDER BY CreatedAt DESC";
+                    WHERE RecipesId = @RecipeId";
 
-            SqlParameter paramRecipeId = new SqlParameter("@RecipesId", recipeId);
+            var parameters = new SqlParameter[] { new SqlParameter("@RecipeId", recipeId) };
 
-            return (await ExecuteListAsync(sql, paramRecipeId)).ToList();
+            var result = await ExecuteListAsync(sql, parameters);
+            return result.ToList();
         }
 
         public async Task<List<Ratings>> GetAllRatingsByUserIdAsync(int userId)
         {
             string sql = $@"SELECT RatingsId, RecipesId, UserId, RatingValue, CreatedAt
                     FROM {_tableName}
-                    WHERE UserId = @UserId
-                    ORDER BY CreatedAt DESC";
+                    WHERE UserId = @UserId";
 
-            SqlParameter paramUserId = new SqlParameter("@UserId", userId);
+            var parameters = new SqlParameter[] { new SqlParameter("@UserId", userId) };
 
-            return (await ExecuteListAsync(sql, paramUserId)).ToList();
+            var result = await ExecuteListAsync(sql, parameters);
+            return result.ToList();
         }
 
         public async Task<double> GetAverageRatingAsync(int recipeId)
@@ -111,9 +102,9 @@ namespace Repo.Repository
                             FROM {_tableName} 
                             WHERE RecipesId = @RecipeId";
 
-            SqlParameter param = new SqlParameter("@RecipeId", recipeId);
+            var parameter = new SqlParameter("@RecipeId", recipeId);
 
-            var result = await SQL.ExecuteScalarAsync(sql, param);
+            var result = await SQL.ExecuteScalarAsync(sql, parameter);
             return result == DBNull.Value ? 0.0 : Convert.ToDouble(result);
         }
 
@@ -122,14 +113,14 @@ namespace Repo.Repository
             string sql = $@"SELECT COUNT(1) FROM {_tableName} 
                  WHERE RecipesId = @RecipeId AND UserId = @UserId";
 
-            SqlParameter[] parameters = new SqlParameter[]
+            var parameters = new SqlParameter[]
             {
                 new SqlParameter("@RecipeId", recipeId),
                 new SqlParameter("@UserId", userId)
             };
 
-            var result = await SQL.ExecuteScalarAsync(sql, parameters);
-            return Convert.ToInt32(result) > 0;
+            var count = await SQL.ExecuteScalarAsync(sql, parameters);
+            return Convert.ToInt32(count) > 0;
         }
     }
 }

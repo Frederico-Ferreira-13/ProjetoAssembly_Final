@@ -1,4 +1,5 @@
 ﻿using Contracts.Repository;
+using Core.Common;
 using Core.Model;
 using Microsoft.Data.SqlClient;
 using System;
@@ -11,53 +12,31 @@ namespace Repo.Repository
     public class RecipesRepository : Repository<Recipes>, IRecipesRepository
     {
         protected override string PrimaryKeyName => "RecipesId";
-        public RecipesRepository() : base("Recipes")
-        {
-        }
+        public RecipesRepository() : base("Recipes") { }
 
         protected override Recipes MapFromReader(SqlDataReader reader)
         {
-            int id = reader.GetInt32(reader.GetOrdinal("RecipesId"));
-            DateTime createdAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"));
-
-            DateTime? lastUpdatedAt = reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt"))
-                       ? (DateTime?)null
-                       : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt"));
-
-            bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
-
-            int userId = reader.GetInt32(reader.GetOrdinal("UserId"));
-            int categoriesId = reader.GetInt32(reader.GetOrdinal("CategoriesId"));
-            int difficultyIdValue = reader.GetInt32(reader.GetOrdinal("DifficultyId"));
-            string title = reader.GetString(reader.GetOrdinal("Title"));
-            string instructions = reader.GetString(reader.GetOrdinal("Instructions"));
-            int prepTimeMinutes = Convert.ToInt32(reader["PrepTimeMinutes"]);
-            int cookTimeMinutes = Convert.ToInt32(reader["CookTimeMinutes"]);
-            string servings = reader.GetString(reader.GetOrdinal("Servings"));
-
-            string imageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? "default.jpg" : reader.GetString(reader.GetOrdinal("ImageUrl"));
-
-            return Recipes.Reconstitute(
-                id,
-                userId,
-                categoriesId,
-                difficultyIdValue,
-                title,
-                instructions,
-                prepTimeMinutes,
-                cookTimeMinutes,
-                servings,
-                imageUrl,
-                createdAt,
-                lastUpdatedAt,
-                isActive
+            return new Recipes(
+                id: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                categoriesId: reader.GetInt32(reader.GetOrdinal("CategoriesId")),
+                difficultyId: reader.GetInt32(reader.GetOrdinal("DifficultyId")),
+                title: reader.GetString(reader.GetOrdinal("Title")),
+                instructions: reader.GetString(reader.GetOrdinal("Instructions")),
+                prepTimeMinutes: reader.GetInt32(reader.GetOrdinal("PrepTimeMinutes")),
+                cookTimeMinutes: reader.GetInt32(reader.GetOrdinal("CookTimeMinutes")),
+                servings: reader.GetString(reader.GetOrdinal("Servings")),
+                imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader.GetString(reader.GetOrdinal("ImageUrl")),
+                createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt")),
+                isActive: reader.GetBoolean(reader.GetOrdinal("IsActive"))
             );
         }
 
         protected override string BuildInsertSql(Recipes entity)
         {
-            return $"INSERT INTO {_tableName} (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, IsActive) " +
-                    $"VALUES (@UserId, @CategoriesId, @DifficultyId, @Title, @Instructions, @PrepTimeMinutes, @CookTimeMinutes, @Servings, @ImageUrl, GETDATE(), 1)";
+            return $@"INSERT INTO {_tableName} (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, IsActive, IsApproved)
+                      VALUES (@UserId, @CategoriesId, @DifficultyId, @Title, @Instructions, @PrepTimeMinutes, @CookTimeMinutes, @Servings, @ImageUrl, GETDATE(), 1, @IsApproved)";
         }
 
         protected override SqlParameter[] GetInsertParameters(Recipes entity)
@@ -78,17 +57,18 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(Recipes entity)
         {
-            return $"UPDATE {_tableName} SET " +
-                   "Title = @Title, " +
-                   "Instructions = @Instructions, " +
-                   "PrepTimeMinutes = @PrepTimeMinutes, " +
-                   "CookTimeMinutes = @CookTimeMinutes, " +
-                   "Servings = @Servings, " +
-                   "CategoriesId = @CategoriesId, " +
-                   "DifficultyId = @DifficultyId, " +
-                   "ImageUrl = @ImageUrl, " +
-                   "LastUpdatedAt = GETDATE() " +
-                   "WHERE RecipesId = @RecipesId";
+            return $@"UPDATE {_tableName} SET 
+                      Title = @Title, 
+                      Instructions = @Instructions, 
+                      PrepTimeMinutes = @PrepTimeMinutes, 
+                      CookTimeMinutes = @CookTimeMinutes, 
+                      Servings = @Servings, 
+                      CategoriesId = @CategoriesId, 
+                      DifficultyId = @DifficultyId, 
+                      ImageUrl = @ImageUrl, 
+                      LastUpdatedAt = GETDATE(),
+                      IsApproved = @IsApproved
+                      WHERE RecipesId = @RecipesId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Recipes entity)
@@ -102,7 +82,8 @@ namespace Repo.Repository
                 new SqlParameter("@Servings", entity.Servings),
                 new SqlParameter("@CategoriesId", entity.CategoriesId),
                 new SqlParameter("@DifficultyId", entity.DifficultyId),
-                new SqlParameter("@ImageUrl", (object)entity.ImageUrl ?? DBNull.Value), // Adicionado
+                new SqlParameter("@ImageUrl", (object)entity.ImageUrl ?? DBNull.Value),
+                new SqlParameter("@IsApproved", entity.IsApproved),
                 new SqlParameter("@RecipesId", entity.GetId())
             };
         }
@@ -115,55 +96,23 @@ namespace Repo.Repository
                 SELECT RecipesId, UserId, CategoriesId, DifficultyId, Title, Instructions, 
                        PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, LastUpdatedAt, IsActive
                 FROM {_tableName} 
-                WHERE UserId = @UserId AND IsActive = 1
-                ORDER BY CreatedAt DESC";
+                WHERE UserId = @UserId AND IsActive = 1";
 
-            SqlParameter paramUserId = new SqlParameter("@UserId", userId);
+            var parameters = new SqlParameter[] { new SqlParameter("@UserId", userId) };
 
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramUserId))
-                {
-                    while (reader.Read())
-                    {
-                        recipes.Add(MapFromReader(reader));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório GetByUserIdAsync: {ex.Message}");
-                throw;
-            }
-
-            return recipes;
+            var result = await ExecuteListAsync(sql, parameters);
+            return result.ToList();           
         }
 
         public async Task<bool> ExistsByIdAsync(int recipeId)
         {
-            string sql = $@"
-                SELECT TOP 1 1
-                FROM {_tableName}
-                WHERE RecipesId = @RecipesId AND IsActive = 1";
+            var recipe = await ReadByIdAsync(recipeId);
 
-            SqlParameter paramId = new SqlParameter("@RecipesId", recipeId);
-            try
-            {
-                using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, paramId))
-                {
-                    return reader.HasRows;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no Repositório ExistsByIdAsync: {ex.Message}");
-                throw;
-            }
+            return recipe != null;
         }
 
         public async Task<IEnumerable<Recipes>> GetRecipesWithFavoritesAsync(int? currentUserId, int? categoryId)
-        {
-            var recipes = new List<Recipes>();
+        {            
             string sql = @"
                 SELECT r.*,
                 (SELECT COUNT(*) FROM Favorites f Where f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoritesCount,
@@ -172,26 +121,23 @@ namespace Repo.Repository
                 FROM Recipes r
                 WHERE (@CategoryId IS NULL OR r.CategoriesId = @CategoryId) AND r.IsActive = 1";
 
-            SqlParameter[] parameters = new SqlParameter[]
+            var parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
                 new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value)
             };
 
-            using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
+            var result = await ExecuteListAsync(sql, parameters);
+            var recipes = new List<Recipes>();
+
+            foreach (var recipe in result)
             {
-                while (reader.Read())
-                {
-                    var recipe = MapFromReader(reader); // Lê as colunas base
-
-                    // Preencher as propriedades extra
-                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoritesCount"));
-                    recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
-
-                    recipes.Add(recipe);
-                }
+                recipe.FavoriteCount = 0;
+                recipe.IsFavorite = false;
+                recipes.Add(recipe);
             }
-            return recipes;
+
+             return recipes;
         }
 
         public async Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId)
@@ -229,21 +175,16 @@ namespace Repo.Repository
                 new SqlParameter("@PageSize", pageSize)
             };
 
-            using (SqlDataReader reader = await SQL.ExecuteQueryAsync(sql, parameters))
-            {
-                while(reader.Read())
-                {
-                    if(totalCount == 0)
-                    {
-                        totalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));                       
-                    }
+            var result = await ExecuteListAsync(sql, parameters);
 
-                    var recipe = MapFromReader(reader);
-                    recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoritesCount"));
-                    recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
-                    recipes.Add(recipe);
-                }
+            foreach (var recipe in result)
+            {
+                recipe.FavoriteCount = 0;
+                recipe.IsFavorite = false;
+                recipes.Add(recipe);
             }
+
+            totalCount = recipes.Count;
 
             return (recipes, totalCount);
         }
@@ -259,7 +200,6 @@ namespace Repo.Repository
             var parameter = new SqlParameter("@DifficultyId", difficultyId);
 
             using var reader = await SQL.ExecuteQueryAsync(sql, parameter);
-
             return reader.HasRows;
         }
 
@@ -269,55 +209,33 @@ namespace Repo.Repository
                 SELECT r.*, u.UserName, u.Email
                 FROM Recipes r
                 LEFT JOIN Users u ON r.UserId = u.UserId
-                WHERE r.IsApproved = 0 AND r.IsActive = 1
-                ORDER BY r.CreatedAt DESC";
+                WHERE r.IsApproved = 0 AND r.IsActive = 1";
+
+            var result = await ExecuteListAsync(sql);
 
             var recipes = new List<Recipes>();
 
-            using var reader = await SQL.ExecuteQueryAsync(sql);
-
-            while (await reader.ReadAsync())
+            foreach (var recipe in result)
             {
-                var recipe = Recipes.Reconstitute(
-                    id: reader.GetInt32(reader.GetOrdinal("RecipesId")),
-                    userId: reader.GetInt32(reader.GetOrdinal("UserId")),
-                    categoriesId: reader.GetInt32(reader.GetOrdinal("CategoriesId")),
-                    difficultyId: reader.GetInt32(reader.GetOrdinal("DifficultyId")),
-                    title: reader.GetString(reader.GetOrdinal("Title")),
-                    instructions: reader.GetString(reader.GetOrdinal("Instructions")),
-                    prepTimeMinutes: reader.GetInt16(reader.GetOrdinal("PrepTimeMinutes")),
-                    cookTimeMinutes: reader.GetInt16(reader.GetOrdinal("CookTimeMinutes")),
-                    servings: reader.GetString(reader.GetOrdinal("Servings")),
-                    imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader.GetString(reader.GetOrdinal("ImageUrl")),
-                    createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                    lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt")),
-                    isActive: reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                var fakeUser = new Users(
+                    id: recipe.UserId ?? 0,
+                    name: "Utilizador",
+                    userName: "Utilizador",
+                    email: "",
+                    passwordHash: "",
+                    salt: "",
+                    isApproved: true,
+                    usersRoleId: 1,
+                    accountId: 1,
+                    createdAt: DateTime.Now,
+                    lastUpdatedAt: null,
+                    isActive: true
                 );
 
-                string validateEmail = reader.IsDBNull(reader.GetOrdinal("Email"))
-                                       ? "sistema@temp.com"
-                                       : reader.GetString(reader.GetOrdinal("Email"));
-
-                string fakeHash = new string('0', 60);
-                string fakeSalt = new string('0', 16);
-
-                recipe.SetUser(Users.Reconstitute(
-                   id: reader.GetInt32(reader.GetOrdinal("UserId")),
-                   name: reader.IsDBNull(reader.GetOrdinal("UserName")) ? "Utilizador" : reader.GetString(reader.GetOrdinal("UserName")),
-                   userName: reader.GetString(reader.GetOrdinal("UserName")),
-                   email: reader.IsDBNull(reader.GetOrdinal("Email")) ? "" : reader.GetString(reader.GetOrdinal("Email")),
-                   passwordHash: "",
-                   salt: "",
-                   isApproved: true,
-                   usersRoleId: 1,
-                   accountId: 1,
-                   createdAt: DateTime.Now,
-                   lastUpdatedAt: null,
-                   isActive: true
-                ));
-
+                recipe.SetUser(fakeUser);
                 recipes.Add(recipe);
             }
+
             return recipes;
         }
     }

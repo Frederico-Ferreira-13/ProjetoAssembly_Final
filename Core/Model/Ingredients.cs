@@ -16,7 +16,7 @@ namespace Core.Model
         public int IngredientsTypeId { get; protected set; }
         public IngredientsType? Type { get; protected set; }
 
-        private Ingredients(int id, string ingredientName, int ingredientsTypeId)
+        public Ingredients(int id, string ingredientName, int ingredientsTypeId)
         {
             if (id <= 0)
             {
@@ -26,12 +26,7 @@ namespace Core.Model
             IngredientsId = id;            
             IngredientName = ingredientName;
             IngredientsTypeId = ingredientsTypeId;
-        }
-
-        public static Ingredients Reconstitute(int id, string ingredientName, int ingredientsTypeId)
-        {
-            return new Ingredients(id, ingredientName, ingredientsTypeId);
-        }
+        }        
 
         public Ingredients([NotNull] string ingredientName, int ingredientsTypeId)
         {

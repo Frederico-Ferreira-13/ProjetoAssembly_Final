@@ -37,7 +37,7 @@ namespace Core.Model
             Unit = unit;
         }
 
-        private IngredientsRecips(int id, int recipesId, int ingredientsId, decimal quantityValue,
+        public IngredientsRecips(int id, int recipesId, int ingredientsId, decimal quantityValue,
              string unit)
         {
             IngredientsRecipsId = id;            
@@ -46,13 +46,7 @@ namespace Core.Model
             IngredientsId = ingredientsId;
             QuantityValue = quantityValue;
             Unit = unit;
-        }
-
-        public static IngredientsRecips Reconstitute(int id, int recipesId, int ingredientsId,
-            decimal quantityValue, string unit)
-        {
-            return new IngredientsRecips(id, recipesId, ingredientsId, quantityValue, unit);
-        }
+        }       
 
         public void Update(decimal newQuantityValue, [NotNull] string newUnit, string? newDetail)
         {           
