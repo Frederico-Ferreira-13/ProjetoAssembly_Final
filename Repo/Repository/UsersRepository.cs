@@ -5,10 +5,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using Core.Common;
 
 namespace Repo.Repository
 {
-    public class UsersRepository : Repository<Users>, IUsersRepository
+    public class UsersRepository : SoftDeleteRepository<Users>, IUsersRepository
     {
         private const string SelectColumns = "UserId, Name, UserName, Email, PasswordHash, Salt, IsApproved, UsersRoleId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
 
@@ -75,7 +76,7 @@ namespace Repo.Repository
 
         public async Task<bool> ExistsByIdAsync(int id)
         {
-            var user = await ReadByIdAsync(id, onlyActive: true);
+            var user = await ReadByIdAsync(id);
             return user != null;
         }
 

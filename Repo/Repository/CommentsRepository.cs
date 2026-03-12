@@ -29,14 +29,13 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(Comments entity)
         {
-            return $@"UPDATE {_tableName}
-                      SET CommentText = @CommentText,
-                          Rating = @Rating,
-                          LastUpdatedAt = GETDATE(),
-                          IsEdited = @IsEdited,
-                          IsDeleted = @IsDeleted,
-                          OriginalComment = @OriginalComment
-                      WHERE CommentsId = @CommentsId";
+            return $@"INSERT INTO {_tableName}
+                      (RecipesId, UserId, CommentText, Rating, CreatedAt,
+                        LastUpdatedAt, IsEdited, IsDeleted, OriginalComment)
+                            VALUES
+                        (@RecipesId, @UserId, @CommentText, @Rating, @CreatedAt, @LastUpdatedAt, @IsEdited,
+                        @IsDeleted, @OriginalComment);
+                            SELECT CAST (SCOPE_IDENTITY() as int);";
         }
 
         protected override SqlParameter[] GetInsertParameters(Comments entity)
@@ -47,6 +46,10 @@ namespace Repo.Repository
                 new SqlParameter("@UserId", entity.UserId),
                 new SqlParameter("@CommentText",(object?)entity.CommentText ?? DBNull.Value),
                 new SqlParameter("@Rating", entity.Rating),
+                new SqlParameter("@CreatedAt", entity.CreatedAt),
+                new SqlParameter("@LastUpdatedAt", (object?)entity.LastUpdatedAt ?? DBNull.Value),
+                new SqlParameter("@IsEdited", entity.IsEdited),
+                new SqlParameter("@IsDeleted", entity.IsDeleted),
                 new SqlParameter("@OriginalComment", (object?)entity.OriginalComment ?? DBNull.Value)
             };
         }

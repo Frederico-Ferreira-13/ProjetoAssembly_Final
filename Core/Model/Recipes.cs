@@ -7,80 +7,61 @@ using System.Text;
 
 namespace Core.Model
 {
-    public class Recipes : IEntity
+    public class Recipes : IEntity, ISoftDeletable
     {
         public int RecipesId { get; private set; }
-        public bool IsActive { get; private set; }
-        public bool IsApproved { get; private set; }
-
         public int? UserId { get; protected set; }
         public int CategoriesId { get; protected set; }
-
         public int DifficultyId { get; protected set; }
-
         public string Title { get; protected set; }
         public string Instructions { get; protected set; }
         public int PrepTimeMinutes { get; protected set; }
         public int CookTimeMinutes { get; protected set; }
         public string Servings { get; protected set; }
         public string? ImageUrl { get; protected set; }
+        public DateTime CreatedAt { get; protected set; }
+        public DateTime? LastUpdatedAt { get; protected set; }
+        public bool IsActive { get; private set; }
+        public bool IsApproved { get; private set; }      
 
         public int FavoriteCount { get; set; } = 0;
         public bool IsFavorite { get; set; } = false;
-        public double AverageRating { get; set; } = 0.0;
-
-        public DateTime CreatedAt { get; protected set; }
-        public DateTime? LastUpdatedAt { get; protected set; }
-
-        public Difficulty? Difficulty { get; protected set; }
+        public double AverageRating { get; set; } = 0.0;       
 
         public virtual Users? User { get; private set; }
 
         public virtual ICollection<IngredientsRecips> Ingredients { get; protected set; } = new List<IngredientsRecips>();
 
         private const int MinTitleLength = 5;
-        private const int MinInstructionsLength = 20;
-
-        [SetsRequiredMembers]
-        private Recipes()
-        {
-            this.RecipesId = default;
-            this.IsActive = true;
-            Title = string.Empty;
-            Instructions = string.Empty;
-            Servings = string.Empty;
-        }
+        private const int MinInstructionsLength = 20;       
 
         public Recipes(int userId, int categoriesId, int difficultyId, string title, string instructions,
-                        int prepTimeMinutes, int cookTimeMinutes, string servings, bool isApproved = false)
+                        int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl = null)
         {
             ValidateRecipe(userId, categoriesId, difficultyId, title, instructions, prepTimeMinutes,
                 cookTimeMinutes, servings);
 
-            this.RecipesId = default;
-            this.IsActive = true;
-            this.IsApproved = isApproved;
-
             UserId = userId;
             CategoriesId = categoriesId;
             DifficultyId = difficultyId;
-            Title = title;
-            Instructions = instructions;
+            Title = title.Trim();
+            Instructions = instructions.Trim();
             PrepTimeMinutes = prepTimeMinutes;
             CookTimeMinutes = cookTimeMinutes;
-            Servings = servings;
+            Servings = servings.Trim();
+            ImageUrl = imageUrl?.Trim();
 
-            this.CreatedAt = DateTime.UtcNow;
-            this.LastUpdatedAt = null;
+            CreatedAt = DateTime.UtcNow;
+            LastUpdatedAt = null;
+            IsActive = true;
+            IsApproved = false;
         }
 
-        public Recipes(int id, bool isActive, int userId, int categoriesId, int difficultyId, string title,
+        public Recipes(int id, int userId, int categoriesId, int difficultyId, string title,
             string instructions, int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl,
-            DateTime createdAt, DateTime? lastUpdatedAt)
+            DateTime createdAt, DateTime? lastUpdatedAt, bool isActive, bool isApproved)
         {
-            this.RecipesId = id;
-            this.IsActive = isActive;
-
+            RecipesId = id;
             UserId = userId;
             CategoriesId = categoriesId;
             DifficultyId = difficultyId;
@@ -89,10 +70,11 @@ namespace Core.Model
             PrepTimeMinutes = prepTimeMinutes;
             CookTimeMinutes = cookTimeMinutes;
             Servings = servings;
-            this.ImageUrl = imageUrl;
-
-            this.CreatedAt = createdAt;
-            this.LastUpdatedAt = lastUpdatedAt;
+            ImageUrl = imageUrl;
+            CreatedAt = createdAt;
+            LastUpdatedAt = lastUpdatedAt;
+            IsActive = isActive;
+            IsApproved = isApproved;
         }
         
 

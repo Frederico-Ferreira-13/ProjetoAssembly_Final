@@ -44,10 +44,10 @@ namespace Repo.Repository
         protected override string BuildUpdateSql(UserSettings entity)
         {
             return $@"UPDATE {_tableName} 
-                      SET Theme = @Theme, 
-                          Language = @Language,
-                          NotificationsEnabled = @NotificationsEnabled                          
-                      WHERE UserSettingId = @UserSettingId";
+              SET Theme = @Theme, 
+                  Language = @Language,
+                  NotificationsEnabled = @NotificationsEnabled                         
+              WHERE UserSettingId = @UserSettingId";
         }
 
         protected override SqlParameter[] GetUpdateParameters(UserSettings entity)

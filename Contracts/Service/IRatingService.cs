@@ -11,7 +11,7 @@ namespace Contracts.Service
         Task<Result<Ratings>> GetRankingById(int ratingId);
         Task<Result<Ratings>> GetUserRatingForRecipeAsync(int recipeId, int userId);
         Task<Result<List<Ratings>>> GetRatingsByRecipeIdAsync(int recipeId);
-        Task<double> GetAverageRatingByRecipeIdAsync(int recipeId);
+        Task<Result<double>> GetAverageRatingByRecipeIdAsync(int recipeId);
 
         Task<Result<Ratings>> CreateRatingAsync(Ratings newRating);
         Task<Result> UpdateRatingAsync(int ratingId, int newRatingValue);

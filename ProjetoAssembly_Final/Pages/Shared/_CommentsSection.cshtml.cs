@@ -9,11 +9,9 @@ namespace ProjetoAssembly_Final.Pages.Shared
     public class _CommentsSectionModel : PageModel
     {
         public List<Comments> ListComments { get; set; } = new();
+        public int RecipeId { get; set; }
 
-        [BindProperty]
-        public string Message { get; set; } = string.Empty;
-        [BindProperty]
-        public int Rating { get; set; }   
-        public int RecipeId { get; set; }    
+        public string? CommentMessage { get; set; }
+        public int CommentRating { get; set; }
     }
 }

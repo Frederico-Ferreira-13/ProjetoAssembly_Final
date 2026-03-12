@@ -1,34 +1,35 @@
-﻿/* --- CONTAINER PRINCIPAL --- */
-.container {
+﻿
+/* --- CONTAINER PRINCIPAL --- */
+.comments-section-wraper {
     max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    margin: 20px auto;
+    font-family: 'Segoe UI', Tahoma, Verdana, Geneva, sans-serif,;
 }
 
 /* --- CARDS DE COMENTÁRIOS --- */
 .comment-card {
-    background: var(--card-bg);
+    background: var(--card-bg, #ffffff);
     border-radius: 16px;
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border-left: 6px solid #28a745;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    animation: fadeInUp 0.4s ease forwards;
-    color: var(--text-color);
+    transition: all 0.3s ease;
+    position: relative;
+    color: var(--text-color, #2d3748);
 }
 
 .comment-card:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    border-left-color: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);    
 }
 
+/* --- INFO DE UTILIZADOR --- */
 .comment-user-info {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .user-avatar-circle {
@@ -40,12 +41,30 @@
     align-items: center;
     justify-content: center;
     color: white;    
-    font-weight: bold;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .user-display-id {
     font-weight: 700;
-    color: var(--text-color);    
+    font-size: 1rem;    
+}
+
+/* --- BADGES E TIMERS --- */
+.edited-badge {
+    background: #edf2f7;
+    color: #4a5568;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 5px;
 }
 
 .comment-date {
@@ -54,78 +73,176 @@
     color: #a0aec0
 }
 
-.comment-body {
-    font-size: 1.05rem;    
-    background: rgba(0, 0, 0, 0.03);
-    padding: 15px;
-    border-radius: 10px;
-    line-height: 1.5;
+.edit-timer {
+    font-size: 0.8rem;
+    color: #718096;
+    margin-left: 10px;
+}
+
+.edit-expired {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin-top: 10px;
+    font-style: italic;
 }
 
 /* --- ESTRELAS DA LISTA (ESTÁTICAS) --- */
+.stars-display {
+    color: #cbd5e0;
+    font-size: 0.9rem;
+}
+
 .stars-display .checked {
-    color: #f1c40f;
-    text-shadow: 0 0 5px rgba(241, 196, 15, 0.2);
+    color: #f1c40f;    
 }
 
-.star-rating-control {
-    display: flex !important;
-    flex-direction: row-reverse !important;
+/* --- CONTEÚDO DO COMENTÁRIO --- */
+.Commnet-content p {
+    margin: 10px 0;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+/* --- AÇÕES (BOTÕES) --- */
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.btn-edit-comment {
+    background: none;
+    border: none;
+    color: #3182ce;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.btn-edit-comment:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+/* --- FORMULÁRIO DE EDIÇÃO (MODO EDIT) --- */
+.comment.edit-form {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+
+}
+
+.edit-actions {
+    display: flex;
     justify-content: flex-end;
-    gap: 5px;    
+    gap: 10px;
+    margin-top: 15px;
 }
 
-.star-rating-control input[type="radio"]{
-   display: none !important;   
+.btn-save, btn-cancel {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 0.85rem;
+}
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-cancel {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+/* --- INPUT E RATING --- */
+.form-control-modern {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.form-control-modern:focus {
+    border-color: #28a745;
+    outline: none;
+}
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #a0aec0;
+    margin-top: 5px;
+}
+
+/* Estrelas para input (Radio) */
+.star-rating-control {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star-rating-control input {
+    display: none;
 }
 
 .star-rating-control label {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #edf2f7;
     cursor: pointer;
-    transition: 0.2s,
-    
+    transition: color 0.2s;
 }
 
 .star-rating-control label:hover,
 .star-rating-control label:hover ~ label,
 .star-rating-control input:checked ~ label {
-    color: #f1c40f !important;
+    color: #f1c40f;
 }
 
-/* --- FORMULÁRIO DE ENVIO --- */
-.comment-form-section {
-    background: var(--card-bg);
-    padding: 30px;
-    border-radius: 20px;    
-    border: 1px solid var(--border-color);
-    margin-top: 40px;
+/* --- ALERTAS --- */
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
 }
 
-.form-control-modern {
-    width: 100%;
-    border: var(--bg-color);
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 15px;
-    transition: 0.3s;
-    box-sizing: border-box;
+.alert-success {
+    background: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
 }
 
-.form-control-modern:focus {
-    border-color: var(--primary-green);
-    outline: none;    
+.alert-danger {
+    background: #fed7d7;
+    color: #822727;
+    border: 1px solid #feb2b2;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 600px) {
+    .comment-card {
+        padding: 15px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .comment-user-info {
+        flex-wrap: wrap;
+    }
+
+    .comment-date {
+        width: 100%;
+        margin-top: 5px;
     }
 }

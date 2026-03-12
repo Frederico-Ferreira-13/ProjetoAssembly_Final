@@ -33,13 +33,12 @@ namespace Service.Services
         public async Task<Result<Ingredients>> GetIngredientByIdAsync(int ingredientId)
         {
             var ingredient = await _ingredientsRepository.ReadByIdAsync(ingredientId);
-
             if (ingredient == null)
             {
                 return Result<Ingredients>.Failure(
                     Error.NotFound(
                         ErrorCodes.NotFound,
-                        $"O Ingrediente com ID {ingredientId} não foi encontrado.")
+                        $"Ingrediente com ID {ingredientId} não encontrado.")
                 );
             }
 
@@ -48,18 +47,72 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<Ingredients>>> SearchIngredientsAsync(string searchIngredient)
         {
+            if (string.IsNullOrWhiteSpace(searchIngredient))
+            {
+                return Result<IEnumerable<Ingredients>>.Failure(
+                    Error.Validation(
+                        "O termo de pesquisa é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(searchIngredient), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
             var ingredients = await _ingredientsRepository.Search(searchIngredient);
             return Result<IEnumerable<Ingredients>>.Success(ingredients);
         }
 
         public async Task<Result<Ingredients>> CreateIngredientAsync(Ingredients newIngredient)
         {
-            if (await _ingredientsRepository.IsIngredientUnique(newIngredient.IngredientName))
+            if (string.IsNullOrWhiteSpace(newIngredient.IngredientName))
             {
                 return Result<Ingredients>.Failure(
                     Error.Validation(
-                        $"O Ingrediente '{newIngredient.IngredientName}' já existe.",
-                        new Dictionary<string, string[]> { { nameof(newIngredient.IngredientName), new[] { "Este nome já está em uso." } } }));
+                        "O nome do ingrediente é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(newIngredient.IngredientName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (newIngredient.IngredientName.Length > 100)
+            {
+                return Result<Ingredients>.Failure(
+                    Error.Validation(
+                        "O nome do ingrediente não pode exceder 100 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(newIngredient.IngredientName), new[] { "Máximo 100 caracteres" } } }
+                    )
+                );
+            }
+
+            if (newIngredient.IngredientsTypeId <= 0)
+            {
+                return Result<Ingredients>.Failure(
+                    Error.Validation(
+                        "ID do tipo de ingrediente inválido.",
+                        new Dictionary<string, string[]> { { nameof(newIngredient.IngredientsTypeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var typeExists = await _ingredientsTypeRepository.ReadByIdAsync(newIngredient.IngredientsTypeId);
+            if (typeExists == null)
+            {
+                return Result<Ingredients>.Failure(
+                    Error.NotFound(
+                        ErrorCodes.NotFound,
+                        $"Tipo de ingrediente com ID {newIngredient.IngredientsTypeId} não encontrado."
+                    )
+                );
+            }
+
+            if (await _ingredientsRepository.IsIngredientUnique(newIngredient.IngredientName))
+            {
+                return Result<Ingredients>.Failure(
+                    Error.Conflict(
+                        ErrorCodes.AlreadyExists,
+                        $"O ingrediente '{newIngredient.IngredientName}' já existe.",
+                        new Dictionary<string, string[]> { { nameof(newIngredient.IngredientName), new[] { "Nome já em uso" } } }
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -89,7 +142,7 @@ namespace Service.Services
             {
                 _unitOfWork.Rollback();
                 return Result<Ingredients>.Failure(
-                    Error.InternalServer($"Erro ao criar ingrediente: {ex.Message}"));
+                    Error.InternalServer($"Erro inesperado ao criar ingrediente: {ex.Message}"));
             }
         }
 
@@ -101,14 +154,59 @@ namespace Service.Services
                 return Result.Failure(
                     Error.NotFound(
                         ErrorCodes.NotFound,
-                        $"O Ingrediente com ID {ingredientToUpdate.IngredientsId} não foi encontrado para atualização."));
+                        $"O Ingrediente com ID {ingredientToUpdate.IngredientsId} não encontrado para atualização."));
+            }
+
+            if (string.IsNullOrWhiteSpace(ingredientToUpdate.IngredientName))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome do ingrediente é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(ingredientToUpdate.IngredientName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (ingredientToUpdate.IngredientName.Length > 100)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome do ingrediente não pode exceder 100 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(ingredientToUpdate.IngredientName), new[] { "Máximo 100 caracteres" } } }
+                    )
+                );
+            }
+
+            if (ingredientToUpdate.IngredientsTypeId <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "ID do tipo de ingrediente inválido.",
+                        new Dictionary<string, string[]> { { nameof(ingredientToUpdate.IngredientsTypeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var typeExists = await _ingredientsTypeRepository.ReadByIdAsync(ingredientToUpdate.IngredientsTypeId);
+            if (typeExists == null)
+            {
+                return Result.Failure(
+                    Error.NotFound(
+                        ErrorCodes.NotFound,
+                        $"Tipo de ingrediente com ID {ingredientToUpdate.IngredientsTypeId} não encontrado."
+                    )
+                );
             }
 
             if (!await _ingredientsRepository.IsIngredientUnique(ingredientToUpdate.IngredientName, ingredientToUpdate.IngredientsId))
             {
-                return Result.Failure(Error.Validation(
-                        $"O Ingrediente '{ingredientToUpdate.IngredientName}' já existe.",
-                        new Dictionary<string, string[]> { { nameof(ingredientToUpdate.IngredientName), new[] { "Este nome já está em uso." } } }));
+                return Result.Failure(
+                    Error.Conflict(
+                        ErrorCodes.AlreadyExists,
+                        $"O ingrediente '{ingredientToUpdate.IngredientName}' já existe.",
+                        new Dictionary<string, string[]> { { nameof(ingredientToUpdate.IngredientName), new[] { "Nome já em uso" } } }
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -128,6 +226,13 @@ namespace Service.Services
                 return Result.Failure(Error.Validation(
                     "Dados de entrada inválidos para a atualização do ingrediente.",
                     new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }));
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(
+                    Error.InternalServer($"Erro ao atualizar ingrediente: {ex.Message}")
+                );
             }
         }
 
@@ -179,6 +284,16 @@ namespace Service.Services
 
         public async Task<Result<IngredientsType>> GetIngredientsTypeByNameAsync(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return Result<IngredientsType>.Failure(
+                    Error.Validation(
+                        "O nome do tipo de ingrediente é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(name), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
             var type = await _ingredientsTypeRepository.GetByNameAsync(name);
             if (type == null)
             {
@@ -196,25 +311,56 @@ namespace Service.Services
             return Result<IEnumerable<IngredientsType>>.Success(types);
         }
 
-        public async Task<Result<IngredientsType>> CreateIngredientsTypeAsync(IngredientsType ingredientsType)
+        public async Task<Result<IngredientsType>> CreateIngredientsTypeAsync(IngredientsType newType)
         {
-            if (await _ingredientsTypeRepository.GetByNameAsync(ingredientsType.IngredientsTypeName) != null)
+            if (string.IsNullOrWhiteSpace(newType.IngredientsTypeName))
             {
                 return Result<IngredientsType>.Failure(
                     Error.Validation(
-                        $"O Tipo de Ingrediente '{ingredientsType.IngredientsTypeName}' já existe.",
-                        new Dictionary<string, string[]> { { nameof(ingredientsType.IngredientsTypeName), new[] { "Nome já em uso." } } }));
+                        "O nome do tipo de ingrediente é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(newType.IngredientsTypeName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (newType.IngredientsTypeName.Length > 50)
+            {
+                return Result<IngredientsType>.Failure(
+                    Error.Validation(
+                        "O nome do tipo de ingrediente não pode exceder 50 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(newType.IngredientsTypeName), new[] { "Máximo 50 caracteres" } } }
+                    )
+                );
+            }
+
+            if (await _ingredientsTypeRepository.GetByNameAsync(newType.IngredientsTypeName) != null)
+            {
+                return Result<IngredientsType>.Failure(
+                    Error.Validation(
+                        $"O Tipo de Ingrediente '{newType.IngredientsTypeName}' já existe.",
+                        new Dictionary<string, string[]> { { nameof(newType.IngredientsTypeName), new[] { "Nome já em uso." } } }));
             }
 
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var newType = new IngredientsType(ingredientsType.IngredientsTypeName);
-                await _ingredientsTypeRepository.CreateAddAsync(newType);
+                var typeToCreate = new IngredientsType(newType.IngredientsTypeName);
+                await _ingredientsTypeRepository.CreateAddAsync(typeToCreate);
                 await _unitOfWork.CommitAsync();
 
-                return Result<IngredientsType>.Success(newType);
+                return Result<IngredientsType>.Success(typeToCreate);
+            }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.Rollback();
+                string fieldName = ex.ParamName ?? "Geral";
+                return Result<IngredientsType>.Failure(
+                    Error.Validation(
+                        "Dados inválidos para criar tipo de ingrediente.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }
+                    )
+                );
             }
             catch (Exception ex)
             {
@@ -235,6 +381,26 @@ namespace Service.Services
                         $"Tipo de Ingrediente com ID {updateType.IngredientsTypeId} não encontrado."));
             }
 
+            if (string.IsNullOrWhiteSpace(updateType.IngredientsTypeName))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome do tipo de ingrediente é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(updateType.IngredientsTypeName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (updateType.IngredientsTypeName.Length > 50)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome do tipo de ingrediente não pode exceder 50 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(updateType.IngredientsTypeName), new[] { "Máximo 50 caracteres" } } }
+                    )
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
@@ -247,8 +413,12 @@ namespace Service.Services
                     {
                         _unitOfWork.Rollback();
                         return Result.Failure(
-                            Error.Validation(
-                                $"O nome do Tipo de Ingrediente '{updateType.IngredientsTypeName}' já está em uso."));
+                            Error.Conflict(
+                                ErrorCodes.AlreadyExists,
+                                $"O nome '{updateType.IngredientsTypeName}' já está em uso.",
+                                new Dictionary<string, string[]> { { nameof(updateType.IngredientsTypeName), new[] { "Nome já em uso" } } }
+                            )
+                        );
                     }
 
                     existingType.UpdateName(updateType.IngredientsTypeName);
@@ -263,11 +433,23 @@ namespace Service.Services
 
                 return Result.Success("Tipo de Ingrediente atualizado com sucesso.");
             }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.Rollback();
+                string fieldName = ex.ParamName ?? "Geral";
+                return Result.Failure(
+                    Error.Validation(
+                        "Dados inválidos para atualizar tipo de ingrediente.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }
+                    )
+                );
+            }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
                 return Result.Failure(
-                    Error.InternalServer($"Erro ao atualizar tipo de ingrediente: {ex.Message}"));
+                    Error.InternalServer($"Erro ao atualizar tipo de ingrediente: {ex.Message}")
+                );
             }
         }
 
@@ -276,8 +458,18 @@ namespace Service.Services
             var existingType = await _ingredientsTypeRepository.ReadByIdAsync(id);
             if (existingType == null)
             {
-                return Result.Success($"Tipo de Ingrediente com ID {id} não encontrado (idempotente).");
-            }            
+                return Result.Success("Tipo de ingrediente já eliminado ou não encontrado (idempotente).");
+            }
+
+            if (await _ingredientsRepository.AnyWithTypeIdAsync(id))
+            {
+                return Result.Failure(
+                    Error.BusinessRuleViolation(
+                        ErrorCodes.BizHasDependencies,
+                        "Não é possível eliminar o tipo de ingrediente porque está associado a um ou mais ingredientes."
+                    )
+                );
+            }
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -325,12 +517,21 @@ namespace Service.Services
 
         public async Task<Result<IngredientsRecips>> AddIngredientToRecipeAsync(IngredientsRecips newLink)
         {
-            if (!await _unitOfWork.Recipes.ExistsByIdAsync(newLink.RecipesId))
+            var currentUserIdResult = await _usersService.GetCurrentUserIdAsync();
+            if (!currentUserIdResult.IsSuccessful)
+            {
+                return Result<IngredientsRecips>.Failure(currentUserIdResult.Error);
+            }
+
+            var recipe = await _unitOfWork.Recipes.ReadByIdAsync(newLink.RecipesId);
+            if (recipe == null)
             {
                 return Result<IngredientsRecips>.Failure(
                     Error.NotFound(
                         ErrorCodes.NotFound,
-                        $"Receita com ID {newLink.RecipesId} não encontrada."));
+                        $"Receita com ID {newLink.RecipesId} não encontrada."
+                    )
+                );
             }
 
             var isOwner = await _recipesService.IsRecipeOwnerAsync(newLink.RecipesId);
@@ -339,15 +540,20 @@ namespace Service.Services
                 return Result<IngredientsRecips>.Failure(
                     Error.Forbidden(
                         ErrorCodes.AuthForbidden,
-                        "Apenas o criador da receita pode adicionar ingredientes."));
+                        "Apenas o criador da receita pode adicionar ingredientes."
+                    )
+                );
             }
 
-            if (await _unitOfWork.Ingredients.ReadByIdAsync(newLink.IngredientsId) == null)
+            var ingredientExists = await _ingredientsRepository.ReadByIdAsync(newLink.IngredientsId);
+            if (ingredientExists == null)
             {
                 return Result<IngredientsRecips>.Failure(
                     Error.NotFound(
                         ErrorCodes.NotFound,
-                        $"Ingrediente com ID {newLink.IngredientsId} não encontrado."));
+                        $"Ingrediente com ID {newLink.IngredientsId} não encontrado."
+                    )
+                );
             }
 
             if (await _ingredientsRecipsRepository.IsIngredientUsedInRecipeAsync(newLink.RecipesId, newLink.IngredientsId))
@@ -355,7 +561,29 @@ namespace Service.Services
                 return Result<IngredientsRecips>.Failure(
                     Error.Validation(
                         "Este ingrediente já foi adicionado à receita.",
-                        new Dictionary<string, string[]> { { nameof(newLink.IngredientsId), new[] { "Ingrediente duplicado." } } }));
+                        new Dictionary<string, string[]> { { nameof(newLink.IngredientsId), new[] { "Ingrediente duplicado" } } }
+                    )
+                );
+            }
+
+            if (newLink.QuantityValue <= 0)
+            {
+                return Result<IngredientsRecips>.Failure(
+                    Error.Validation(
+                        "A quantidade deve ser maior que zero.",
+                        new Dictionary<string, string[]> { { nameof(newLink.QuantityValue), new[] { "Valor inválido" } } }
+                    )
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(newLink.Unit))
+            {
+                return Result<IngredientsRecips>.Failure(
+                    Error.Validation(
+                        "A unidade é obrigatória.",
+                        new Dictionary<string, string[]> { { nameof(newLink.Unit), new[] { "Campo obrigatório" } } }
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -402,13 +630,41 @@ namespace Service.Services
                         $"Ligação Ingrediente/Receita com ID {id} não encontrada."));
             }
 
-            var isOwner = await _recipesService.IsRecipeOwnerAsync(existingLink.RecipesId);
+            var currentUserIdResult = await _usersService.GetCurrentUserIdAsync();
+            if (!currentUserIdResult.IsSuccessful)
+            {
+                return Result.Failure(currentUserIdResult.Error);
+            }
+
+            var isOwner = await _recipesService. IsRecipeOwnerAsync(existingLink.RecipesId);
             if (!isOwner)
             {
                 return Result.Failure(
                     Error.Forbidden(
                         ErrorCodes.AuthForbidden,
-                        "Apenas o criador da receita pode atualizar ingredientes."));
+                        "Apenas o criador da receita pode atualizar ingredientes."
+                    )
+                );
+            }
+
+            if (updateLink.QuantityValue <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "A quantidade deve ser maior que zero.",
+                        new Dictionary<string, string[]> { { nameof(updateLink.QuantityValue), new[] { "Valor inválido" } } }
+                    )
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(updateLink.Unit))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "A unidade é obrigatória.",
+                        new Dictionary<string, string[]> { { nameof(updateLink.Unit), new[] { "Campo obrigatório" } } }
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -446,13 +702,21 @@ namespace Service.Services
                 return Result.Success("Ligação já removida (idempotente).");
             }
 
+            var currentUserIdResult = await _usersService.GetCurrentUserIdAsync();
+            if (!currentUserIdResult.IsSuccessful)
+            {
+                return Result.Failure(currentUserIdResult.Error);
+            }
+
             var isOwner = await _recipesService.IsRecipeOwnerAsync(existingLink.RecipesId);
             if (!isOwner)
             {
                 return Result.Failure(
                     Error.Forbidden(
                         ErrorCodes.AuthForbidden,
-                        "Apenas o criador da receita pode remover ingredientes."));
+                        "Apenas o criador da receita pode remover ingredientes."
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();

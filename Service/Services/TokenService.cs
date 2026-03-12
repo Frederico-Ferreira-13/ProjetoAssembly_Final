@@ -92,7 +92,6 @@ namespace Service.Services
                 ));
             }
         }
-
         public Task InvalidateTokenAsync()
         {
             Console.WriteLine("LOGOUT: Tentativa de invalidação do token/sessão.");

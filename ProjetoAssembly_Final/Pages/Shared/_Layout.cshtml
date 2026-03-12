@@ -1,101 +1,116 @@
 ﻿@using Microsoft.Extensions.Localization
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
-
+@{
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;    
+}
 <!DOCTYPE html>
 <html lang="@System.Threading.Thread.CurrentThread.CurrentUICulture.Name">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - @Localizer["Receitas do Frederico"]</title>
+    <title>@ViewData["Title"] - Frederico Receitas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/pages/pendingRecipes.css" asp-append-version="true">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">   
+    <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true">  
+    
 
     @RenderSection("Styles", required: false)
 </head>
 <body class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
+    <header class="site-header">
+        <nav class="nav-container">
 
-    <nav>
-        <div class="nav-container">
             <div class="logo">
                 <a asp-page="/Index">
                     <span class="logo-icon">👨‍🍳</span>
-                     <span class="logo-text">Frederico <span style="color: var(--primary-green);">@Localizer["Receitas"]</span></span>
+                    Frederico <span class="logo-highlight">@Localizer["Receitas"]</span>
                 </a>
             </div>
 
             <ul class="nav-links">
-                @{var currentPage = ViewContext.RouteData.Values["page"]?.ToString(); }
-                
-                <li class="@(currentPage == "/Index" ? "active" : "")"><a asp-page="/Index">@Localizer["Início"]</a></li>
-                <li class="@(currentPage == "/recipes" ? "active" : "")"><a asp-page="/recipes">@Localizer["Receitas"]</a></li>
-
-                @if(User.Identity?.IsAuthenticated ?? false)
+                <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")">
+                    <a asp-page="/Index">@Localizer["Início"]</a>
+                </li>
+                <li class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/recipes" ? "active" : "")">
+                    <a asp-page="/recipes">@Localizer["Receitas"]</a>
+                </li>
+                @if (isAuthenticated)
                 {
-                    <li class="@(currentPage == "/create-recipe" ? "active" : "")">
-                        <a asp-page="/create-recipe">@Localizer["Criar Receitas"]</a>
-                    </li>
-                    <li class="@(currentPage == "/MyFavoritsRecipes" ? "active" : "")">
-                        <a asp-page="/MyFavoritsRecipes">@Localizer["Favoritos"]</a>
-                    </li>                   
-                }               
+                    <li><a asp-page="/create-recipe">@Localizer["Criar"]</a></li>
+                    <li><a asp-page="/MyFavoritsRecipes">@Localizer["Favoritos"]</a></li>
+                }
             </ul>
 
-            @if (User.IsInRole("Admin"))
-            {
-                <a asp-page="/PendingRecipes" class="notification-bell @(currentPage == "/PendingRecipes" ? "active-sino" : "")"
-                    title="@Localizer["Receitas Pendentes"]">
-                    <i class="~fa-solid fa-bell"></i>
-                    @{ var count = ViewData["PendingCount"] as int? ?? 0; }
-                    <span id="pendingCount" class="badge" style="@(count > 0 ? "" : "display:none")">@count</span>
-                </a>
-            }
-
-            <div class="search-box">
+            <div class="nav-right">
                 <form action="/recipes" method="get" class="search-form">
-                    <input type="text" name="search" class="search-input" placeholder=@Localizer["Procurar Receita..."]>
-                    <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
+                    <div class="search-container">
+                        <button type="submit" class="search-btn" aria-label="@Localizer["Pesquisar"]">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                        <input type="text"
+                               name="search"
+                               placeholder="@Localizer["Pesquisar..."]"
+                               class="search-input"
+                               aria-label="@Localizer["Pesquisar receitas"]" />
+                    </div>
                 </form>
-            </div>
 
-            <div class="profile-menu">
-                <button class="profile-btn" onclick="toggleMenu()">
-                    <i class="fa-solid fa-bars"></i>
-                    <img src="/img/user.icon.png" alt="Perfil" class="profile-img-nav" />
-                </button>
-                <ul id="profile-dropdown" class="profile-dropdown">
-                    @if (User.Identity?.IsAuthenticated ?? false)
-                    {
-                        <li><a asp-page="/perfil"><i class="fa-solid fa-user"></i> @Localizer["O Meu Perfil"]</a></li>
-                        <li><a asp-page="/settings"><i class="fa-solid fa-gear"></i> @Localizer["Definições"]</a></li>
-                        <li><a asp-page="/logout"><i class="fa-solid fa-right-from-bracket"></i> @Localizer["Sair"]</a></li>                        
-                        <li><a asp-page="/MyFavoritsRecipes"><i class="fa-solid fa-heart"></i> @Localizer["Favoritos"]</a></li>
-                        
-                    }
-                    else
-                    {
-                        <li><a asp-page="/login"><i class="fa-solid fa-right-to-bracket"></i> @Localizer["Login"]</a></li>
-                        <li><a asp-page="/regist"><i class="fa-solid fa-user-plus"></i> @Localizer["Registar"]</a></li>
-                    }
-                    <li class="dropdown-divider"><hr></li>
-                    <li><a asp-page="/contacts"><i class="fa-solid fa-envelope"></i> @Localizer["Contactos"]</a></li>
-                    <li><a href="https://linkedin.com/in/frederico-ferreira-31834249/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a></li>
-                    <li><a href="https://github.com/Frederico-Ferreira-13" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a></li>
-                </ul>
+                <div class="profile-menu">
+                    <button class="profile-btn" aria-label="Menu" onclick="toggleMenu(event)">
+                        @if (isAuthenticated)
+                        {
+                            <i class="fa-solid fa-user-circle"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-bars"></i>
+                        }
+                    </button>
+
+                    <ul id="profile-dropdown" class="profile-dropdown">
+                        @if (isAuthenticated)
+                        {
+                            <li><a asp-page="/perfil"><i class="fa-solid fa-user"></i> Perfil</a></li>
+                            <li><a asp-page="/settings"><i class="fa-solid fa-gear"></i> Definições</a></li>
+                            <li><a asp-page="/MyFavoritsRecipes"><i class="fa-solid fa-heart"></i> Favoritos</a></li>
+                            <li><a asp-page="/logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</a></li>
+                        }
+                        else
+                        {
+                            <li><a asp-page="/login"><i class="fa-solid fa-right-to-bracket"></i> Entrar</a></li>
+                            <li><a asp-page="/regist"><i class="fa-solid fa-user-plus"></i> Registar</a></li>
+                        }
+                        <li class="dropdown-divider"><hr /></li>
+                        <li><a asp-page="/contacts"><i class="fa-solid fa-envelope"></i> Contactos</a></li>
+                        <li><a href="https://linkedin.com/in/frederico-ferreira-31834249/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a></li>
+                        <li><a href="https://github.com/Frederico-Ferreira-13" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a></li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
     <main class="main-content">
         @RenderBody()
     </main>    
 
-    <footer>
-        <p>&copy; 2026 Frederico - @Localizer["Trabalho Académico - Assembly"].</p>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>© 2026 Frederico - @Localizer["Trabalho Académico - Assembly"]</p>
+            <div class="footer-links">
+                <a asp-page="/contacts">@Localizer["Contactos"]</a>
+                <a href="https://linkedin.com/in/frederico-ferreira-31834249/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/Frederico-Ferreira-13" target="_blank">GitHub</a>
+            </div>
+        </div>
     </footer>
 
+    <script src="~/js/menu-toggle.js" asp-append-version="true"></script>
     <script src="~/js/script.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

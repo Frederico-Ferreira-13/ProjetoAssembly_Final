@@ -54,7 +54,8 @@ namespace Repo.Repository
 
         public async Task BeginTransactionAsync()
         {
-            if (_scope != null)
+            // Vou comentar para que o UnitOfWork não bloquear o ADO.NET
+            /*if (_scope != null)
             {
                 throw new InvalidOperationException("Já existe uma transação ativa.");
             }
@@ -69,27 +70,29 @@ namespace Repo.Repository
                 TransactionScopeOption.Required,
                 options,
                 TransactionScopeAsyncFlowOption.Enabled //Para Async
-            );
+            );*/
 
             await Task.CompletedTask;
         }
 
         public async Task<int> CommitAsync()
         {
-            if(_scope == null)
+            // Como não abro o scope acima, não precisamos de dar Complete()
+            /*if(_scope == null)
             {
                 return 0;
             }
 
-            _scope.Complete();
+            _scope.Complete();*/
+
             await Task.CompletedTask;
             return 1;
         }
 
         public void Rollback()
         {
-            _scope?.Dispose();
-            _scope = null;
+            //_scope?.Dispose();
+            //_scope = null;
         }
 
         public void Dispose()

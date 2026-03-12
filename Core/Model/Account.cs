@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Core.Model
 {
-    public class Account : IEntity
+    public class Account : IEntity, ISoftDeletable
     {
         public int AccountId { get; private set; }
         public string AccountName { get; protected set; } = string.Empty;

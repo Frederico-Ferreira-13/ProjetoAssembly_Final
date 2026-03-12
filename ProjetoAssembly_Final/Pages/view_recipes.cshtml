@@ -25,121 +25,119 @@
     <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/comments.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/view-recipes.css" asp-append-version="true" />
 }
 
-<main class="main-wrapper">
+<div id="antiforgery-token-container">
+    @Html.AntiForgeryToken()
+</div>
+
+<main class="view-recipe-container">
     @if (Model.IsReviewMode)
     {
-        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <i class="fa-solid fa-circle-exclamation fa-lg me-2"></i>
-                <strong>@Localizer["Modo de Revisão"]</strong> @Localizer["Esta receita aguarda aprovação."]
+       <div class="alert alert-warning d-flex justify-content-between align-items-center mb-5 p-4 rounded-3 shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-circle-exclamation fa-2x me-3"></i>
+                <div>
+                    <strong>@Localizer["Modo de Revisão"]</strong><br />
+                    @Localizer["Esta receita aguarda aprovação."]
+                </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-3">
                 <form method="post" asp-page="/PendingRecipes" asp-page-handler="Approve">
                     <input type="hidden" name="id" value="@Model.Recipe?.RecipesId" />
-                    <button type="submit" class="btn-card" style="padding: 5px 15px; font-size: 0.8rem;">
+                    <button type="submit" class="btn-action btn-approve">
                         <i class="fa-solid fa-check"></i> @Localizer["Aprovar"]
                     </button>
                 </form>
-                <a asp-page="/PendingRecipes" class="btn-pagination">@Localizer["Sair"]</a>
+                <a asp-page="/PendingRecipes" class="btn-action" style="background: #6c757d; color: white;">
+                    <i class="fa-solid fa-arrow-left"></i> @Localizer["Sair"]
+                </a>
             </div>
         </div>
     }
 
-    <h1 class="section-title">@Model.Recipe?.Title</h1>
+    <div class="recipe-hero">
+        <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)" alt="@Model.Recipe?.Title">
+        <div class="hero-overlay">
+            <h1 class="hero-title">@Model.Recipe?.Title</h1>
 
-    @if (!Model.IsReviewMode && canEdit)
-    {
-        <div class="category-nav" style="justify-content: flex-end; margin-bottom: 20px;">
-            <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-card" style="width: auto;">
-                <i class="fa-solid fa-pen-to-square me-2"></i> @Localizer["Editar Receita"]
-            </a>
-        </div>
-    }
-
-    <div class="recipe-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
-        <div class="recipe-card">
-            <div class="card-img-wrapper">
-                <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)"
-                     alt="@Model.Recipe?.Title" class="card-img">
-
-                <!-- Botão Favorito no canto superior esquerdo da foto -->
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    bool isFav = Model.Recipe?.IsFavorite ?? false;
-
-                    <button type="button"
-                            class="btn-favorite-wook @(isFav ? "active" : "")"
-                            onclick="handleToggleFavorite(event, this, @Model.Recipe?.RecipesId)"
-                            title="@(isFav ? Localizer["Remover dos favoritos"] : Localizer["Adicionar aos favoritos"])">
-                        <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
-                        <span class="fav-badge">@Model.Recipe?.FavoriteCount</span>
-                    </button>
-                }
-                else
-                {
-                    <button type="button" class="btn-favorite-wook disabled"
-                            title="@Localizer["Inicia sessão para guardar"]">
-                        <i class="fa-regular fa-heart"></i>
-                        <span class="fav-badge">@Model.Recipe?.FavoriteCount</span>
-                    </button>
-                }
-            </div>
-
-            <div class="card-body">
-                <div class="recipe-meta">
-                    <div class="meta-item">
-                        <i class="fa-solid fa-users"></i> @Model.Recipe?.Servings @Localizer["Doses"]
-                    </div>
-                    <div class="meta-item">
-                        <i class="fa-regular fa-clock"></i> @(Model.Recipe?.PrepTimeMinutes + Model.Recipe?.CookTimeMinutes) min
-                    </div>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <i class="fa-solid fa-users"></i> @Model.Recipe?.Servings @Localizer["Doses"]
                 </div>
-                <div class="meta-item" style="justify-content: center;">
-                    <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : "dif-medium")">
-                        @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : "Média")
+                <div class="hero-meta-item">
+                    <i class="fa-regular fa-clock"></i> @(Model.Recipe?.PrepTimeMinutes + Model.Recipe?.CookTimeMinutes) min
+                </div>
+                <div class="hero-meta-item">
+                    <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : Model.Recipe?.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
+                        @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : Model.Recipe?.DifficultyId == 2 ? "Média" : "Difícil")
                     </span>
                 </div>
             </div>
-        </div>
 
-        <div class="comment-card" style="border-left: 6px solid var(--primary-green);">
-            <h3><i class="fa-solid fa-list-ul"></i> @Localizer["Ingredientes"]</h3>
-            <ul class="lista-ingredientes" style="list-style: none; padding: 15px 0;">
-                @if (Model.Recipe?.Ingredients != null)
+            <div class="hero-actions">
+                @if (isAuthenticated)
+                {
+                    bool isFav = Model.Recipe?.IsFavorite ?? false;
+                    <button type="button" class="btn-action btn-favorite @(isFav ? "active" : "")"
+                            onclick="handleToggleFavorite(event, this, @Model.Recipe?.RecipesId)">
+                        <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
+                        @(isFav ? Localizer["Favorito"] : Localizer["Favoritar"])
+                    </button>
+                }
+
+                @if (canEdit)
+                {
+                    <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-action btn-edit">
+                        <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar Receita"]
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="recipe-main-content">
+        <div class="ingredients-panel">
+            <h3 class="section-title"><i class="fa-solid fa-list-ul"></i> @Localizer["Ingredientes"]</h3>
+            <ul class="ingredients-list">
+                @if (Model.Recipe?.Ingredients != null && Model.Recipe.Ingredients.Any())
                 {
                     @foreach (var ing in Model.Recipe.Ingredients)
                     {
-                        <li style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                            <i class="fa-solid fa-check" style="color: var(--primary-green);"></i>
+                        <li>
+                            <i class="fa-solid fa-check check-icon"></i>
                             @ing.QuantityValue @ing.Unit @Localizer["de"] @(ing.Ingredient?.IngredientName ?? "Ingrediente")
                         </li>
                     }
                 }
+                else
+                {
+                    <li class="text-muted">@Localizer["Lista de ingredientes não disponível."]</li>
+                }
             </ul>
+        </div>
 
-            <h3 class="mt-4"><i class="fa-solid fa-mitten"></i> @Localizer["Modo de Preparação"]</h3>
-            <div class="comment-body">
+        <div class="instructions-panel">
+            <h3 class="section-title"><i class="fa-solid fa-mitten"></i> @Localizer["Modo de Preparação"]</h3>
+            <div class="instructions-text">
                 @Model.Recipe?.Instructions
             </div>
         </div>
     </div>
 
-    <hr class="separator-light">
+    <hr class="separator-light mt-5 mb-5">
 
-    <section class="comment-form-section">
+    <section class="comments-section">
         <h2 class="section-title"><i class="fa-solid fa-comments"></i> @Localizer["Comentários"]</h2>
 
-        @if (!(User.Identity?.IsAuthenticated ?? false))
+        @if (!isAuthenticated)
         {
-            <div class="empty-notice">
-                <i class="fa-solid fa-lock"></i>
+            <div class="empty-notice text-center py-5">
+                <i class="fa-solid fa-lock fa-3x mb-3" style="color: var(--primary-green); opacity: 0.7;"></i>
                 <h4>@Localizer["Quer deixar a sua opinião?"]</h4>
                 <p>@Localizer["Apenas utilizadores registados podem comentar."]</p>
-                <div class="category-nav">
-                    <a asp-page="/Login" class="btn-card">@Localizer["Entrar"]</a>
-                </div>
+                <a asp-page="/login" class="btn-action btn-edit mt-3">@Localizer["Entrar para comentar"]</a>
             </div>
         }
 
@@ -149,3 +147,8 @@
         }' />
     </section>
 </main>
+
+@section Scripts {
+    <script src="~/js/favorites.js" asp-append-version="true"></script>
+    <script src="~/js/comments.js" asp-append-version="true"></script>
+}

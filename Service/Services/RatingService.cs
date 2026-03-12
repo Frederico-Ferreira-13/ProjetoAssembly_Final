@@ -30,15 +30,15 @@ namespace Service.Services
         public async Task<Result<Ratings>> GetRankingById(int ratingId)
         {
             var rating = await _ratingRepository.ReadByIdAsync(ratingId);
-
             if (rating == null)
             {
                 return Result<Ratings>.Failure(
                     Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Avaliação com ID {ratingId} não encontrada.")
+                        ErrorCodes.NotFound,
+                        $"Avaliação com ID {ratingId} não encontrada.")
                 );
             }
+
             return Result<Ratings>.Success(rating);
         }
 
@@ -48,14 +48,17 @@ namespace Service.Services
             {
                 return Result<Ratings>.Failure(
                     Error.Validation(
-                    "O ID da receita é inválido.", new Dictionary<string, string[]> { { nameof(recipeId), new[] { "ID da receita deve ser positivo." } } })
+                        "O ID da receita é inválido.", 
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "ID da receita deve ser positivo." } } })
                 );
             }
+
             if (userId <= 0)
             {
                 return Result<Ratings>.Failure(
                     Error.Validation(
-                    "O ID do Utilizador é inválido.", new Dictionary<string, string[]> { { nameof(userId), new[] { "ID do utilizador deve ser positivo." } } })
+                        "O ID do Utilizador é inválido.", 
+                        new Dictionary<string, string[]> { { nameof(userId), new[] { "ID do utilizador deve ser positivo." } } })
                 );
             }
 
@@ -64,8 +67,8 @@ namespace Service.Services
             {
                 return Result<Ratings>.Failure(
                     Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Avaliação não encontrada para o Utilizador {userId} na Receita {recipeId}.")
+                        ErrorCodes.NotFound,
+                        $"Avaliação não encontrada para o Utilizador {userId} na Receita {recipeId}.")
                 );
             }
             return Result<Ratings>.Success(rating);
@@ -76,7 +79,10 @@ namespace Service.Services
             if (recipeId <= 0)
             {
                 return Result<List<Ratings>>.Failure(
-                    Error.Validation("O ID da Receita é inválido.")
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "Deve ser maior que zero" } } }
+                    )
                 );
             }
 
@@ -84,20 +90,25 @@ namespace Service.Services
             return Result<List<Ratings>>.Success(ratings.ToList());
         }
 
-        public async Task<double> GetAverageRatingByRecipeIdAsync(int recipeId)
+        public async Task<Result<double>> GetAverageRatingByRecipeIdAsync(int recipeId)
         {
             if (recipeId <= 0)
             {
-                return await _ratingRepository.GetAverageRatingAsync(recipeId);
+                return Result<double>.Failure(
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
             }
 
-            return await _ratingRepository.GetAverageRatingAsync(recipeId);
+            var average = await _ratingRepository.GetAverageRatingAsync(recipeId);
+            return Result<double>.Success(average);
         }
 
         public async Task<Result<Ratings>> CreateRatingAsync(Ratings newRating)
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-
             if (!userIdResult.IsSuccessful)
             {
                 return Result<Ratings>.Failure(
@@ -108,24 +119,54 @@ namespace Service.Services
             }
 
             int currentUserId = userIdResult.Value;
-            if (!await _recipesService.ExistsAsync(newRating.RecipesId))
+
+            if (newRating.RecipesId <= 0)
+            {
+                return Result<Ratings>.Failure(
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(newRating.RecipesId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var recipeResult = await _recipesService.GetRecipeByIdAsync(newRating.RecipesId);
+            if (!recipeResult.IsSuccessful)
+            {
+                return Result<Ratings>.Failure(recipeResult.Error);
+            }
+
+            var recipe = recipeResult.Value;
+            if (!recipe.IsActive)
             {
                 return Result<Ratings>.Failure(
                     Error.NotFound(
-                    ErrorCodes.NotFound,
-                    $"Receita com ID {newRating.RecipesId} não encontrada.",
-                    new Dictionary<string, string[]> { { nameof(newRating.RecipesId), new[] { "Receita inválida." } } })
+                        ErrorCodes.NotFound,
+                        $"Receita com ID {newRating.RecipesId} está inativa."
+                    )
                 );
             }
 
             if (await _ratingRepository.ExistsByUserAndRecipeAsync(newRating.RecipesId, currentUserId))
             {
                 return Result<Ratings>.Failure(
-                    Error.Validation(
-                    "O Utilizador já avaliou esta receita. Deve usar 'UpdateRating'.")
+                    Error.Conflict(
+                        ErrorCodes.AlreadyExists,
+                        "O utilizador já avaliou esta receita. Use 'UpdateRating' para alterar."
+                    )
                 );
             }
-            
+
+            if (newRating.RatingValue < 1 || newRating.RatingValue > 5)
+            {
+                return Result<Ratings>.Failure(
+                    Error.Validation(
+                        "A classificação deve estar entre 1 e 5.",
+                        new Dictionary<string, string[]> { { nameof(newRating.RatingValue), new[] { "Valor entre 1 e 5" } } }
+                    )
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
@@ -190,6 +231,16 @@ namespace Service.Services
                         "Não tem permissão para atualizar esta avaliação."));
             }
 
+            if (newRatingValue < 1 || newRatingValue > 5)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "A classificação deve estar entre 1 e 5.",
+                        new Dictionary<string, string[]> { { nameof(newRatingValue), new[] { "Valor entre 1 e 5" } } }
+                    )
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
@@ -220,7 +271,6 @@ namespace Service.Services
         public async Task<Result> DeleteRatingAsync(int ratingId)
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-
             if (!userIdResult.IsSuccessful)
             {
                 return Result.Failure(

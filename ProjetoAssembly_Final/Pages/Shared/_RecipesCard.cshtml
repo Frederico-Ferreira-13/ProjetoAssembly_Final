@@ -6,36 +6,33 @@
 @{
     var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
     string? currentUserId = currentUserIdClaim?.Value;
-
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
-
     bool isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Administrador"));
-
     bool isOwner = isAuthenticated
                    && currentUserId != null
                    && Model.UserId.HasValue
                    && Model.UserId.Value.ToString() == currentUserId;
-
     bool canEdit = isAdmin || isOwner;
+
+    bool isDetailView = ViewData["IsDetailView"] as bool? ?? false;
 }
 
 <article class="recipe-card">
     <div class="card-img-wrapper">
-        <partial name="_FavoriteButton" model="Model" />
-
-        @if (canEdit)
-        {
-            <a asp-page="/editRecipe" asp-route-id="@Model.RecipesId" class="btn-edit-overlay" title="@Localizer["Editar Receita"]">
-                <i class="fa-solid fa-pen-to-square"></i>
-            </a>
-        }
-
         <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId">
-            <img src="~/img/@(string.IsNullOrEmpty(Model.ImageUrl) ? "default.jpg" : Model.ImageUrl)"
+            @{
+                var imageSrc = string.IsNullOrEmpty(Model.ImageUrl)
+                ? Url.Content("~/img/default.jpg")
+                : (Model.ImageUrl.Contains("img/")
+                    ? Url.Content("~/" + Model.ImageUrl.Replace("~/", ""))
+                    : Url.Content("~/img/" + Model.ImageUrl));
+            }
+
+            <img src="@imageSrc"
                  alt="@Model.Title"
                  class="card-img"
                  loading="lazy"
-                 onerror="this.onerror=null; this.src='/img/default-recipe.jpg';">
+                 onerror="this.onerror=null; this.src='/img/default.jpg';">
         </a>
 
         <div class="card-stats-overlay">
@@ -43,28 +40,57 @@
                 <i class="fa-solid fa-star"></i>
                 <span>@(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "0.0")</span>
             </div>
+
             <div class="favorite-badge">
                 <i class="fa-solid fa-heart"></i>
                 <span>@Model.FavoriteCount</span>
             </div>
-        </div>
-    </div>
+        </div>        
+
+        @if (isDetailView)
+        {
+            if (isAuthenticated)
+            {
+                bool isFav = Model.IsFavorite;
+                <button type="button"
+                        class="btn-favorite-action @(isFav ? "active" : "")"
+                        onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
+                        title="@(isFav? Localizer["Remover dos favoritos"] : Localizer["Adicionar aos favoritos"])">
+                    <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn-favorite-action disabled" title="@Localizer["Inicia sessão para guardar"]">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+            }
+        }
+    </div>       
 
     <div class="card-body">
+
+        @if (canEdit)
+        {
+            <a asp-page="/editRecipe" asp-route-id="@Model.RecipesId" class="btn-edit-card" title="@Localizer["Editar Receita"]">
+                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]
+            </a>
+        }
+
         <div class="recipe-meta">
             <span class="difficulty-badge
                         @(Model.DifficultyId == 1 ? "dif-easy" :
-                        Model.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
+                            Model.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
                 @(Model.DifficultyId == 1 ? "FÁCIL" :
-                Model.DifficultyId == 2 ? "MÉDIA" : "DIFÍCIL")
+                        Model.DifficultyId == 2 ? "MÉDIA" : "DIFÍCIL")
             </span>
             <span class="meta-item">
                 <i class="fa-regular fa-clock"></i>
-                @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min
+                @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min\
             </span>
         </div>
 
-        <h3>@Model.Title</h3>
+        <h3 class="card-title ">@Model.Title</h3>
 
         <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId" class="btn-card">
             @Localizer["Ver Receita"]

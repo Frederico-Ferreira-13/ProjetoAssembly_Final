@@ -10,5 +10,7 @@ namespace Contracts.Repository
         Task<List<Ingredients>> Search(string searchIngredient);
         Task<Ingredients?> GetByNameAsync(string ingredientsName);
         Task<bool> IsIngredientUnique(string ingredientUnique, int? excludeId = null);
+
+        Task<bool> AnyWithTypeIdAsync(int ingredientsTypeId);
     }
 }

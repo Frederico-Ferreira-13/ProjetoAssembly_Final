@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Core.Model
 {
-    public class Users : IEntity
+    public class Users : IEntity, ISoftDeletable
     {
         public int UserId { get; private set; }
         public bool IsActive { get; private set; } = true;

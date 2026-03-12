@@ -1,0 +1,160 @@
+﻿function enableEditMode(commentId, currentText, currentRating) {
+    console.log('[Comments] Ativando edição:', { commentId, currentText, currentRating });
+
+    // Esconder visualização
+    const displayEl = document.getElementById(`comment-display-${commentId}`);
+    if (displayEl) {
+        displayEl.style.display = 'none';
+    }
+
+    // Mostrar formulário de edição
+    const editForm = document.getElementById(`comment-edit-${commentId}`);
+    if (editForm) {
+        editForm.style.display = 'block';
+
+        // Focar no textarea e colocar cursor no fim
+        const textarea = document.getElementById(`edit-text-${commentId}`);
+        if (textarea) {
+            textarea.focus();
+            const len = textarea.value.length;
+            textarea.setSelectionRange(len, len);
+        }
+    }
+}
+
+function cancelEdit(commentId) {
+    console.log('[Comments] Cancelando edição:', commentId);
+
+    // Mostrar visualização
+    const displayEl = document.getElementById(`comment-display-${commentId}`);
+    if (displayEl) {
+        displayEl.style.display = 'block';
+    }
+
+    // Esconder formulário
+    const editForm = document.getElementById(`comment-edit-${commentId}`);
+    if (editForm) {
+        editForm.style.display = 'none';
+    }
+}
+
+function validateEditForm(commentId) {
+    const textarea = document.getElementById(`edit-text-${commentId}`);
+    if (!textarea) {
+        console.error('[Comments] Textarea não encontrado:', commentId);
+        return false;
+    }
+
+    const text = textarea.value.trim();
+
+    // Validação de texto vazio
+    if (text.length === 0) {
+        alert('O comentário não pode estar vazio.');
+        textarea.focus();
+        return false;
+    }
+
+    // Validação de tamanho máximo
+    if (text.length > 500) {
+        alert('O comentário não pode exceder 500 caracteres.');
+        textarea.focus();
+        return false;
+    }
+
+    console.log('[Comments] Formulário válido, a submeter...');
+    return true;
+}
+
+function initCharCounters() {
+    document.addEventListener('input', function (e) {
+        // Verificar se é um textarea de edição
+        if (e.target && e.target.matches('textarea[id^="edit-text-"]')) {
+            const match = e.target.id.match(/edit-text-(\d+)/);
+            if (match) {
+                const commentId = match[1];
+                const count = e.target.value.length;
+                const counter = document.getElementById(`char-count-${commentId}`);
+
+                if (counter) {
+                    counter.textContent = count;
+
+                    // Mudar cor se próximo do limite
+                    if (count > 450) {
+                        counter.style.color = '#e74c3c';
+                    } else if (count > 400) {
+                        counter.style.color = '#f39c12';
+                    } else {
+                        counter.style.color = '';
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateEditTimers() {
+    const timers = document.querySelectorAll('.edit-timer');
+
+    timers.forEach(timer => {
+        const created = new Date(timer.dataset.created);
+        const now = new Date();
+        const elapsed = (now - created) / 1000; // segundos
+        const remaining = 300 - elapsed; // 5 minutos = 300 segundos
+
+        const timeDisplay = timer.querySelector('.time-remaining');
+
+        if (remaining <= 0) {
+            // Tempo expirado - remover botão de editar
+            const actions = timer.closest('.comment-actions');
+            if (actions) {
+                actions.innerHTML = `
+                    <span class="edit-expired">
+                        <i class="fa-solid fa-clock"></i> 
+                        Tempo de edição expirado
+                    </span>
+                `;
+            }
+        } else if (timeDisplay) {
+            // Formatar tempo restante
+            const minutes = Math.floor(remaining / 60);
+            const seconds = Math.floor(remaining % 60);
+            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Alerta visual se menos de 1 minuto
+            if (remaining < 60) {
+                timeDisplay.style.color = '#e74c3c';
+                timeDisplay.style.fontWeight = 'bold';
+            }
+        }
+    });
+}
+
+function initEditTimers() {
+    // Executar imediatamente
+    updateEditTimers();
+
+    // Atualizar a cada segundo
+    setInterval(updateEditTimers, 1000);
+}
+
+function initComments() {
+    console.log('[Comments] Inicializando...');
+
+    initCharCounters();
+    initEditTimers();
+
+    console.log('[Comments] Pronto!');
+}
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initComments);
+} else {
+    // DOM já carregado
+    initComments();
+}
+
+// Exportar funções para uso global (necessário para os onclick inline)
+window.enableEditMode = enableEditMode;
+window.cancelEdit = cancelEdit;
+window.validateEditForm = validateEditForm;

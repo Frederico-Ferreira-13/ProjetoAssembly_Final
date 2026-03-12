@@ -1,214 +1,236 @@
 ﻿/* editrecipe.css*/
 
 .edit-recipe-wrapper {
-    max-width: 950px;
-    margin: 40px auto;
+    max-width: 1100px;
+    margin: 60px auto;
     padding: 0 20px;
 }
 
 .edit-card {
     background: var(--card-bg);
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    padding: 45px;
-    border-top: 8px solid var(--primary-green);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    padding: 50px 40px;
+    border-top: 6px solid var(--primary-green);
+    transition: all 0.3s ease;
 }
 
+.edit-card:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+/* Cabeçalho */
 .edit-header {
-    margin-bottom: 40px;    
     text-align: center;
+    margin-bottom: 50px;
 }
 
 .edit-header h2 {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
+    font-weight: 800;
     color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    font-weight: 800;
+    gap: 14px;
+    margin: 0 0 12px;
 }
 
 .edit-subtitle {
-    color: #b2bec3;
-    font-size: 1.1rem;
-}
-
-.section-label {
-    font-size: 1.1rem !important;
-    color: var(--text-color) !important;
-    margin-bottom: 15px !important;
+    color: #7f8c8d;
+    font-size: 1.15rem;
+    font-weight: 400;
 }
 
 /* --- GRID DO FORMULÁRIO --- */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 30px 40px;
 }
 
 .full-width { 
     grid-column: span 2;
 }
 
+/* Grupos de formulário */
 .form-group-custom {
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group-custom label {
-    display: block;
     font-weight: 600;
     color: var(--text-color);
     margin-bottom: 10px;
-    font-size: 0.95rem;
-    opacity: 0.9;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.form-input-custom {
+form-input-custom,
+.textarea-custom {
     width: 100%;
     padding: 14px 18px;
     border: 2px solid var(--border-color);
     border-radius: 12px;
-    transition: all 0.3s;
     font-size: 1rem;
-    background-color: var(--bg-color);
+    background: var(--bg-color);
     color: var(--text-color);
+    transition: all 0.3s ease;
     box-sizing: border-box;
 }
 
-.form-input-custom:focus {
+.form-input-custom:focus,
+.textarea-custom:focus {
     border-color: var(--primary-green);
-    background-color: var(--card-bg);
+    box-shadow: 0 0 0 4px rgba(40,167,69,0.15);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+    background: white;
 }
 
 .textarea-custom {
+    min-height: 160px;
     resize: vertical;
-    min-height: 150px;
 }
 
 /* --- LINHA DE INGREDIENTES --- */
 .ingredient-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 90px 110px 1fr 120px 50px;
     gap: 12px;
-    margin-bottom: 15px;
     align-items: center;
-    background: rgba(0, 0, 0, 0.02);
-    padding: 10px;
+    background: rgba(40,167,69,0.03);
+    padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid transparent;
-    transition: 0.3s;
+    border: 1px solid rgba(40,167,69,0.1);
+    transition: all 0.3s ease;
 }
 
 .ingredient-row:hover {
-    border-color: var(--border-color);
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(40,167,69,0.08);
+    border-color: var(--primary-green);
 }
 
-.ingredient-row .qty {
-    width: 90px;
-    flex-shrink: 0;
-}
-
-.ingredient-row .unit {
-    width: 110px;
-    flex-shrink: 0;
-}
-
-.ingredient-row .detail {
-    flex: 1;
+.ingredient-row input {
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
 }
 
 .btn-remove {
-    background: #ff7675;
+    background: #ff6b6b;
     color: white;
     border: none;
-    padding: 12px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .btn-remove:hover {
-    background: #d63031;
-    transform: scale(1.05);
+    background: #ee5253;
+    transform: scale(1.1);
 }
 
 /* Botão Secundário (Adicionar novo campo) */
 .btn-secondary {
-    background-color: transparent;
-    color: var(--primary-green);
+    background: transparent;
     border: 2px dashed var(--primary-green);
-    padding: 12px;
+    color: var(--primary-green);
+    padding: 14px;
     width: 100%;
     border-radius: 12px;
-    cursor: pointer;
     font-weight: 700;
-    margin-top: 10px;
-    transition: 0.3s;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 16px;
 }
 
 .btn-secondary:hover {
-    background-color: rgba(40, 167, 69, 0.05);
+    background: rgba(40,167,69,0.08);
+    border-style: solid;
 }
 
 /* --- ÁREA DE AÇÕES --- */
 .edit-actions {
     display: flex;
     gap: 20px;
-    margin-top: 40px;
+    margin-top: 50px;
     padding-top: 30px;
     border-top: 2px solid var(--border-color);
 }
 
-.btn-save {
-    background-color: var(--primary-green);
-    color: white;
-    border: none;
-    padding: 18px 30px;
+.btn-save,
+.btn-cancel {
+    flex: 1;
+    padding: 16px 32px;
     border-radius: 12px;
     font-weight: 700;
-    cursor: pointer;
-    flex: 2;
     font-size: 1.1rem;
-    transition: 0.3s;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-save {
+    background: var(--primary-green);
+    color: white;
+    border: none;
 }
 
 .btn-save:hover {
-    filter: brightness(1.1);    
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2)
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(40,167,69,0.35);
 }
 
 .btn-cancel {
-    background-color: #f1f2f6;
-    color: #636e72;
-    text-decoration: none;
-    padding: 18px 20px;
-    border-radius: 12px;
-    text-align: center;
-    flex: 1;
-    font-weight: 600;
-    transition: 0.3s;
+    background: #dfe6e9;
+    color: #2d3436;
+    border: none;
 }
 
-.btn-cancel:hover{
-    background-color: #dfe6e9;
-    color: #2d3436;
+.btn-cancel:hover {
+    background: #b2bec3;
+    transform: translateY(-3px);
 }
 
 /* Responsividade */
-@media (max-width: 768px){
-    .form-grid { grid-template-columns: 1fr; }
-    .full-width { grid-column: span 1; }
-    .ingredient-row { flex-wrap: wrap; }
-    .ingredient-row input {flex: 1 1 100%; }
-    .edit-actions { flex-direction: column; }
+@media (max-width: 992px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: span 1;
+    }
+
+    .edit-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 576px) {
+    .ingredient-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+        .ingredient-row input,
+        .btn-remove {
+            width: 100%;
+        }
+
+    .edit-header h2 {
+        font-size: 1.9rem;
+    }
 }

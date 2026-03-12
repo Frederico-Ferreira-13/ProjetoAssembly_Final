@@ -56,7 +56,7 @@ namespace ProjetoAssembly_Final.Pages
             var userResult = await _usersService.GetUserByIdAsync(userId);
             if (userResult.IsSuccessful)
             {
-                Name = userResult.Value.Name;
+                Name = userResult.Value!.Name;
                 UserName = userResult.Value.UserName;
                 Email = userResult.Value.Email;
             }
@@ -64,7 +64,7 @@ namespace ProjetoAssembly_Final.Pages
             var settingsResult = await _usersService.GetSettingsByUserIdAsync(userId);
             if (settingsResult.IsSuccessful)
             {
-                InputTheme = settingsResult.Value.Theme;
+                InputTheme = settingsResult.Value!.Theme;
                 InputLanguage = settingsResult.Value.Language;
                 InputNotifications = settingsResult.Value.NotificationsEnabled;
             }            
@@ -100,7 +100,7 @@ namespace ProjetoAssembly_Final.Pages
                 if (userResult.IsSuccessful)
                 {
                     var userToUpdate = userResult.Value;
-                    userToUpdate.UpdateName(Name);
+                    userToUpdate!.UpdateName(Name);
                     userToUpdate.UpdateUserName(UserName);
                     userToUpdate.UpdateEmail(Email);
 

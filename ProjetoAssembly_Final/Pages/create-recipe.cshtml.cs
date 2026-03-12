@@ -1,4 +1,5 @@
 using Contracts.Repository;
+using Contracts.Service;
 using Core.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,17 +11,21 @@ namespace ProjetoAssembly_Final.Pages
 {
     [Authorize]
     public class create_recipeModel : PageModel
-    {        
+    {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRecipesRepository _recipesRepository;
         private readonly IIngredientsRepository _ingredientsRepository;
         private readonly IIngredientsRecipsRepository _ingredientsRecipsRepository;
+        private readonly IUsersService _usersService;
 
-        public create_recipeModel(IRecipesRepository recipesRepository, IIngredientsRepository ingredientsRepository,
-            IIngredientsRecipsRepository ingredientsRecipsRepository)
+        public create_recipeModel(IUnitOfWork unitOfWork, IRecipesRepository recipesRepository, IIngredientsRepository ingredientsRepository,
+            IIngredientsRecipsRepository ingredientsRecipsRepository, IUsersService usersService)
         {
+            _unitOfWork = unitOfWork;
             _recipesRepository = recipesRepository;
             _ingredientsRepository = ingredientsRepository;
             _ingredientsRecipsRepository = ingredientsRecipsRepository;
+            _usersService = usersService;
         }
         [BindProperty]
         public string Title { get; set; } = string.Empty;
@@ -43,7 +48,8 @@ namespace ProjetoAssembly_Final.Pages
         {
         }
 
-        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string[] unit, string[] ingredientName, string[] ingredientDetail)
+        public async Task<IActionResult> OnPostAsync(decimal[] quantityValue, string[] unit, string[] ingredientName, 
+            string[] ingredientDetail)
         {
             if (!ModelState.IsValid)
             {
@@ -53,62 +59,106 @@ namespace ProjetoAssembly_Final.Pages
             try
             {
                 var userIdClaim = User.FindFirst("UserId")?.Value;
-                if (string.IsNullOrEmpty(userIdClaim))
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 {
                     return RedirectToPage("/Login");
-                }                              
+                }
 
-                int userId = int.Parse(userIdClaim);
-                bool isApproved = (User.FindFirst(ClaimTypes.Role)?.Value == "2");
+                var userResult = await _usersService.GetUserByIdAsync(userId);
+                if(!userResult.IsSuccessful || !userResult.Value.IsApproved)
+                {
+                    ModelState.AddModelError(string.Empty, "A sua conta ainda não foi aprovada. Contacte o administrador.");
+                }
+
+                bool isAdmin = userResult.Value.UsersRoleId == 1;
 
                 var newRecipe = new Recipes(
                     userId: userId,
                     categoriesId: SelectedCategory,
                     difficultyId: SelectedDifficulty,
-                    title: Title,
-                    instructions: Description,
+                    title: Title.Trim(),
+                    instructions: Description.Trim(),
                     prepTimeMinutes: PrepTime,
                     cookTimeMinutes: CookTime,
-                    servings: Servings,
-                    isApproved: isApproved
+                    servings: Servings.Trim(),
+                    imageUrl: null
                 );
 
-                await _recipesRepository.CreateAddAsync(newRecipe);
-
-                if (ingredientName != null)
+                if (isAdmin)
                 {
-                    for (int i = 0; i < ingredientName.Length; i++)
-                    {
-                        string? baseName = ingredientName[i].Trim();
-
-                        if (!string.IsNullOrWhiteSpace(baseName))
-                        {
-                            string detail = (ingredientDetail != null && i < ingredientDetail.Length)
-                                            ? ingredientDetail[i]?.Trim() ?? string.Empty
-                                            : string.Empty;
-
-                            string currentUnit = (unit != null && i < unit.Length)
-                                                ? unit[i] ?? string.Empty 
-                                                : string.Empty;
-
-                            string fullName = string.IsNullOrEmpty(detail) ? baseName : $"{baseName} ({detail})";
-
-                            var ingredientBase = new Ingredients(fullName, 1);
-                            await _ingredientsRepository.CreateAddAsync(ingredientBase);
-
-                            var relection = new IngredientsRecips(
-                                newRecipe.RecipesId,
-                                ingredientBase.IngredientsId,
-                                quantityValue.Length > i ? quantityValue[i] : 0,
-                                currentUnit
-                            );
-
-                            await _ingredientsRecipsRepository.CreateAddAsync(relection);
-                        }
-                    }
+                    newRecipe.Approve();
                 }
 
-                return RedirectToPage("/Index");
+                await _unitOfWork.BeginTransactionAsync();
+
+                try
+                {
+                    await _recipesRepository.CreateAddAsync(newRecipe);
+
+                    if (ingredientName != null && ingredientName.Length > 0)
+                    {
+                        for (int i = 0; i < ingredientName.Length; i++)
+                        {
+                            string? baseName = ingredientName[i].Trim();
+                            if (!string.IsNullOrWhiteSpace(baseName)) continue;
+                            {
+                                string detail = (ingredientDetail?.Length > i ? ingredientDetail[i]?.Trim() : null) ?? string.Empty;
+                                string ingredientFullName = string.IsNullOrEmpty(detail) ? baseName : $"{baseName} ({detail})";
+
+                                decimal qty = (quantityValue?.Length > i ? quantityValue[i] : 0);
+                                string unitValue = (unit?.Length > i ? unit[i]?.Trim() : null) ?? "unidade";
+
+                                if(qty <= 0)
+                                {
+                                    ModelState.AddModelError($"Ingredients({i}).Quantity", "Quantidade deve ser maior que zero.");
+                                    continue;
+                                }
+
+                                var existingIngredient = await _ingredientsRepository.GetByNameAsync(ingredientFullName);
+                                int ingredientId;
+
+                                if (existingIngredient != null)
+                                {
+                                    ingredientId = existingIngredient.IngredientsId;
+                                }
+                                else
+                                {
+                                    var newIngredient = new Ingredients(
+                                        ingredientName: ingredientFullName,
+                                        ingredientsTypeId: 1 
+                                    );
+
+                                    await _ingredientsRepository.CreateAddAsync(newIngredient);
+                                    ingredientId = newIngredient.IngredientsId;
+                                }
+
+                                if (await _ingredientsRecipsRepository.IsIngredientUsedInRecipeAsync(newRecipe.RecipesId, ingredientId))
+                                {
+                                    continue;
+                                }
+
+                                var link = new IngredientsRecips(
+                                    recipesId: newRecipe.RecipesId,
+                                    ingredientsId: ingredientId,
+                                    quantityValue: qty,
+                                    unit: unitValue
+                                );
+
+                                await _ingredientsRecipsRepository.CreateAddAsync(link);
+                            }
+                        }
+                    }
+
+                    await _unitOfWork.CommitAsync();
+                    return RedirectToPage("/Index");
+                }
+                catch (Exception ex)
+                {
+                    _unitOfWork.Rollback();
+                    ModelState.AddModelError(string.Empty, $"Erro ao criar receita: {ex.Message}");
+                    return Page();
+                }
+
             }
             catch (Exception ex)
             {

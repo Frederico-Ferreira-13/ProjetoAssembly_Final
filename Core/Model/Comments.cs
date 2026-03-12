@@ -25,8 +25,7 @@ namespace Core.Model
         [SetsRequiredMembers]
         private Comments() { }
 
-        public Comments(int commentsId ,int recipesId, int userId, string commentText, int rating, DateTime createdAt, 
-            DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
+        public Comments(int recipesId, int userId, string commentText, int rating)
         {
             if (recipesId <= 0)
             {
@@ -50,7 +49,6 @@ namespace Core.Model
                 throw new ArgumentException("Rating deve ser entre 1 e 5.", nameof(rating));
             }
 
-            CommentsId = commentsId;
             RecipesId = recipesId;
             UserId = userId;
             CommentText = commentText;
@@ -60,8 +58,22 @@ namespace Core.Model
             LastUpdatedAt = DateTime.UtcNow;
             IsEdited = false;
             IsDeleted = false;
-            OriginalComment = OriginalComment;
-        }        
+        }
+
+        public Comments(int commentsId, int recipesId, int userId, string? commentText, int rating,
+                        DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
+        {
+            CommentsId = commentsId;
+            RecipesId = recipesId;
+            UserId = userId;
+            CommentText = commentText;
+            Rating = rating;
+            CreatedAt = createdAt;
+            LastUpdatedAt = lastUpdatedAt;
+            IsEdited = isEdited;
+            IsDeleted = isDeleted;
+            OriginalComment = originalComment;
+        }
 
         public void UpdateComment([NotNull] string newCommentText)
         {

@@ -10,7 +10,7 @@ namespace Repo.Repository
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         public CategoryRepository() : base("Category") { }
-        protected override string PrimaryKeyName => "CategoryId";       
+        protected override string PrimaryKeyName => "CategoriesId";       
 
         protected override Category MapFromReader(SqlDataReader reader)
         {

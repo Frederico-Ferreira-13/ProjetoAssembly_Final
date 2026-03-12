@@ -52,9 +52,9 @@ namespace Repo.Repository
         public async Task<Difficulty?> GetByNameAsync(string difficultyName)
         {
             string sql = $@"
-                SELECT DifficultyId, DifficultyName
-                FROM {_tableName}
-                WHERE DifficultyName = @DifficultyName";
+                    SELECT DifficultyId, DifficultyName
+                    FROM {_tableName}
+                    WHERE DifficultyName = @DifficultyName";
 
             SqlParameter[] parameters = new SqlParameter[]
             {

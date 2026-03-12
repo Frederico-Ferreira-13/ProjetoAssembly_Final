@@ -2,17 +2,34 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 
+@{
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+}
+
 <div class="comments-section-wrapper">
     <div id="comments-list-container" class="comments-list">
         @if (Model.ListComments != null && Model.ListComments.Any())
         {
             @foreach (var c in Model.ListComments)
             {
-                <article class="comment-card">
+                var isOwner = isAuthenticated && currentUserId == c.UserId.ToString();
+                var minutosDesdeCriacao = (DateTime.UtcNow - c.CreatedAt).TotalMinutes;
+                var canEdit = isOwner && !c.IsDeleted && minutosDesdeCriacao <= 5;
+
+                <article class="comment-card" id="comment-@c.CommentsId">
                     <div class="comment-user-info">
-                        <div class="user-avatar-circle"><i class="fa-solid fa-user"></i></div>
+                        <div class="user-avatar-circle">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
                         <div class="user-details">
                             <strong class="user-display-id">User #@c.UserId</strong>
+                            @if (c.IsEdited)
+                            {
+                                <span class="edited-badge" title="@Localizer["Editado em"] @c.LastUpdatedAt?.ToString("dd/MM/yyyy HH:mm")">
+                                    <i class="fa-solid fa-pen"></i> @Localizer["editado"]
+                                </span>
+                            }
                             <div class="stars-display">
                                 @for (int i = 0; i < c.Rating; i++)
                                 {
@@ -24,50 +41,133 @@
                                 }
                             </div>
                         </div>
-                        <time class="comment-date">@c.CreatedAt.ToString("dd/MM/yyyy")</time>
+                        <time class="comment-date" title="@c.CreatedAt.ToString("dd/MM/yyyy HH:mm")">
+                            @c.CreatedAt.ToString("dd/MM/yyyy")
+                        </time>
                     </div>
-                    <div class="comment-content">
-                        <p class="comment-text">@c.CommentText</p>
+                    
+                    <div class="comment-content" id="comment-display-@c.CommentsId">
+                        <p>@c.CommentText</p>
+
+                        @if (canEdit)
+                        {
+                            <div class="comment-actions">
+                                <button type="button" class="btn-edit-comment"
+                                        onclick="testEdit(@c.CommentsId)">
+                                    <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]
+                                </button>
+                                <span class="edit-timer" data-created="@c.CreatedAt.ToString("o")">
+                                    (@Localizer["Disponível po"]r <span class="time-remaining">--:--</span>)
+                                </span>
+                            </div>
+                        }
+                        else if (isOwner && minutosDesdeCriacao > 5)
+                        {
+                            <div class="edit-expired">
+                                <i class="fa-solid fa-clock"></i> @Localizer["Tempo de edição expirado"]
+                            </div>
+                        }
                     </div>
+                    
+                    @if (canEdit)
+                    {
+                        <div class="comment-edit-form" id="comment-edit-@c.CommentsId" style="display: none;">
+
+                            <form method="post"
+                                  asp-page-handler="EditComment"
+                                  onsubmit="return validateEdit(@c.CommentsId)">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="commentId" value="@c.CommentsId" />
+                                <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
+
+                                <div class="rating-input-group">
+                                    <label>@Localizer["Avaliação"]:</label>
+                                    <div class="star-rating-control edit-rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <input type="radio" id="edit-star-@c.CommentsId-@i" name="editRating" value="@i" @(i == c.Rating ? "checked" : "") />
+                                            <label for="edit-star-@c.CommentsId-@i" title="@i estrelas">
+                                                <i class="fa-solid fa-star"></i>
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <textarea name="editCommentText"
+                                          id="edit-text-@c.CommentsId"
+                                          class="form-control-modern"
+                                          rows="3"
+                                          maxlength="500"
+                                          required>@c.CommentText
+                                    </textarea>
+                                    <span class="char-count"><span id="char-count-@c.CommentsId">@c.CommentText.Length</span>/500</span>
+                                </div>
+
+                                <div class="edit-actions">
+                                    <button type="button" class="btn-cancel" onclick="cancelEdit(@c.CommentsId)">
+                                        <i class="fa-solid fa-xmark"></i> @Localizer["Cancelar"]
+                                    </button>
+                                    <button type="submit" class="btn-save">
+                                        <i class="fa-solid fa-check"></i> @Localizer["Guardar"]
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
                 </article>
             }
         }
         else
         {
             <div class="empty-notice">
-                <i class="fa-regular fa-comment-dots"></i>
+                <i class="fa-regular fa-comment-dots fa-3x"></i>
                 <p>@Localizer["Ainda não há comentários. Seja o primeiro a comentar!"]</p>
             </div>
         }
-    </div>
+    </div>          
 
-    @if (User.Identity?.IsAuthenticated ?? false)
+    @if (isAuthenticated)
     {
         <section class="comments-form-section">
             <div class="comment-form">
                 <h3><i class="fa-solid fa-pen-to-square"></i>@Localizer["Deixe a sua opinião"]</h3>
-                <form method="post">
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <form method="post" asp-page-handler="Comment">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
 
                     <div class="rating-input-group">
                         <label>@Localizer["A sua avaliação"]</label>
                         <div class="star-rating-control">
-                            @for(int i = 5; i >= 1; i--)
+                            @for (int i = 5; i >= 1; i--)
                             {
-                                <input type="radio" id="star-@i" name="Rating" value="@i" required />
-                                <label for="star-@i" title="@i estrelas">
-                                    <i class="fa-solid fa-star"></i>
-                                </label>
+                                <input type="radio" id="star-@i" name="CommentRating" value="@i" required />
+                                <label for="star-@i"><i class="fa-solid fa-star"></i></label>
                             }
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <textarea name="Message" class="form-control-modern" rows="4" 
-                                  placeholder="@Localizer["O que achou desta receita?"]"></textarea>
+                        <textarea name="CommentMessage"
+                              class="form-control-modern"
+                              rows="4"
+                              required
+                              maxlength="500"
+                              placeholder="@Localizer["O que achou desta receita?"]"></textarea>
                     </div>
 
-                    <div class="form-footer">
+                    <div class="form-footer text-end">
                         <button type="submit" class="btn-submit-comment">
                             <i class="fa-solid fa-paper-plane"></i> @Localizer["Publicar Comentário"]
                         </button>
@@ -75,5 +175,5 @@
                 </form>
             </div>
         </section>
-    }    
+    }
 </div>

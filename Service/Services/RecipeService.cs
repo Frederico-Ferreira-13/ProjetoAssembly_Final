@@ -40,7 +40,6 @@ namespace Service.Services
 
             int currentUserId = userIdResult.Value;
             var recipe = await _recipesRepository.ReadByIdAsync(recipeId);
-
             return recipe != null && recipe.UserId == currentUserId;
         }
 
@@ -56,8 +55,17 @@ namespace Service.Services
 
         public async Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId)
         {
-            var recipe = await _recipesRepository.ReadByIdAsync(recipeId);
+            if (recipeId <= 0)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
 
+            var recipe = await _recipesRepository.ReadByIdAsync(recipeId);
             if (recipe == null)
             {
                 return Result<Recipes>.Failure(
@@ -72,18 +80,18 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<Recipes>>> GetRecipesByUserIdAsync(int userId)
         {
-            try
-            {
-                var allrecipes = await _recipesRepository.ReadAllAsync();
-                var userRecipes = allrecipes.Where(r => r.UserId == userId).ToList();
-                
-                return Result<IEnumerable<Recipes>>.Success(userRecipes);
-            }
-            catch (Exception ex)
+            if (userId <= 0)
             {
                 return Result<IEnumerable<Recipes>>.Failure(
-                    Error.InternalServer($"Erro ao obter receitas do utilizador: {ex.Message}"));
+                    Error.Validation(
+                        "ID do utilizador inválido.",
+                        new Dictionary<string, string[]> { { nameof(userId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
             }
+
+            var userRecipes = await _recipesRepository.GetUserIdRecipes(userId);
+            return Result<IEnumerable<Recipes>>.Success(userRecipes);
         }
 
         public async Task<Result<IEnumerable<Recipes>>> GetAllRecipesAsync()
@@ -92,21 +100,52 @@ namespace Service.Services
             return Result<IEnumerable<Recipes>>.Success(recipes);
         }
 
-        public async Task<int> GetFavoriteCountAsync(int recipeId)
+        public async Task<Result<int>> GetFavoriteCountAsync(int recipeId)
         {
-            return await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+            if (recipeId <= 0)
+            {
+                return Result<int>.Failure(
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var count = await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+            return Result<int>.Success(count);
         }
 
-        public async Task<int> GetTotalRecipesByUserAsync(int userId)
+        public async Task<Result<int>> GetTotalRecipesByUserAsync(int userId)
         {
-            var recipes = await _recipesRepository.ReadAllAsync();
-            return recipes.Count(r => r.UserId == userId);
+            if (userId <= 0)
+            {
+                return Result<int>.Failure(
+                    Error.Validation(
+                        "ID do utilizador inválido.",
+                        new Dictionary<string, string[]> { { nameof(userId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var recipes = await _recipesRepository.GetUserIdRecipes(userId);
+            return Result<int>.Success(recipes.Count());
         }
 
-        public async Task<int> GetTotalFavoritesByUserAsync(int userId)
+        public async Task<Result<int>> GetTotalFavoritesByUserAsync(int userId)
         {
-            var favorites = await _favoritesRepository.GetByUserIdAsync(userId);
-            return favorites.Count();
+            if (userId <= 0)
+            {
+                return Result<int>.Failure(
+                    Error.Validation(
+                        "ID do utilizador inválido.",
+                        new Dictionary<string, string[]> { { nameof(userId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            var count = await _favoritesRepository.GetByUserIdAsync(userId);
+            return Result<int>.Success(count.Count());
         }
 
         public async Task<Result<IEnumerable<Recipes>>> GetPendingRecipesAsync()
@@ -115,27 +154,54 @@ namespace Service.Services
             return Result<IEnumerable<Recipes>>.Success(pending);
         }
 
-        public async Task<Result<(IEnumerable<Recipes> Items, int TotalCount)>> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId)
+        public async Task<Result<(IEnumerable<Recipes> Items, int TotalCount)>> SearchRecipesAsync(
+            string? search, int? categoryId, int page, int pageSize, int? currentUserId)
         {
-            try
-            {
-                var data = await _recipesRepository.SearchRecipesAsync(search, categoryId, page, pageSize, currentUserId);
-                return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Success(data);
-            }
-            catch (Exception ex)
+            if (page < 1)
             {
                 return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Failure(
-                    Error.InternalServer($"Erro ao pesquisar receitas: {ex.Message}"));
+                    Error.Validation(
+                        "Número da página inválido.",
+                        new Dictionary<string, string[]> { { nameof(page), new[] { "Deve ser maior ou igual a 1" } } }
+                    )
+                );
             }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Failure(
+                    Error.Validation(
+                        "Tamanho da página inválido (1-100).",
+                        new Dictionary<string, string[]> { { nameof(pageSize), new[] { "Valor entre 1 e 100" } } }
+                    )
+                );
+            }
+
+            var (items, totalCount) = await _recipesRepository.SearchRecipesAsync(search, categoryId, page, pageSize, currentUserId);
+            return Result<(IEnumerable<Recipes> Items, int TotalCount)>.Success((items, totalCount));
         }
 
         public async Task<Result<object>> ToggleFavoriteAsync(int recipeId, int userId)
         {
+            if (recipeId <= 0)
+            {
+                return Result<object>.Failure(
+                    Error.Validation(
+                        "ID da receita inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
             var exists = await _recipesRepository.ExistsByIdAsync(recipeId);
             if (!exists)
             {
                 return Result<object>.Failure(
-                    Error.NotFound("Rec_01", "Receita não encontrada"));
+                    Error.NotFound(
+                        ErrorCodes.NotFound,
+                        $"Receita com ID {recipeId} não encontrada."
+                    )
+                );
             }
 
             var currentUserIdResult = await _tokenService.GetUserIdFromContextAsync();
@@ -144,7 +210,9 @@ namespace Service.Services
                 return Result<object>.Failure(
                     Error.Forbidden(
                         ErrorCodes.AuthForbidden,
-                        "Não pode togglear favorito para outro utilizador."));
+                        "Não pode togglear favorito para outro utilizador."
+                    )
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -165,6 +233,7 @@ namespace Service.Services
                 await _unitOfWork.CommitAsync();
 
                 var newCount = await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+
                 return Result<object>.Success(new
                 {
                     isFavorite = !isFavorite,
@@ -193,8 +262,75 @@ namespace Service.Services
 
             int currentUserId = userIdResult.Value;
 
-            var user = await _unitOfWork.Users.ReadByIdAsync(currentUserId);
-            bool isAdmin = user != null && user.UsersRoleId == 1;
+            if (string.IsNullOrWhiteSpace(newRecipe.Title))
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "O título da receita é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.Title), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (newRecipe.Title.Length > 200)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "O título não pode exceder 200 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.Title), new[] { "Máximo 200 caracteres" } } }
+                    )
+                );
+            }
+
+            if (newRecipe.CategoriesId <= 0)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "ID da categoria inválido.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.CategoriesId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (newRecipe.DifficultyId <= 0)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "ID da dificuldade inválido.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.DifficultyId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (newRecipe.PrepTimeMinutes <= 0)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "Tempo de preparação inválido.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.PrepTimeMinutes), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (newRecipe.CookTimeMinutes <= 0)
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "Tempo de cozedura inválido.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.CookTimeMinutes), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(newRecipe.Instructions))
+            {
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "As instruções são obrigatórias.",
+                        new Dictionary<string, string[]> { { nameof(newRecipe.Instructions), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -211,16 +347,28 @@ namespace Service.Services
                     servings: newRecipe.Servings
                 );
 
-                if (isAdmin)
+                var user = await _unitOfWork.Users.ReadByIdAsync(currentUserId);
+                if (user != null && user.UsersRoleId == 1) // 1 = Admin
                 {
                     recipesToCreate.Approve();
-                }                
+                }
 
                 await _recipesRepository.CreateAddAsync(recipesToCreate);
                 await _unitOfWork.CommitAsync();
 
                 return Result<Recipes>.Success(recipesToCreate);
-            }            
+            }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.Rollback();
+                string fieldName = ex.ParamName ?? "Geral";
+                return Result<Recipes>.Failure(
+                    Error.Validation(
+                        "Dados inválidos para criar receita.",
+                        new Dictionary<string, string[]> { { fieldName, new[] { ex.Message } } }
+                    )
+                );
+            }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
@@ -257,6 +405,76 @@ namespace Service.Services
                     Error.Forbidden(
                     ErrorCodes.AuthForbidden,
                     "O Utilizador não tem permissão para atualizar esta receita. Apenas o criador pode fazê-lo.")
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(recipeToUpdate.Title))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O título da receita é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.Title), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (recipeToUpdate.Title.Length > 200)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O título não pode exceder 200 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.Title), new[] { "Máximo 200 caracteres" } } }
+                    )
+                );
+            }
+
+            if (recipeToUpdate.CategoriesId <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "ID da categoria inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.CategoriesId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (recipeToUpdate.DifficultyId <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "ID da dificuldade inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.DifficultyId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (recipeToUpdate.PrepTimeMinutes <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "Tempo de preparação inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.PrepTimeMinutes), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (recipeToUpdate.CookTimeMinutes <= 0)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "Tempo de cozedura inválido.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.CookTimeMinutes), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(recipeToUpdate.Instructions))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "As instruções são obrigatórias.",
+                        new Dictionary<string, string[]> { { nameof(recipeToUpdate.Instructions), new[] { "Campo obrigatório" } } }
+                    )
                 );
             }
 
@@ -356,22 +574,27 @@ namespace Service.Services
                     $"Receita com ID {recipeId} não encontrada."));
             }
 
-            /*var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
             if (!userIdResult.IsSuccessful)
             {
-                return Result.Failure(Error.Unauthorized(
-                    ErrorCodes.AuthUnauthorized,
-                    "Não autenticado."));
-            }
+                return Result.Failure(
+                    Error.Unauthorized(
+                        ErrorCodes.AuthUnauthorized,
+                        "Não autenticado."
+                    )
+                );
+            }            
 
             var user = await _unitOfWork.Users.ReadByIdAsync(userIdResult.Value);
-            if(user == null || user.UsersRoleId != 1)
+            if (user == null || user.UsersRoleId != 1) // 1 = Admin
             {
                 return Result.Failure(
                     Error.Forbidden(
                         ErrorCodes.AuthForbidden,
-                        "Apenas administradores podem aprovar receitas."));
-            }*/
+                        "Apenas administradores podem aprovar receitas."
+                    )
+                );
+            }
 
             await _unitOfWork.BeginTransactionAsync();
 

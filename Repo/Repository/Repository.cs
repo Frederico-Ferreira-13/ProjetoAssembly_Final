@@ -49,15 +49,10 @@ namespace Repo.Repository
             }
         }
 
-        public async Task<TEntity?> ReadByIdAsync(int id, bool? onlyActive = true)
+        public virtual async Task<TEntity?> ReadByIdAsync(int id)
         {
-            string sql = $"SELECT * FROM {_tableName} WHERE {PrimaryKeyName} = @Id AND IsActive = 1";
-            var parameters = new List<SqlParameter> { new SqlParameter("@Id", id) };
-
-            if(onlyActive == true)
-            {
-                sql += " AND IsActive = 1";
-            }
+            string sql = $"SELECT * FROM {_tableName} WHERE {PrimaryKeyName} = @Id";
+            var parameters = new List<SqlParameter> { new SqlParameter("@Id", id) };                       
 
             try
             {
@@ -80,17 +75,12 @@ namespace Repo.Repository
 
         // Lê todas as entidades. Por default, só retorna as com IsActive = 1,
         // Para ignorar o filtro, passe onlyActive: false.
-        public async Task<IEnumerable<TEntity>> ReadAllAsync(bool? onlyActive = true)
+        public virtual async Task<IEnumerable<TEntity>> ReadAllAsync()
         {
             var entities = new List<TEntity>();
 
             string sql = $"SELECT * FROM {_tableName}";
-            var parameters = new List<SqlParameter>();
-
-            if (onlyActive == true)
-            {
-                sql += " WHERE IsActive = 1";
-            }
+            var parameters = new List<SqlParameter>();            
 
             try
             {                
@@ -126,9 +116,9 @@ namespace Repo.Repository
             }
         }
 
-        public async Task RemoveAsync(TEntity entity)
+        public virtual async Task RemoveAsync(TEntity entity)
         {
-            string sql = $"UPDATE {_tableName} SET IsActive = 0, LastUpdatedAt = GETDATE() WHERE {PrimaryKeyName} = @Id";
+            string sql = $"DELETE FROM {_tableName} WHERE {PrimaryKeyName} = @Id";
             SqlParameter paramId = new SqlParameter("@Id", entity.GetId());
 
             try

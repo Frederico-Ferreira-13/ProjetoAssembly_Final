@@ -8,8 +8,8 @@ namespace Contracts.Repository
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
         Task CreateAddAsync(TEntity entity);
-        Task<TEntity?> ReadByIdAsync(int id, bool? onlyActive = true);
-        Task<IEnumerable<TEntity>> ReadAllAsync(bool? onlyActive = true);
+        Task<TEntity?> ReadByIdAsync(int id);
+        Task<IEnumerable<TEntity>> ReadAllAsync();
         Task UpdateAsync(TEntity entity);
         Task RemoveAsync(TEntity entity);
 

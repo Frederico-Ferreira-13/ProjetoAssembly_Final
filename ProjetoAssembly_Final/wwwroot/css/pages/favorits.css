@@ -1,205 +1,156 @@
 ﻿/* --- ESPECÍFICO DE FAVORITOS (favorits.css) --- */
 /* --- PÁGINA DE FAVORITOS --- */
+
+.main-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 .favorites-header {
     text-align: center;
-    margin-bottom: 40px;
-    padding-top: 20px;
+    margin: 60px 0 50px;
+    padding: 0 20px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.favorites-header h1 {
-    font-size: 2.5rem;
-    color: var(--text-color);
+favorites-header h1 {
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
     font-weight: 800;
-}
-
-/* --- FILTROS DE CATEGORIAS (Navegação Suave) --- */
-.category-grid {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 40px;
-}
-
-.category-card {
-    background: var(--card-bg);
-    padding: 15px 25px;
-    border-radius: 15px;
-    text-decoration: none;
     color: var(--text-color);
+    margin: 0 0 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    min-width: 110px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid var(--border-color);
+    justify-content: center;
+    gap: 18px;
 }
 
-.category-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--primary-green);
-    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.15);
+favorites-header h1 i {
+    color: #e74c3c;
+    font-size: 1.5em;
+    animation: heartBeat 2.5s infinite ease-in-out;
 }
 
-/* Estado Ativo (Categoria Selecionada) */
-.category-card.active {
-    background-color: #28a745 !important;
-    color: white !important;
-    border-color: var(--primary-green);
-    transform: scale(1.05);
+.favorites-header p {
+    font-size: 1.25rem;
+    color: #7f8c8d;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
 }
 
-.category-card.active .category-icon i {
-    color: white !important;
+/* Grelha de receitas favoritas */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 35px;
+    margin: 0 auto 60px;
+    max-width: 1400px;
 }
 
-.category-icon {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-    color: var(--primary-green);
-    transition: color 0.3s;
-}
-
-/* --- ESTADO VAZIO --- */
-.empty-state-notice {
-    grid-column: 1 / -1;
+/* Estado vazio (mais acolhedor e motivador) */
+empty-state-notice {
     background: var(--card-bg);
-    border: 2px dashed var(--border-color);
-    border-radius: 20px;
+    border-radius: 24px;
+    padding: 90px 40px;
     text-align: center;
-    padding: 60px 30px;
-    margin: 20px 0;
-    transition: 0.3s;
+    box-shadow: 0 12px 45px rgba(0,0,0,0.1);
+    border: 3px dashed var(--primary-green);
+    max-width: 800px;
+    margin: 0 auto 80px;
 }
 
 .empty-state-notice i {
-    font-size: 5rem;
-    color: var(--border-color);
-    margin-bottom: 25px;
+    font-size: 8rem;
+    color: var(--primary-green);
+    margin-bottom: 35px;
+    opacity: 0.85;
     display: block;
 }
 
 .empty-state-notice p {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: var(--text-color);
-    opacity: 0.7;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    font-weight: 500;
 }
 
-/* Botão para incentivar a explorar quando está vazio */
+.empty-state-notice p:last-of-type {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-bottom: 40px;
+}
+
 .btn-explore {
-    display: inline-block;
-    padding: 12px 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 48px;
     background: var(--primary-green);
     color: white;
-    text-decoration: none;
-    border-radius: 30px;
     font-weight: 700;
-    transition: 0.3s;
+    font-size: 1.2rem;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 8px 25px rgba(40,167,69,0.3);
 }
 
 .btn-explore:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
+    background: var(--primary-dark);
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(40,167,69,0.45);
 }
 
-/* --- SEPARADOR --- */
-.separator {
-    border: 0;
-    height: 1px;
-    background: var(--border-color);
-    margin: 50px 0;
-}
-
-/* Ajuste para a Grelha de Receitas nos Favoritos */
-.favorites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px;
-}
-
-/* --- BOTÃO FAVORITO NA PÁGINA DE DETALHE --- */
-.card-img-wrapper {
-    position: relative;
-    height: 320px;
-    overflow: hidden;
-    border-radius: 20px 20px 0 0;
-}
-
-.btn-favorite-wook {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.92);
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.7rem;
-    color: #e74c3c;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
-    transition: all 0.25s ease;
-    cursor: pointer;
-}
-
-.btn-favorite-wook.active {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-favorite-wook:hover:not(.disabled) {
-    transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
-}
-
-.btn-favorite-wook i {
-    transition: transform 0.2s ease;
-}
-
-.btn-favorite-wook:active i {
-    transform: scale(1.4);
-}
-
-.btn-favorite-wook.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Badge pequeno do contador */
-.fav-badge {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    background: #e74c3c;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: bold;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    border: 1.5px solid white;
-}
-
-@keyframes heartPop {
-    0% {
+/* Animação do coração no título */
+@keyframes heartBeat {
+    0%, 100% {
         transform: scale(1);
     }
 
     50% {
-        transform: scale(1.5);
+        transform: scale(1.25);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 28px;
     }
 
-    100% {
-        transform: scale(1);
+    .empty-state-notice {
+        padding: 70px 30px;
+    }
+}
+
+@media (max-width: 576px) {
+    favorites-header {
+        margin: 40px 0 40px;
+    }
+
+    .favorites-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .favorites-header p {
+        font-size: 1.1rem;
+    }
+
+    .empty-state-notice {
+        padding: 60px 20px;
+        margin: 0 15px 60px;
+    }
+
+    .empty-state-notice i {
+        font-size: 6rem;
+    }
+
+    .btn-explore {
+        padding: 14px 32px;
+        font-size: 1.05rem;
     }
 }

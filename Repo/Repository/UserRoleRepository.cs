@@ -52,7 +52,7 @@ namespace Repo.Repository
 
         public async Task<UsersRole?> GetByNameAsync(string userRole)
         {
-            string sql = $@"SELECT UserRoleId, RoleName 
+            string sql = $@"SELECT UsersRoleId, RoleName 
                             FROM {_tableName} 
                             WHERE RoleName = @RoleName";
 

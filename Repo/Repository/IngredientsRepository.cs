@@ -93,5 +93,18 @@ namespace Repo.Repository
             var count = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());
             return Convert.ToInt32(count) == 0;
         }
+
+        public async Task<bool> AnyWithTypeIdAsync(int ingredientsTypeId)
+        {
+            string sql = @"
+                SELECT TOP 1 1
+                FROM Ingredients
+                WHERE IngredientsTypeId = @IngredientsTypeId";
+
+            var parameter = new SqlParameter("@IngredientsTypeId", ingredientsTypeId);
+
+            using var reader = await SQL.ExecuteQueryAsync(sql, parameter);
+            return reader.HasRows;
+        }
     }
 }

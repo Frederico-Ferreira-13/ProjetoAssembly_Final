@@ -22,6 +22,7 @@ namespace ProjetoAssembly_Final.Pages
         public async Task OnGetAsync()
         {
             _logger.LogInformation("A carregar a página inicial...");
+
             RecipeList = new List<Recipes>();
 
             try
@@ -29,68 +30,35 @@ namespace ProjetoAssembly_Final.Pages
                 if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                 {
                     var pendingResult = await _recipesService.GetPendingRecipesAsync();
-
-                    if (pendingResult != null && pendingResult.IsSuccessful && pendingResult.Value != null)
-                    {                        
-                        ViewData["PendingCount"] = pendingResult.Value.Count();
-                    }
-                    else
-                    {
-                        ViewData["PendingCount"] = 0;
-                    }                    
+                    ViewData["PendingCount"] = pendingResult.IsSuccessful && pendingResult.Value != null
+                        ? pendingResult.Value.Count()
+                        : 0;
                 }
                 else
                 {
                     ViewData["PendingCount"] = 0;
-                }
+                }                    
 
                 var results = await _recipesService.GetAllRecipesAsync();
                 if (results != null && results.IsSuccessful && results.Value != null && results.Value.Any())
                 {
                     RecipeList = results.Value
-                        .OrderByDescending(r => r.RecipesId)
-                        .Take(4)
+                        .OrderByDescending(r => r.FavoriteCount + (r.AverageRating * 10))
+                        .ThenByDescending(r => r.RecipesId)
+                        .Take(5)
                         .ToList();
                 }
                 else
                 {
-                    AdicionarReceitasExemplo();
+                    _logger.LogWarning("Nenhuma receita encontrada. Mostrando mensagem vazia.");
+                    RecipeList = MockRecipes.GetFallbackMockRecipes().Take(4).ToList();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao carregar destaques");
-                AdicionarReceitasExemplo();               
+                RecipeList = MockRecipes.GetFallbackMockRecipes().Take(4).ToList();
             }            
-        }
-
-        private void AdicionarReceitasExemplo()
-        {
-            var sopa = Recipes.Reconstitute(9993, 9993, 1, 1, "Sopa de Legumes Caseira",
-                "1. Descasque os legumes.\n2. Coza em água e sal. \n3. Triture com um fio de azeite.",
-                10, 25, "4 Pessoas", "sopa.jpg", DateTime.Now, null, true);
-            
-            var carne = Recipes.Reconstitute(9992, 9992, 2, 2, "Arroz de Pato Tradicional",
-                "1. Coza o pato com enchidos.\n2. Refogue o arroz na gordura do pato.\n3. Leve ao forno para dourar.",
-                20, 50, "6 Pessoas", "arroz-de-pato.jpg", DateTime.Now, null, true);           
-
-            var peixe = Recipes.Reconstitute(9994, 9994, 3, 2, "Bacalhau à Brás",
-                "1. Refogue a cebola e o alho.\n2. Junte o bacalhau desfiado e a batata palha.\n3. Envolva com ovos batidos.",
-                15, 15, "2 Pessoas", "bacalhau.jpg", DateTime.Now, null, true);            
-
-            var doce = Recipes.Reconstitute(9991, 9991, 4, 1, "Arroz Doce Cremoso",
-                "1. Coza o arroz em leite com casca de limão.\n2. Adicione açúcar e gemas no final.\n3. Polvilhe com canela.",
-                10, 40, "8 Pessoas", "arroz-doce.jpg", DateTime.Now, null, true);
-
-            var vegan = Recipes.Reconstitute(9995, 9995, 5, 1, "Bolo de Chocolate Vegan",
-                "1. Misture os ingredientes secos.\n2. Adicione os líquidos.\n3. Leve ao forno.",
-                10, 45, "8 Pessoas", "bolo-de-chocolate-vegan.jpg", DateTime.Now, null, true);
-
-            RecipeList.Add(sopa);
-            RecipeList.Add(carne);
-            RecipeList.Add(peixe);
-            RecipeList.Add(doce);
-            RecipeList.Add(vegan);
-        }
+        }        
     }
 }

@@ -7,65 +7,82 @@
     ViewData["Title"] = Localizer["Contactos"];
 }
 
-<link rel="stylesheet" href="~/css/pages/contacts.css" asp-append-version="true" />
-<link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true" />
-<link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/contacts.css" asp-append-version="true" />
+}
 
-<main class="main-wrapper">   
-    <div class="contact-header">
-        <h1>@Localizer["Contactos"]</h1>
-        <p>@Localizer["Tem alguma dúvida ou sugestão? Estamos aqui para ajudar!"]</p>                
-    </div>
-
-    <div class="contact-info-grid">               
-        <div class="contact-card"> 
-            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
-            <h3>@Localizer["Telefone"]</h3>
-            <p>@Localizer["Segunda a Sexta, 9h às 18h"]</p>
-            <a href="tel:916781293" class="contact-link-btn">916 781 293</a>
+<main class="main-content contact-page">
+    <section class="contact-hero">
+        <div class="container">
+            <h1>@Localizer["Contactos"]</h1>
+            <p class="lead">@Localizer["Tem alguma dúvida ou sugestão? Estamos aqui para ajudar!"]</p>
         </div>
+    </section>
+   
+    <section class="contact-info container">
+        <div class="info-grid">
+            
+            <div class="contact-card">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <h3>@Localizer["Telefone"]</h3>
+                <p>@Localizer["Segunda a Sexta, 9h às 18h"]</p>
+                <a href="tel:916781293" class="contact-link-btn">916 781 293</a>
+            </div>
 
-        <div class="contact-card">
-            <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
-            <h3>@Localizer["E-mail"]</h3>
-            <p>@Localizer["Respondemos em 24h"]</p>
-            <a href="malito:fredericocrf87@hotmail.com" class="contact-link-btn">@Localizer["Enviar E-mail"]</a>
+            <div class="contact-card">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <h3>@Localizer["E-mail"]</h3>
+                <p>@Localizer["Respondemos em 24h"]</p>
+                <a href="malito:fredericocrf87@hotmail.com" class="contact-link-btn">@Localizer["Enviar E-mail"]</a>
+            </div>
         </div>
-    </div>
-               
-    <div class="contact-form-wrapper">
-        <h3 class="form-title">@Localizer["Envie-nos uma mensagem"]</h3>
-        
-        @if(TempData["SuccessMessage"] != null)
-        {
-            <div class="alet alert-success">
-                @TempData["SuccessMessage"]
-            </div>
-        }
-        3
-        <form method="post" class="contact-form">
-            <div class="form-group">
-                <label asp-for="Name">@Localizer["Nome"]</label>
-                <input asp-for="Name" class="form-input" placeholder="@Localizer["O seu nome..."]" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+    </section>       
+    
+    <section class="contact-form-section container">
+        <div class="form-card">
+            <h2>@Localizer["Envie-nos uma mensagem"]</h2>
 
-            <div class="form-group">
-                <label asp-for="Email">@Localizer["E-mail"]</label>
-                <input asp-for="Email" class="form-input" placeholder="exemplo@email.com" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alet alert-success alert-dismissible fade-show" role="alert">
+                    <i class="fa-solid fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
 
-            <div class="form-group">
-                <label asp-for="Message">@Localizer["Mensagem"]"</label>
-                <textarea asp-for="Message" class="form-control" placeholder="@Localizer["Em que podemos ajudar?"]"></textarea>
-                <span asp-validation-for="Message" class="text-danger"></span>
-            </div>
+            <form method="post" class="contact-form" novalidate>
+                <div class="form-floating mb-4">
+                    <input asp-for="Name" class="form-input" placeholder="@Localizer["O seu nome..."]" required />
+                    <label asp-for="Name">@Localizer["Nome"]</label>                    
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
 
-            <button type="submit" class="btn-submit">
-                <span>@Localizer["Enviar Mensagem"]</span>
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </form>
-    </div>
+                <div class="form-floating mb-4">
+                    <input asp-for="Email" class="form-input" placeholder="exemplo@email.com" />
+                    <label asp-for="Email">@Localizer["E-mail"]</label>                    
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-4">
+                    <textarea asp-for="Message" class="form-control" placeholder="@Localizer["Em que podemos ajudar?"]"></textarea>
+                    <label asp-for="Message">@Localizer["Mensagem"]"</label>                    
+                    <span asp-validation-for="Message" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn-submit w-100">
+                    <span>@Localizer["Enviar Mensagem"]</span>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </section>    
 </main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

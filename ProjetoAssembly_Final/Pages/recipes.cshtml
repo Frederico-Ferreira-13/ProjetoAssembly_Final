@@ -16,41 +16,113 @@
 <div class="main-wrapper">
     <section class="category-section">
         <h2 class="section-title">@Localizer["Explorar Receitas"]</h2>
-        <div class="category-nav">
-            <a asp-page="/recipes" class="category-item @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-list"></i></div>
+        <nav aria-label="@Localizer["Navegação de categorias"]" class="category-nav">
+            <a asp-page="/recipes" 
+               class="category-item @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")"
+               aria-current="@(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "page" : "false")">
+                <div class="category-icon"><i class="fa-solid fa-list"></i></div>
                 <span>@Localizer["Todas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9993" class="category-item @(Request.Query["categoryId"] == "1" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="9993"
+               class="category-item @(Request.Query["categoryId"] == "9993" ? "active" : "")"
+               aria-current="@(Request.Query["categoryId"] == "9993" ? "page" : "false")">
                 <div class="category-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>@Localizer["Sopas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9992" class="category-item @(Request.Query["categoryId"] == "2" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="9992"
+               class="category-item @(Request.Query["categoryId"] == "9992" ? "active" : "")"
+               aria-current="@(Request.Query["categoryId"] == "9992" ? "page" : "false")">
                 <div class="category-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>@Localizer["Carne"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9994" class="category-item @(Request.Query["categoryId"] == "3" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="9994"
+               class="category-item @(Request.Query["categoryId"] == "9994" ? "active" : "")"
+               aria-current="@(Request.Query["categoryId"] == "9994" ? "page" : "false")">
                 <div class="category-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>@Localizer["Peixe"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9995" class="category-item @(Request.Query["categoryId"] == "4" ? "active" : "")">
-                <div class="cat-icon"><i class="fa-solid fa-leaf"></i></div>
+            <a asp-page="/recipes" asp-route-categoryId="9995"
+               class="category-item @(Request.Query["categoryId"] == "9995" ? "active" : "")"
+               aria-current="@(Request.Query["categoryId"] == "9995" ? "page" : "false")">
+                <div class="category-icon"><i class="fa-solid fa-leaf"></i></div>
                 <span>@Localizer["Vegetariano"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9991" class="category-item @(Request.Query["categoryId"] == "5" ? "active" : "")">
+            <a asp-page="/recipes" asp-route-categoryId="9991"
+               class="category-item @(Request.Query["categoryId"] == "9991" ? "active" : "")"
+               aria-current="@(Request.Query["categoryId"] == "9991" ? "page" : "false")">
                 <div class="category-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>@Localizer["Sobremesas"]</span>
-            </a>           
-        </div>
+            </a>
+        </nav>        
     </section>
 
     <hr class="separator-light">
 
-    <section class="results-section">
+   <section class="results-section">
+        <!-- Barra de pesquisa + ordenação -->
+        <div class="filters-bar mb-5">
+            <form method="get" asp-page="/recipes" class="search-form">
+                <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                <div class="input-group search-group">
+                    <input type="text" name="search" value="@Model.Search" 
+                           class="form-control search-input" 
+                           placeholder="@Localizer["Pesquisar por nome, ingrediente..."]" 
+                           aria-label="@Localizer["Pesquisar receitas"]" />
+                    <button type="submit" class="btn-search" aria-label="@Localizer["Pesquisar"]">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="sort-options">
+                <label for="sort">@Localizer["Ordenar por"]:</label>
+                <select name="sort" id="sort" class="sort-select" onchange="this.form.closest('form').submit();">
+                    @if (string.IsNullOrEmpty(Model.Sort))
+                    {
+                        <option value="" selected>@Localizer["Mais recentes"]</option>
+                    }
+                    else
+                    {
+                        <option value="">@Localizer["Mais recentes"]</option>
+                    }
+
+                    @if (Model.Sort == "popular")
+                    {
+                        <option value="popular" selected>@Localizer["Popularidade"]</option>
+                    }
+                    else
+                    {
+                        <option value="popular">@Localizer["Popularidade"]</option>
+                    }
+
+                    @if (Model.Sort == "time")
+                    {
+                        <option value="time" selected>@Localizer["Tempo de preparo"]</option>
+                    }
+                    else
+                    {
+                        <option value="time">@Localizer["Tempo de preparo"]</option>
+                    }
+
+                    @if (Model.Sort == "difficulty")
+                    {
+                        <option value="difficulty" selected>@Localizer["Dificuldade"]</option>
+                    }
+                    else
+                    {
+                        <option value="difficulty">@Localizer["Dificuldade"]</option>
+                    }
+                </select>
+            </div>
+        </div>
+
         @if (!string.IsNullOrEmpty(Model.Search))
         {
+            var count = Model.ListRecipes?.Count() ?? 0;
+
             <div class="search-info mb-4">
-                @Localizer["Resultados para: "] <strong>"@Model.Search"</strong>
+                @Localizer["Resultados para"] <strong>"@Model.Search"</strong>
+                <span class="result-count">(@count) @Localizer["receitas encontradas"]</span>
             </div>
         }
 
@@ -59,56 +131,79 @@
             {
                 @foreach (var receita in Model.ListRecipes)
                 {
-                    <partial name="_RecipesCard" model="receita"></partial>
+                    <partial name="_RecipesCard" model="receita" />
                 }
             }
             else
             {
-                <div class="empty-notice">
-                    <i class="fa-solid fa-utensils-slash fa-4x mb-4" style="color: #28a745;"></i>
+                <div class="empty-notice text-center py-5">
+                    <i class="fa-solid fa-utensils-slash fa-5x mb-4" style="color: var(--primary-green); opacity: 0.7;"></i>
                     <h3>@Localizer["Nenhuma receita encontrada"]</h3>
-                    <p class="text-muted mb-4">
-                        @Localizer["Ainda não temos receitas com esses critérios..."]<br />
-                        @Localizer["Que tal criares uma nova receita incrível?"]
+                    <p class="text-muted mb-4 lead">
+                        @Localizer["Não encontramos receitas com os critérios selecionados."]<br />
+                        @Localizer["Tenta pesquisar com outros termos ou limpar os filtros."]
                     </p>
-                    <a asp-page="/createRecipe" class="btn-card btn-lg" style="padding: 14px 36px; font-size: 1.1rem;">
-                        <i class="fa-solid fa-plus me-2"></i> @Localizer["Criar Receita"]
-                    </a>
-                    <a asp-page="/recipes" class="btn-card mt-3" style="padding: 12px 30px;">
-                        @Localizer["Limpar filtros"]
-                    </a>
+                    <div class="empty-actions mt-4">
+                        <a asp-page="/createRecipe" class="btn btn-success btn-lg me-3">
+                            <i class="fa-solid fa-plus me-2"></i> @Localizer["Criar Nova Receita"]
+                        </a>
+                        <a asp-page="/recipes" class="btn btn-outline-secondary btn-lg">
+                            @Localizer["Ver Todas as Receitas"]
+                        </a>
+                    </div>
                 </div>
             }
         </div>
 
-        @if(Model.TotalPages > 1)
+        <!-- Paginação moderna -->
+        @if (Model.TotalPages > 1)
         {
-            <div class="pagination-container">
-                <a asp-page="/recipes"
-                    asp-route-p="@(Model.P - 1)"
-                    asp-route-CategoryId="@Model.CategoryId"
-                    asp-route-search="@Model.Search"
-                    class="btn-pag @(Model.P == 1 ? "disabled" : "")">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </a>
+            <nav aria-label="@Localizer["Paginação de receitas"]" class="pagination-modern mt-5">
+                <ul class="pagination-list">
+                    <li class="@(Model.P <= 1 ? "disabled" : "")">
+                        <a asp-page="/recipes" 
+                           asp-route-p="@(Model.P - 1)" 
+                           asp-route-categoryId="@Model.CategoryId" 
+                           asp-route-search="@Model.Search"
+                           asp-route-sort="@Model.Sort">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
 
-                @for(int i = 1; i <= Model.TotalPages; i++)
-                {
-                    <a asp-page="/recipes"
-                        asp-route-p="@i"
-                        asp-route-categoryId="@Model.CategoryId"
-                        asp-route-search="@Model.Search"
-                        class="btn-pag @(i == Model.P ? "active" : "")">@i</a>
-                }
+                    @for (int i = Math.Max(1, Model.P - 2); i <= Math.Min(Model.TotalPages, Model.P + 2); i++)
+                    {
+                        <li class="@(i == Model.P ? "active" : "")">
+                            <a asp-page="/recipes" 
+                               asp-route-p="@i" 
+                               asp-route-categoryId="@Model.CategoryId" 
+                               asp-route-search="@Model.Search"
+                               asp-route-sort="@Model.Sort">@i</a>
+                        </li>
+                    }
 
-                <a asp-page="/recipes"
-                   asp-route-p="@(Model.P + 1)"
-                   asp-route-categoryId="@Model.CategoryId"
-                   asp-route-search="@Model.Search"
-                   class="btn-pag @(Model.P == Model.TotalPages ? "disabled" : "")">
-                    <i class="fa-solid fa-chevron-right"></i>
-               </a>
-            </div>
+                    @if (Model.P + 3 < Model.TotalPages)
+                    {
+                        <li class="dots">...</li>
+                        <li>
+                            <a asp-page="/recipes" 
+                               asp-route-p="@Model.TotalPages" 
+                               asp-route-categoryId="@Model.CategoryId" 
+                               asp-route-search="@Model.Search"
+                               asp-route-sort="@Model.Sort">@Model.TotalPages</a>
+                        </li>
+                    }
+
+                    <li class="@(Model.P >= Model.TotalPages ? "disabled" : "")">
+                        <a asp-page="/recipes" 
+                           asp-route-p="@(Model.P + 1)" 
+                           asp-route-categoryId="@Model.CategoryId" 
+                           asp-route-search="@Model.Search"
+                           asp-route-sort="@Model.Sort">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         }
     </section>
 </div>

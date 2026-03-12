@@ -16,15 +16,29 @@
 <link rel="preload" as="image" href="@Url.Content("~/img/hero.jpg")">
 
 <header class="hero">
+    <div class="hero-overlay"></div>
     <div class="hero-content">
         <h1>@Localizer["Descubra o sabor de cozinhar em casa"]</h1>
         <p>@Localizer["As melhores iguarias, desde sopas reconfortantes a sobremesas irresistíveis."]</p>
-        <a href="#categorias" class="btn-principal">@Localizer["Explorar Categorias"]</a>
+        
+        <div class="hero-actions">
+            <a asp-page="/recipes" class="btn-principal btn-hero-primary">
+                <i class="fa-solid fa-star"></i> 
+                @Localizer["Ver Destaques da Semana"]
+            </a>
+
+            <a href="#categorias" class="btn-secundario">
+                <i class="fa-solid fa-list-ul"></i>
+                @Localizer["Explorar por Categoria"]
+            </a>
+        </div>       
     </div>
 </header>
 
 <main class="container">
-    <section id="categorias" class="category-section">        
+
+    <section id="categorias" class="category-section">
+        <h2 class="section-title-center">@Localizer["O que pretende cozinhas hoje?"]</h2>
         <div class="category-grid">
             <a asp-page="/recipes" asp-route-categoryId="9993" class="category-card">
                 <div class="cat-icon"><i class="fa-solid fa-bowl-food"></i></div>
@@ -48,50 +62,71 @@
             </a>           
         </div>
     </section>
-
+    
     <section class="slider-container">
-        <h2 class="section-title">@Localizer["Destaques da Semana"]</h2>
+        <div class="section-header">
+            <h2 class="section-title">@Localizer["Destaques da Semana"]</h2>
+        </div>
+        
         <div class="slideshow-wrapper">
-            <div class="mySlides fade">
-                <img src="img/bacalhau.jpg" alt="Bacalhau à Brás">
-                <div class="slide-badge">@Localizer["Tradicional"]</div>
-                <div class="slide-text-overlay">@Localizer["Bacalhau à Brás"]</div>
-            </div>
-            <div class="mySlides fade">
-                <img src="img/sopa.jpg" alt="@Localizer["Sopa de Legumes"]">
-                <div class="slide-badge">@Localizer["Saudável"]</div>
-                <div class="slide-text-overlay">@Localizer["Sopa de Legumes - Saudável e Caseira"]</div>
-            </div>
-            <div class="mySlides fade">
-                <img src="img/arroz-de-pato.jpg" alt="@Localizer["Arroz de Pato"]">
-                <div class="slide-badge">@Localizer["Tradicional"]</div>
-                <div class="slide-text-overlay"> @Localizer["Arroz de Pato"]</div>
-            </div>
-            <div class="mySlides fade">
-                <img src="img/bolo-de-chocolate-vegan.jpg" alt="@Localizer["Bolo de Chocolate Vegan"]">
-                <div class="slide-badge">@Localizer["Saudável"]</div>
-                <div class="slide-text-overlay"> @Localizer["Bolo de Chocolate Vegan"]</div>
-            </div>
-            <div class="mySlides fade">
-                <img src="img/arroz-doce.jpg" alt="Arroz Doce">
-                <div class="slide-badge">@Localizer["Saudável"]</div>
-                <div class="slide-text-overlay"> @Localizer["Arroz Doce"]</div>
-            </div>
+            @if (Model.RecipeList != null && Model.RecipeList.Any())
+            {
+                @for (int i = 0; i < Model.RecipeList.Count; i++)
+                {
+                    var recipe = Model.RecipeList[i];
+                    var slideImg = string.IsNullOrEmpty(recipe.ImageUrl)
+                    ? Url.Content("~/img/default.jpg")
+                    : (recipe.ImageUrl.Contains("img/")
+                    ? Url.Content("~/" + recipe.ImageUrl.Replace("~/", ""))
+                    : Url.Content("~/img/" + recipe.ImageUrl));
 
-            <button class="prev" onclick="plusDivs(-1)">&#10094;</button>
-            <button class="next" onclick="plusDivs(1)">&#10095;</button>
+                    <div class="mySlides fade" style="@(i == 0 ? "display:block;" : "display:none;")">
+                        <a asp-page="/view_recipes" asp-route-id="@recipe.RecipesId" class="slide-link">
+                            <img src="@slideImg" alt="@recipe.Title">
+                            <div class="slide-badge">@Localizer["Destaque"]</div>
+                            <div class="slide-text-overlay">
+                                <h3>@recipe.Title</h3>
+                                <span class="btn-slide-view">@Localizer["Ver Receita"]</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+
+                <button class="prev" onclick="plusDivs(-1)" aria-label="Anterior">&#10094;</button>
+                <button class="next" onclick="plusDivs(1)" aria-label="Próximo">&#10095;</button>
+            }
+            else
+            {
+                <div class="mySlides fade" style="display:block;">
+                    <img src="~/img/default.jpg" alt="Sem destaques">
+                    <div class="slide-text-overlay">@Localizer["Nenhuma receita disponível"]</div>
+                </div>
+            }
         </div>
     </section>
 
-    <section class="recipe-section">
-        <h2 class="section-title">@Localizer["Receitas Recentes"]</h2>
+    <section class="recipe-recent-section">
+        <div class="section-header">
+            <h2 class="section-title">@Localizer["últimas Novidades"]</h2>
+            <a asp-page="/recipes" class="view-all-link">
+                @Localizer["Ver todas as receitas"] <i class="fa-solid fa-chevron-right"></i>
+                </a>
+        </div>
+        
         <div id="recipe-container" class="recipe-grid">
-            @if (Model.RecipeList != null)
+            @if (Model.RecipeList != null && Model.RecipeList.Any())
             {
-                @foreach (var recipe in Model.RecipeList.Take(4))
+                @foreach (var recipe in Model.RecipeList.Take(5))
                 {
                     <partial name="_RecipesCard" model="recipe" />
                 }
+            }
+            else
+            {
+                <div class="empty-notice">
+                    <i class="fa-solid fa-utensils"></i>
+                    <p>@Localizer["Ainda não temos receitas recentes para mostrar."]</p>
+                </div>
             }
         </div>
     </section>

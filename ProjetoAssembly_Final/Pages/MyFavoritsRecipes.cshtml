@@ -5,6 +5,7 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = Localizer["Os Meus Favoritos"];
+    ViewData["IsDetailView"] = false;
 }
 
 @section Styles {
@@ -15,17 +16,17 @@
 <div class="main-wrapper">
     <header class="favorites-header">
         <h1>
-            <i class="fa-solid fa-heart" style="color: #e74c3c"></i>
+            <i class="fa-solid fa-heart"></i>
             @Localizer["As Minhas Receitas Favoritas"]
         </h1>
-        <p class="edit-subtitle">@Localizer["Todas as receitas que guardaste num só lugar."]</p>
+        <p>@Localizer["Todas as receitas que guardaste num só lugar. ❤️"]</p>
     </header>
-    
+
     <section class="recipe-section">
         <div id="recipe-container" class="favorites-grid">
-            @if(Model.MyFavoriteRecipes != null && Model.MyFavoriteRecipes.Any())
+            @if (Model.MyFavoriteRecipes != null && Model.MyFavoriteRecipes.Any())
             {
-                @foreach(var recipe in Model.MyFavoriteRecipes)
+                @foreach (var recipe in Model.MyFavoriteRecipes)
                 {
                     <partial name="_RecipesCard" model="recipe" />
                 }
@@ -35,12 +36,12 @@
                 <div class="empty-state-notice">
                     <i class="fa-regular fa-heart"></i>
                     <p>@Localizer["Ainda não guardaste nenhuma receita como favorita."]</p>
-                    
+                    <p>@Localizer["Explora e adiciona as tuas preferidas!"]</p>
                     <a asp-page="/recipes" class="btn-explore">
-                        @Localizer["Explorar Receitas"]
+                        <i class="fa-solid fa-search"></i> @Localizer["Explorar Receitas"]
                     </a>
                 </div>
             }
         </div>
     </section>
-</div>
+</div></div>

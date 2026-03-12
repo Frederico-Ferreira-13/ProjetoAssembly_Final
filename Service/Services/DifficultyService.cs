@@ -4,7 +4,7 @@ using Core.Common;
 using Core.Model;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Service.Services
 {
@@ -20,7 +20,6 @@ namespace Service.Services
         public async Task<Result<Difficulty>> GetDifficultyByIdAsync(int id)
         {
             var difficulty = await _unitOfWork.Difficulty.ReadByIdAsync(id);
-
             if (difficulty == null)
             {
                 return Result<Difficulty>.Failure(
@@ -35,8 +34,17 @@ namespace Service.Services
 
         public async Task<Result<Difficulty>> GetDifficultyByNameAsync(string name)
         {
-            var difficulty = await _unitOfWork.Difficulty.GetByNameAsync(name);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return Result<Difficulty>.Failure(
+                    Error.Validation(
+                        "O nome da dificuldade é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(name), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
 
+            var difficulty = await _unitOfWork.Difficulty.GetByNameAsync(name);
             if (difficulty == null)
             {
                 return Result<Difficulty>.Failure(
@@ -52,28 +60,51 @@ namespace Service.Services
         public async Task<Result<IEnumerable<Difficulty>>> GetAllDifficultiesAsync()
         {
             var difficulties = await _unitOfWork.Difficulty.ReadAllAsync();
-
             return Result<IEnumerable<Difficulty>>.Success(difficulties);
         }
 
-        public async Task<Result<Difficulty>> CreateDifficultyAsync(Difficulty difficulty)
+        public async Task<Result<Difficulty>> CreateDifficultyAsync(Difficulty newDifficulty)
         {
-            if (await _unitOfWork.Difficulty.GetByNameAsync(difficulty.DifficultyName) != null)
+            if (string.IsNullOrWhiteSpace(newDifficulty.DifficultyName))
             {
                 return Result<Difficulty>.Failure(
                     Error.Validation(
-                    $"A Dificuldade '{difficulty.DifficultyName}' já existe.",
-                    new Dictionary<string, string[]> { { nameof(difficulty.DifficultyName), new[] { "Nome já em uso." } } })
+                        "O nome da dificuldade é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(newDifficulty.DifficultyName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (newDifficulty.DifficultyName.Length > 50)
+            {
+                return Result<Difficulty>.Failure(
+                    Error.Validation(
+                        "O nome da dificuldade não pode exceder 50 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(newDifficulty.DifficultyName), new[] { "Máximo 50 caracteres" } } }
+                    )
+                );
+            }
+
+            if (await _unitOfWork.Difficulty.GetByNameAsync(newDifficulty.DifficultyName) != null)
+            {
+                return Result<Difficulty>.Failure(
+                    Error.Conflict(
+                        ErrorCodes.AlreadyExists,
+                        $"A dificuldade '{newDifficulty.DifficultyName}' já existe.",
+                        new Dictionary<string, string[]> { { nameof(newDifficulty.DifficultyName), new[] { "Nome já em uso" } } }
+                    )
                 );
             }
 
             try
             {
-                var newDifficulty = new Difficulty(difficulty.DifficultyName);
-                await _unitOfWork.Difficulty.CreateAddAsync(newDifficulty);
+                var difficultyToCreate = new Difficulty(newDifficulty.DifficultyName);
+
+                await _unitOfWork.BeginTransactionAsync();
+                await _unitOfWork.Difficulty.CreateAddAsync(difficultyToCreate);
                 await _unitOfWork.CommitAsync(); // Commit
 
-                return Result<Difficulty>.Success(newDifficulty);
+                return Result<Difficulty>.Success(difficultyToCreate);
             }
             catch (ArgumentException ex)
             {
@@ -104,6 +135,26 @@ namespace Service.Services
                 );
             }
 
+            if (string.IsNullOrWhiteSpace(updateDifficulty.DifficultyName))
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome da dificuldade é obrigatório.",
+                        new Dictionary<string, string[]> { { nameof(updateDifficulty.DifficultyName), new[] { "Campo obrigatório" } } }
+                    )
+                );
+            }
+
+            if (updateDifficulty.DifficultyName.Length > 50)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "O nome da dificuldade não pode exceder 50 caracteres.",
+                        new Dictionary<string, string[]> { { nameof(updateDifficulty.DifficultyName), new[] { "Máximo 50 caracteres" } } }
+                    )
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync(); // Início da transação
 
             try
@@ -114,11 +165,14 @@ namespace Service.Services
                 {
                     if (await _unitOfWork.Difficulty.GetByNameAsync(updateDifficulty.DifficultyName) != null)
                     {
-                        _unitOfWork.Rollback(); // Rollback precoce se conflito
+                        _unitOfWork.Rollback();
                         return Result.Failure(
-                            Error.Validation(
-                                $"O nome da Dificuldade '{updateDifficulty.DifficultyName}' já está em uso.",
-                                new Dictionary<string, string[]> { { nameof(updateDifficulty.DifficultyName), new[] { "Nome já em uso." } } }));
+                            Error.Conflict(
+                                ErrorCodes.AlreadyExists,
+                                $"O nome '{updateDifficulty.DifficultyName}' já está em uso.",
+                                new Dictionary<string, string[]> { { nameof(updateDifficulty.DifficultyName), new[] { "Nome já em uso" } } }
+                            )
+                        );
                     }
 
                     existingDifficulty.UpdateName(updateDifficulty.DifficultyName);
@@ -128,7 +182,7 @@ namespace Service.Services
                 if (changed)
                 {
                     await _unitOfWork.Difficulty.UpdateAsync(existingDifficulty);
-                    await _unitOfWork.CommitAsync(); // Commit só se houve mudança
+                    await _unitOfWork.CommitAsync();
                 }
 
                 return Result.Success("Dificuldade atualizada com sucesso.");
@@ -153,7 +207,6 @@ namespace Service.Services
         public async Task<Result> DeleteDifficultyAsync(int id)
         {
             var existingDifficulty = await _unitOfWork.Difficulty.ReadByIdAsync(id);
-
             if (existingDifficulty == null)
             {
                 return Result.Success($"Dificuldade com ID {id} não encontrada (Idempotência).");
@@ -165,15 +218,16 @@ namespace Service.Services
                 return Result.Failure(
                     Error.BusinessRuleViolation(
                         ErrorCodes.BizHasDependencies,
-                        "Não é possível eliminar uma dificuldade que está em uso por receitas."));
+                        "Não é possível eliminar uma dificuldade que está em uso por receitas.")
+                );
             }
 
-            await _unitOfWork.BeginTransactionAsync(); // Início da transação
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
                 await _unitOfWork.Difficulty.RemoveAsync(existingDifficulty);
-                await _unitOfWork.CommitAsync(); // Commit
+                await _unitOfWork.CommitAsync();
 
                 return Result.Success("Dificuldade eliminada com sucesso.");
             }

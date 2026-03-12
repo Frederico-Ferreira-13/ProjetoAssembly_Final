@@ -24,20 +24,25 @@ namespace ProjetoAssembly_Final.Pages
         public async Task OnGetAsync()
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-            var userId = userIdResult.IsSuccessful ? userIdResult.Value : 3;
+            var userId = userIdResult.IsSuccessful ? userIdResult.Value : 0;
 
             var favs = await _unitOfWork.Favorites.GetByUserIdAsync(userId);
+            var list = favs.Select(f => f.Recipe).Where(r => r != null).Cast<Recipes>().ToList();
+            list.ForEach(r => r.IsFavorite = true);
 
-            MyFavoriteRecipes = favs
-                .Select(f => f.Recipe)
-                .Where(r => r != null)
-                .Cast<Recipes>()
-                .Select(r =>
+            // 2. INJETAR OS MOCKS que foram marcados
+            var allMocks = MockRecipes.GetFallbackMockRecipes();
+            foreach (var mockId in MockRecipes.FavoriteMockIds)
+            {
+                var mock = allMocks.FirstOrDefault(m => m.RecipesId == mockId);
+                if (mock != null)
                 {
-                    r.IsFavorite = true;
-                    return r;
-                })
-                .ToList();
+                    mock.IsFavorite = true;
+                    list.Add(mock);
+                }
+            }
+
+            MyFavoriteRecipes = list;
         }
         
         public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)

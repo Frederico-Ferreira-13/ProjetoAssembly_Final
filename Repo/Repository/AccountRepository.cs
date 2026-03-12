@@ -4,10 +4,11 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Core.Common;
 
 namespace Repo.Repository
 {
-    public class AccountRepository : Repository<Account>, IAccountRepository
+    public class AccountRepository : SoftDeleteRepository<Account>, IAccountRepository
     {
         public AccountRepository() : base("Account") { }
         protected override string PrimaryKeyName => "AccountId";        
@@ -109,8 +110,8 @@ namespace Repo.Repository
 
             if (excludeId.HasValue)
             {
-                sql += " AND AccountId != @ExlcueId";
-                parameters.Add(new SqlParameter("@ExclueId", excludeId.Value));
+                sql += " AND AccountId != @ExlcudeId";
+                parameters.Add(new SqlParameter("@ExcludeId", excludeId.Value));
             }
 
             var count = await SQL.ExecuteScalarAsync(sql, parameters.ToArray());

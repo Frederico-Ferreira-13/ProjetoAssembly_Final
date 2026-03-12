@@ -106,7 +106,7 @@ namespace Repo.Repository
 
         public async Task<Favorites?> GetByUserAndRecipeAsync(int userId, int recipesId)
         {
-            string sql = $@"SELECT * FROM FavoritesId, UserId, RecipesId, CreatedAt
+            string sql = $@"SELECT FavoritesId, UserId, RecipesId, CreatedAt
                             FROM {_tableName}
                             WHERE UserId = @UserId AND RecipesId = @RecipesId";
 
