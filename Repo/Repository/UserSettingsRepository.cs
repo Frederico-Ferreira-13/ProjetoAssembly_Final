@@ -20,14 +20,14 @@ namespace Repo.Repository
                 userId: reader.GetInt32(reader.GetOrdinal("UserId")),
                 theme: reader.GetString(reader.GetOrdinal("Theme")),
                 language: reader.GetString(reader.GetOrdinal("Language")),
-                notificationsEnabled: reader.GetBoolean(reader.GetOrdinal("NotificationsEnabled"))
+                receiveNotifications: reader.GetBoolean(reader.GetOrdinal("ReceiveNotifications"))
             );
         }
 
         protected override string BuildInsertSql(UserSettings entity)
         {
-            return $@"INSERT INTO {_tableName} (UserId, Theme, Language, NotificationsEnabled)
-                      VALUES (@UserId, @Theme, @Language, @NotificationsEnabled)";
+            return $@"INSERT INTO {_tableName} (UserId, Theme, Language, ReceiveNotifications)
+                      VALUES (@UserId, @Theme, @Language, @ReceiveNotifications)";
         }
 
         protected override SqlParameter[] GetInsertParameters(UserSettings entity)
@@ -37,7 +37,7 @@ namespace Repo.Repository
                 new SqlParameter("@UserId", entity.UserId),
                 new SqlParameter("@Theme", entity.Theme),
                 new SqlParameter("@Language", entity.Language),
-                new SqlParameter("@NotificationsEnabled", entity.NotificationsEnabled)
+                new SqlParameter("@ReceiveNotifications", entity.ReceiveNotifications)
             };
         }
 
@@ -46,7 +46,7 @@ namespace Repo.Repository
             return $@"UPDATE {_tableName} 
               SET Theme = @Theme, 
                   Language = @Language,
-                  NotificationsEnabled = @NotificationsEnabled                         
+                  ReceiveNotifications = @ReceiveNotifications                         
               WHERE UserSettingId = @UserSettingId";
         }
 
@@ -56,14 +56,14 @@ namespace Repo.Repository
             {
                 new SqlParameter("@Theme", entity.Theme),
                 new SqlParameter("@Language", entity.Language),
-                new SqlParameter("@NotificationsEnabled", entity.NotificationsEnabled),
+                new SqlParameter("@ReceiveNotifications", entity.ReceiveNotifications),
                 new SqlParameter("@UserSettingId", entity.GetId())
             };
         }
 
         public async Task<UserSettings?> GetByUserId(int userId)
         {
-            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, NotificationsEnabled
+            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, ReceiveNotifications
                             FROM {_tableName}
                             WHERE UserId = @UserId";
 
@@ -74,7 +74,7 @@ namespace Repo.Repository
 
         public async Task<IEnumerable<UserSettings>> GetByLanguageAsync(string language)
         {
-            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, NotificationsEnabled
+            string sql = $@"SELECT UserSettingId, UserId, Theme, Language, ReceiveNotifications
                             FROM {_tableName}
                             WHERE Language = @Language";
 

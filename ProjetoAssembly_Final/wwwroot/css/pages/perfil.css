@@ -35,6 +35,7 @@
     object-fit: cover;
     border: 5px solid var(--primary-green);
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+    background: #fff;
 }
 
 .user-info h1 {
@@ -51,6 +52,10 @@
     margin-bottom: 20px;
 }
 
+.profile-header-actions {
+    margin-bottom: 20px;
+}
+
 /* --- ESTATÍSTICAS RÁPIDAS --- */
 .user-stats {
     display: flex;
@@ -58,26 +63,34 @@
     margin-top: 15px;
 }
 
-.stat-item {
+.stat-item, .stat-card {
     background: var(--bg-color);
     padding: 10px 20px;
     border-radius: 12px;
     text-align: center;
     border: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+    min-width: 110px;
+}
+
+.stat-item:hover, .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-green);
 }
 
 .stat-value {
     display: block;
     font-weight: 800;
     color: var(--primary-green);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 .stat-label {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    opacity: 0.7;
+    opacity: 0.8;
+    font-weight: 600;
 }
 
 /* --- GRID DE RECEITAS PRÓPRIAS --- */
@@ -86,6 +99,13 @@
     margin-bottom: 30px;
     color: var(--text-color);
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-subtitle i {
+    color: var(--primary-green);
 }
 
 .profile-grid {
@@ -99,9 +119,10 @@
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .profile-recipe-card:hover {
@@ -109,33 +130,49 @@
     box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
+.card-img-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
 .profile-card-img {
     width: 100%;
     height: 180px;
     object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.profile-recipe-card:hover, profile-card-img {
+    transform: scale(1.05);
 }
 
 .profile-card-info {
     padding: 25px;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .profile-card-info h3 {
     margin: 0 0 15px 0;
     color: var(--text-color);
     font-size: 1.3rem;
+    line-height: 1.4;
+    height: 3.2em;
+    overflow: hidden;
 }
 
 /* --- BOTÕES DE GESTÃO --- */
 .profile-actions {
     display: flex;
     gap: 12px;
-    margin-top: 10px;
+    margin-top: auto;
 }
 
-.btn-manage {
+.btn-manage, .btn-action {
     flex: 1;
-    padding: 12px;
+    padding: 10px;
     border: none;
     border-radius: 10px;
     font-size: 0.85rem;
@@ -146,16 +183,16 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
-.btn-manage.edit {
+.btn-manage.edit, .btn-action.edit {
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
 }
 
-.btn-manage.edit:hover {
+.btn-manage.edit:hover, .btn-action.edit:hover {
     background-color: var(--primary-green);
     color: white;
     border-color: var(--primary-green);
@@ -170,16 +207,29 @@ btn-manage.delete {
 .btn-manage.delete:hover {
     background-color: #ff4757;
     color: white;
+    border-color: #ff4757;
+}
+
+/* ESTADO VAZIO */
+.empty-state-notice {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px;
+    background: var(--bg-color);
+    border_ 2px; dashed var(--border-color);
+    border-radius: 20px;
 }
 
 @media (max-width: 768px) {
     .profile-flex {
         justify-content: center;
         text-align: center;
+        flex-direction: column;
     }
 
     .user-stats {
         justify-content: center;
+        flex-wrap: wrap;
     }
 
     .user-info h1 {

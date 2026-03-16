@@ -66,14 +66,15 @@ namespace Core.Model
             CreatedAt = DateTime.UtcNow;
         }
 
-        public Users(int id, string name, string userName, string email, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
-            DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
+        public Users(int id, string name, string userName, string email, string? profilePicture, string passwordHash, string salt, bool isApproved, int usersRoleId, int accountId,
+                    DateTime createdAt, DateTime? lastUpdatedAt, bool isActive)
         {
             UserId = id;
             IsActive = isActive;
             _name = name;
             _userName = userName;
             _email = email;
+            _profilePicture = profilePicture;
             _passwordHash = passwordHash;
             _salt = salt;
             IsApproved = isApproved;

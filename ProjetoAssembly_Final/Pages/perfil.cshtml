@@ -1,7 +1,7 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.perfilModel
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.perfilModel> Localizer
 @{
     Layout = "_Layout";
     ViewData["Title"] = Localizer["O Meu Perfil"];
@@ -15,17 +15,30 @@
     <section class="profile-header">
         <div class="profile-flex">
             <<div class="profile-img-wrapper">
-                <img src="~/img/user.icon.png" alt="Foto de Perfil" class="profile-img-large">
+                @if(!string.IsNullOrEmpty(Model.CurrentUser?.ProfilePicture))
+                {
+                    <img src="@Model.CurrentUser.ProfilePicture" alt="Foto de Perfil" class="profile-img-large">
+                }
+                else
+                {
+                    <img src="~/img/user.icon.png" alt="Foto de Perfil" class="profile-img-large">
+                }
+
+                
             </div>            
            
             <div class="user-info">
-                <h1>@Localizer["Olá"], @(Model.CurrentUser?.UserName ?? Localizer["Utilizador"])!</h1>
+                
+                <h1>@Localizer["Olá"], @(Model.CurrentUser?.Name ?? Localizer["Utilizador"])!</h1>
 
                 <p>@Localizer["Membro desde"]: @Model.CurrentUser?.CreatedAt.ToString("MMMM yyyy")</p>
-                
-                <a asp-page="/perfilEdit" class="btn-manage edit" style="max-width: 200px;">
-                    <i class="fa-solid fa-user-gear"></i>@Localizer["Editar Dados"]
-                </a>
+
+                <div class="profile-header-actions">
+                    <a asp-page="/perfilEdit" class="btn-manage edit">
+                        <i class="fa-solid fa-user-gear"></i> @Localizer["Editar Dados"]    
+                    </a>
+                </div>                
+               
                 <div class="user-stats">
                     <div class="stat-item">
                         <span class="stat-value">@Model.TotalCreated</span>
@@ -49,16 +62,23 @@
         {
             @foreach(var recipe in Model.MyRecipes)
             {
-                <articl class="profile-recipe-card">
-                    <img src="@(string.IsNullOrEmpty(recipe.ImageUrl) ? "/img/default.jpg" : recipe.ImageUrl)"
-                         alt="@recipe.Title" class="profile-card-img">
+                <article class="profile-recipe-card">
+                    <div class="card-img-container">
+                        @{
+                            var imgSrc = string.IsNullOrEmpty(recipe.ImageUrl)
+                            ? Url.Content("~/img/default.jpg")
+                            : (recipe.ImageUrl.StartsWith("~") ? Url.Content(recipe.ImageUrl) : Url.Content("~/img/" + recipe.ImageUrl));
+                        }
+                        <img src="@imgSrc" alt="@recipe.Title" class="profile-card-img">
+                    </div>                   
                     
                     <div class="profile-card-info">
                         <h3>@recipe.Title</h3>
 
                         <div class="profile-actions">
-                            <a href="/editRecipe?id=@recipe.RecipesId" class="btn-manage edit">
-                                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]
+                            
+                            <a asp-page="/editRecipe" asp-route-id="@recipe.RecipesId" class="btn-action edit">
+                                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]    
                             </a>
 
                             <button onclick="confirmDelete(@recipe.RecipesId)" class="btn-manage delete">
@@ -66,7 +86,7 @@
                             </button>
                         </div>
                     </div>
-                </articl> 
+                </article> 
             }
         }
         else

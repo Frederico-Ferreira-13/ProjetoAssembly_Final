@@ -1,9 +1,16 @@
 ﻿
 /* --- CONTAINER PRINCIPAL --- */
-.comments-section-wraper {
+.comments-section-wrapper {
     max-width: 900px;
     margin: 20px auto;
-    font-family: 'Segoe UI', Tahoma, Verdana, Geneva, sans-serif,;
+    font-family: 'Segoe UI', Tahoma, Verdana, Geneva, sans-serif;
+}
+
+/* --- GRUPOS  DE DISCUSSÃO (THREADS) --- */
+.thread-group {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 20px;
 }
 
 /* --- CARDS DE COMENTÁRIOS --- */
@@ -22,6 +29,20 @@
 .comment-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);    
+}
+
+/* Estilo específico para respostas */
+.replay-indent {
+    border-left: 4px solid #cbd5e0;
+    background-color: #f8fafc !important;
+    padding: 15px 20px;
+    margin-top: 10px;
+}
+
+/* Contentor que agrupa as respostas */
+.replies-container {
+    margin-top: 10px;
+    transition: all 0.3s ease;
 }
 
 /* --- INFO DE UTILIZADOR --- */
@@ -43,6 +64,12 @@
     color: white;    
 }
 
+.small-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+}
+
 .user-details {
     display: flex;
     flex-direction: column;
@@ -52,6 +79,14 @@
 .user-display-id {
     font-weight: 700;
     font-size: 1rem;    
+}
+
+.replay-tag {
+    font-size: 0.8rem;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* --- BADGES E TIMERS --- */
@@ -111,7 +146,7 @@
     margin-top: 15px;
 }
 
-.btn-edit-comment {
+.btn-reply-action, .btn-edit-comment, .btn-delete-comment {
     background: none;
     border: none;
     color: #3182ce;
@@ -122,19 +157,61 @@
     transition: color 0.2s;
 }
 
-.btn-edit-comment:hover {
-    color: #2c5282;
+.btn-reply-action {
+    color: #28a745;
+}
+
+.btn-edit-comment {
+    color: #3182ce;
+}
+
+.btn-delete-comment {
+    color: #e53e3e;
+}
+
+.btn-reply-action:hover, .btn-edit-comment:hover, .btn-delete-comment:hover {
     text-decoration: underline;
+    opacity: 0.8;
 }
 
 /* --- FORMULÁRIO DE EDIÇÃO (MODO EDIT) --- */
-.comment.edit-form {
-    margin-top: 20px;
+.comment-form, .comment-edit-form, .reply-form-wrapper {
+    background: #ffffff;
     padding: 20px;
-    background: #f8fafc;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
+}
 
+.form-control-modern {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    resize: vertical;
+    margin-top: 10px;
+}
+
+.form-control-modern:focus {
+    border-color: #28a745;
+    outline: none;
+}
+
+/* Botões de Submissão */
+.btn-submit-comment, .btn-save {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
 }
 
 .edit-actions {
@@ -144,7 +221,7 @@
     margin-top: 15px;
 }
 
-.btn-save, btn-cancel {
+.btn-save, .btn-cancel {
     padding: 8px 16px;
     border-radius: 8px;
     font-weight: 600;

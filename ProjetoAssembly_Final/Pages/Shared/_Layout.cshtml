@@ -21,7 +21,19 @@
 
     @RenderSection("Styles", required: false)
 </head>
-<body class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
+<body class="">
+
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if(savedTheme === 'Dark') {
+                document.body.classList.add('dark-mode');
+            } else if(savedTheme === 'Light') {
+                document.body.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+
     <header class="site-header">
         <nav class="nav-container">
 

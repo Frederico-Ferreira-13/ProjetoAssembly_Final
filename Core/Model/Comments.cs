@@ -1,6 +1,7 @@
 ﻿using Core.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
 using System.Text;
@@ -19,13 +20,20 @@ namespace Core.Model
         public bool IsEdited { get; protected set; } = false;
         public bool IsDeleted { get; private set; } = false;
         public string? OriginalComment { get; private set; }
+        public int? ParentCommentId { get; protected set; }
+
+        [NotMapped]
+        public string? UserName { get; set; }
+
+        [NotMapped]
+        public string? Name { get; set; }
 
         private const int EditGracePeriodInMinutes = 5;
 
         [SetsRequiredMembers]
         private Comments() { }
 
-        public Comments(int recipesId, int userId, string commentText, int rating)
+        public Comments(int recipesId, int userId, string commentText, int rating, int? parentCommentId = null)
         {
             if (recipesId <= 0)
             {
@@ -44,7 +52,7 @@ namespace Core.Model
             {
                 throw new ArgumentException("Comentário não pode exceder 500 caracteres.", nameof(commentText));
             }
-            if (rating < 1 || rating > 5)
+            if (parentCommentId == null && (rating < 1 || rating > 5))
             {
                 throw new ArgumentException("Rating deve ser entre 1 e 5.", nameof(rating));
             }
@@ -54,14 +62,16 @@ namespace Core.Model
             CommentText = commentText;
             OriginalComment = commentText;
             Rating = rating;
+            ParentCommentId = parentCommentId;
             CreatedAt = DateTime.UtcNow;
             LastUpdatedAt = DateTime.UtcNow;
             IsEdited = false;
             IsDeleted = false;
+           
         }
 
         public Comments(int commentsId, int recipesId, int userId, string? commentText, int rating,
-                        DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment)
+                        DateTime createdAt, DateTime? lastUpdatedAt, bool isEdited, bool isDeleted, string? originalComment, int? parentCommentId)
         {
             CommentsId = commentsId;
             RecipesId = recipesId;
@@ -73,6 +83,7 @@ namespace Core.Model
             IsEdited = isEdited;
             IsDeleted = isDeleted;
             OriginalComment = originalComment;
+            ParentCommentId = parentCommentId;
         }
 
         public void UpdateComment([NotNull] string newCommentText)

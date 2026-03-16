@@ -30,7 +30,7 @@ namespace Repo.Repository
                 createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                 lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt")),
                 isActive: reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                isApproved: reader.GetBoolean(reader.GetOrdinal("IsApproved"))
+                isApproved: HasColumn(reader, "IsApproved") ? reader.GetBoolean(reader.GetOrdinal("IsApproved")) : false
             );
 
             if (HasColumn(reader, "FavoritesCount"))
@@ -104,12 +104,12 @@ namespace Repo.Repository
 
             string sql = $@"
                 SELECT RecipesId, UserId, CategoriesId, DifficultyId, Title, Instructions, 
-                       PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, LastUpdatedAt, IsActive
+                       PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, CreatedAt, 
+                       LastUpdatedAt, IsActive, IsApproved
                 FROM {_tableName} 
                 WHERE UserId = @UserId AND IsActive = 1";
 
             var parameters = new SqlParameter[] { new SqlParameter("@UserId", userId) };
-
             var result = await ExecuteListAsync(sql, parameters);
             return result.ToList();           
         }
@@ -117,7 +117,6 @@ namespace Repo.Repository
         public async Task<bool> ExistsByIdAsync(int recipeId)
         {
             var recipe = await ReadByIdAsync(recipeId);
-
             return recipe != null;
         }
 
@@ -140,37 +139,48 @@ namespace Repo.Repository
             return await ExecuteListAsync(sql, parameters);
         }
 
-        public async Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(string? search, int? categoryId, int page, int pageSize, int? currentUserId)
+        public async Task<(IEnumerable<Recipes> Items, int TotalCount)> SearchRecipesAsync(string? search, int? categoryId, 
+            int page, int pageSize, int? currentUserId)
         {
             string sql = $@"
                 SELECT r.*,
                        (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId) as FavoritesCount,
                        CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId)
                             THEN 1 ELSE 0 END as IsFavorited,
-                       COUNT(*) OVER() as TotalCount
+                       COUNT(*) OVER() as TotalRows
                 FROM Recipes r
                 WHERE r.IsActive = 1
                     AND (@CategoryId IS NULL OR r.CategoriesId = @CategoryId)
-                    AND (
-                        @Search IS NULL 
-                        OR r.Title COLLATE Latin1_General_CI_AI LIKE '%' + @Search + '%'
-                    )
+                    AND (@SearchText IS NULL OR r.Title COLLATE Latin1_General_CI_AI LIKE '%' + @SearchText + '%')
                 ORDER BY r.CreatedAt DESC
-                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+                OFFSET @Offset ROWS FETCH NEXT @PageLimit ROWS ONLY";
 
             SqlParameter[] parameters =
             {
-                new SqlParameter("@UserId", (object)currentUserId! ?? DBNull.Value),
-                new SqlParameter("@CategoryId", (object)categoryId! ?? DBNull.Value),
-                new SqlParameter("@Search", (object)search! ?? DBNull.Value),
+                new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
+                new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value),
+                new SqlParameter("@SearchText", (object)search ?? DBNull.Value), // Mudamos o nome para @SearchText
                 new SqlParameter("@Offset", (page - 1) * pageSize),
-                new SqlParameter("@PageSize", pageSize)
+                new SqlParameter("@PageLimit", pageSize)
             };
 
-            var result = await ExecuteListAsync(sql, parameters);
-            int totalCount = result.Any() ? result.Count() : 0; // Simplificação para este exemplo
+            var items = new List<Recipes>();
+            int totalCount = 0;
 
-            return (result, totalCount);
+            using (var reader = await SQL.ExecuteQueryAsync(sql, parameters))
+            {
+                while (reader.Read())
+                {
+                    if(totalCount == 0 && HasColumn(reader, "TotalRows"))
+                    {
+                        totalCount = reader.GetInt32(reader.GetOrdinal("TotalRows"));
+                    }
+
+                    items.Add(MapFromReader(reader));
+                }
+            }
+
+            return (items, totalCount);
         }
 
         public async Task<bool> AnyWithDifficultyIdAsync(int difficultyId)
@@ -196,16 +206,16 @@ namespace Repo.Repository
                 WHERE r.IsApproved = 0 AND r.IsActive = 1";
 
             var result = await ExecuteListAsync(sql);
-
             var recipes = new List<Recipes>();
 
             foreach (var recipe in result)
             {
                 var fakeUser = new Users(
-                    id: recipe.UserId ?? 0,
+                    id: recipe.UserId,
                     name: "Utilizador",
                     userName: "Utilizador",
                     email: "",
+                    profilePicture: null,
                     passwordHash: "",
                     salt: "",
                     isApproved: true,

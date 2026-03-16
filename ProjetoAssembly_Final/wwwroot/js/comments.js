@@ -38,6 +38,30 @@ function cancelEdit(commentId) {
     }
 }
 
+async function deleteComment(commentId) {
+    if (confirm('Tem a certeza que deseja eliminar este comentário')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '?handler=DeleteComment';
+
+        const commentInput = document.createElement('input');
+        commentInput.type = 'hidden';
+        commentInput.name = 'commentId';
+        commentInput.value = commentId;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '__RequestVerificationToken';
+        tokenInput.value = token;
+
+        form.appendChild(commentInput);
+        form.appendChild(tokenInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 function validateEditForm(commentId) {
     const textarea = document.getElementById(`edit-text-${commentId}`);
     if (!textarea) {
@@ -154,7 +178,33 @@ if (document.readyState === 'loading') {
     initComments();
 }
 
+function showReplyForm(commentId) {
+    console.log('[Comments] Abrindo formulário de resposta para:', commentId);
+
+    document.querySelectorAll('.reply-form-wrapper').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    const form = document.getElementById(`reply-form-container-${commentId}`);
+    if (form) {
+        form.style.display = 'block';
+
+        const textarea = form.querySelector('textarea');
+        if (textarea) textarea.focus();
+    }
+}
+
+function hideReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-container-${commentId}`);
+    if (form) {
+        form.style.display = 'none';
+    }
+}
+
 // Exportar funções para uso global (necessário para os onclick inline)
 window.enableEditMode = enableEditMode;
 window.cancelEdit = cancelEdit;
 window.validateEditForm = validateEditForm;
+window.deleteComment = deleteComment;
+window.showReplyForm = showReplyForm;
+window.hideReplyForm = hideReplyForm;

@@ -15,7 +15,7 @@ namespace Core.Model
 
         public string Theme { get; protected set; }
         public string Language { get; protected set; }
-        public bool NotificationsEnabled { get; protected set; }
+        public bool ReceiveNotifications { get; protected set; }
 
         [SetsRequiredMembers]
         private UserSettings()
@@ -23,10 +23,10 @@ namespace Core.Model
             UserSettingId = default;
             Theme = string.Empty;
             Language = string.Empty;
-            NotificationsEnabled = false;
+            ReceiveNotifications = false;
         }
 
-        public UserSettings(int userId, string theme, string language, bool notificationsEnabled)
+        public UserSettings(int userId, string theme, string language, bool receiveNotifications)
         {
             ValidateSettings(userId, theme, language);
 
@@ -35,21 +35,21 @@ namespace Core.Model
             UserId = userId;
             Theme = theme;
             Language = language;
-            NotificationsEnabled = notificationsEnabled;
+            ReceiveNotifications = receiveNotifications;
         }
 
         public UserSettings(int id, int userId, string theme, string language,
-            bool notificationsEnabled)
+            bool receiveNotifications)
         {
             UserSettingId = id;            
 
             UserId = userId;
             Theme = theme;
             Language = language;
-            NotificationsEnabled = notificationsEnabled;
+            ReceiveNotifications = receiveNotifications;
         }      
 
-        public void UpdateSettings(string newTheme, string newLanguage, bool newNotificationsEnabled)
+        public void UpdateSettings(string newTheme, string newLanguage, bool newReceiveNotifications)
         {            
 
             ValidateSettings(UserId, newTheme, newLanguage);
@@ -62,9 +62,9 @@ namespace Core.Model
             {
                 Language = newLanguage;
             }
-            if (NotificationsEnabled != newNotificationsEnabled)
+            if (ReceiveNotifications != newReceiveNotifications)
             {
-                NotificationsEnabled = newNotificationsEnabled;
+                ReceiveNotifications = newReceiveNotifications;
             }
         }
 
@@ -93,7 +93,7 @@ namespace Core.Model
         {
             if (Theme != newTheme)
             {
-                UpdateSettings(newTheme, Language, NotificationsEnabled);
+                UpdateSettings(newTheme, Language, ReceiveNotifications);
             }
         }
 
@@ -101,13 +101,13 @@ namespace Core.Model
         {
             if (Language != newLanguage)
             {
-                UpdateSettings(Theme, newLanguage, NotificationsEnabled);
+                UpdateSettings(Theme, newLanguage, ReceiveNotifications);
             }
         }
 
         public void UpdateReceiveNotifications(bool newNotificationsEnabled)
         {
-            if (NotificationsEnabled != newNotificationsEnabled)
+            if (ReceiveNotifications != newNotificationsEnabled)
             {
                 UpdateSettings(Theme, Language, newNotificationsEnabled);
             }

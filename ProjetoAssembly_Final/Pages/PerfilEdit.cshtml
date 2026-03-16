@@ -1,9 +1,9 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.PerfilEditModel
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.PerfilEditModel> Localizer
 @{
-    Layout = "_Layout";
+    Layout = "_Layout";    
     ViewData["Title"] = Localizer["Configurações de Perfil"];
 }
 
@@ -20,35 +20,35 @@
     <div class="edit-card">
         <form method="post" enctype="multipart/form-data">
             <input type="hidden" asp-for="CurrentUser.UserId" />
-            <input type="hidden" asp-for="CurrentUser.CreatedAt" />
-            <input type="hidden" asp-for="CurrentUser.PasswordHash" />
+            <input type="hidden" asp-for="CurrentUser.UserName" />
 
             <div class="edit-grid-layout">
-
                 <div class="photo-edit-section">
                     <div class="avatar-wrapper">
-                        <img src="/img/@(string.IsNullOrEmpty(Model.CurrentUser.ProfilePicture) ? "user.icon.png" : Model.CurrentUser.ProfilePicture)"
-                             id="previewImg" class="profile-edit-img" alt="Avatar" />
+                        <img src="@(Model.CurrentUser?.ProfilePicture != null && Model.CurrentUser.ProfilePicture.StartsWith("http")
+                                          ? Model.CurrentUser.ProfilePicture
+                                          : "/img/user.icon.png")"
+                             id="previewImg" class="profile-edit-img" />
 
                         <label for="foto" class="btn-change-photo">
                             <i class="fa-solid fa-camera"></i>
                         </label>
-                        <input type="file" id="foto" name="ProfilePicture" style="display:none;" accept="image/*" onchange="previewFile()" />
+                        <input type="file" id="foto" asp-for="PhotoUpload" style="display:none;" accept="image/*" onchange="previewFile()" />
                     </div>
                     <p class="photo-hint">@Localizer["Alterar foto de perfil"]</p>
                 </div>
 
                 <div class="inputs-sections">
                     <div class="edit-form-group">
-                        <label asp-for="CurrentUser.UserName">@Localizer["Nome de Utilizador"]</label>
-                        <input asp-for="CurrentUser.UserName" class="edit-input" placeholder="@Localizer["Teu nome"]" />
-                        <span asp-validation-for="CurrentUser.UserName" class="text-danger"></span>
+                        <label>@Localizer["Nome de Utilizador"]</label>
+                        <input asp-for="InputUserName" class="edit-input" placeholder="@Localizer["Teu nome"]" />
+                        <span asp-validation-for="InputUserName" class="text-danger"></span>
                     </div>
 
                     <div class="edit-form-group">
-                        <label asp-for="CurrentUser.Email">@Localizer["E-mail"]</label>
-                        <input asp-for="CurrentUser.Email" class="edit-input" />
-                        <span asp-validation-for="CurrentUser.Email" class="text-danger"></span>
+                        <label>@Localizer["E-mail"]</label>
+                        <input asp-for="InputEmail" class="edit-input" />
+                        <span asp-validation-for="InputEmail" class="text-danger"></span>
                     </div>
 
                     <div class="edit-actions">

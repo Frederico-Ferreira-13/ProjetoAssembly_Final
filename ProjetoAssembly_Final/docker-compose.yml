@@ -3,18 +3,18 @@ version: '3.9'
 services:
   api:
     build:
-      context:  .
+      context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5000:8080"
+    env_file:
+      - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Development      
       - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME}
       - CloudinarySettings__ApiKey=${CLOUDINARY_API_KEY}
       - CloudinarySettings__ApiSecret=${CLOUDINARY_API_SECRET}
-      - CloudinarySettings__DefaultImageUrl=https://res.cloudinary.com/demo/image/upload/v1234567890/default.jpg
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
     restart: unless-stopped
-    volumes:
-      - .:/app
   
   

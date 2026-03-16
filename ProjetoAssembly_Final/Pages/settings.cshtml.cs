@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Contracts.Service;
 using Core.Model;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
 {
@@ -12,10 +13,12 @@ namespace ProjetoAssembly_Final.Pages
     {
        
         private readonly IUsersService _usersService;
+        private readonly IStringLocalizer<settingsModel> _localizer;
 
-        public settingsModel(IUsersService usersService)
-        {            
+        public settingsModel(IUsersService usersService, IStringLocalizer<settingsModel> localizer)
+        {
             _usersService = usersService;
+            _localizer = localizer;
         }
 
         [BindProperty]
@@ -62,14 +65,18 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             var settingsResult = await _usersService.GetSettingsByUserIdAsync(userId);
-            if (settingsResult.IsSuccessful)
+            if (settingsResult.IsSuccessful && settingsResult.Value != null)
             {
-                InputTheme = settingsResult.Value!.Theme;
+                InputTheme = settingsResult.Value!.Theme ?? "Light";
                 InputLanguage = settingsResult.Value.Language;
-                InputNotifications = settingsResult.Value.NotificationsEnabled;
-            }            
+                InputNotifications = settingsResult.Value.ReceiveNotifications;
+            }
+            else
+            {
+                InputTheme = "Light";
+            }
 
-            return Page();
+                return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -92,10 +99,9 @@ namespace ProjetoAssembly_Final.Pages
                 InputNotifications
             );
 
-            var result = await _usersService.UpdateUserSettingsAsync(settingsUpdate);
-            if (result.IsSuccessful)
-            {              
-
+            var settingsResult = await _usersService.UpdateUserSettingsAsync(settingsUpdate);           
+            if (settingsResult.IsSuccessful)
+            {
                 var userResult = await _usersService.GetUserByIdAsync(userId);
                 if (userResult.IsSuccessful)
                 {
@@ -151,12 +157,11 @@ namespace ProjetoAssembly_Final.Pages
                         HttpOnly = false
                     }
                 );
-                
+                TempData["SuccessMessage"] = _localizer["Definições atualizadas com sucesso!"].Value;
+                return RedirectToPage("/perfil");
             }
-            TempData["SuccessMessage"] = "Perfil atualizado com sucesso";
-            return RedirectToPage("/Perfil");
 
-            
+            return Page();
         }
 
         private int GetUserId()

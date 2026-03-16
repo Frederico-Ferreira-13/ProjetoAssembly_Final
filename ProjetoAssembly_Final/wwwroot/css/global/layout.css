@@ -7,15 +7,27 @@
     --border-color: #eee;
     --primary-green: #28a745;
     --primary-dark: #218838;
+    --header-bg: #1a1a1a;
+    --dropdown-bg: #ffffff;
     --transition: all 0.3s ease;
+    --shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* --- MODO ESCURO FORÇADO --- */
+body.dark-mode {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --border-color: #333;
+    --dropdown-bg: #252525;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not(.light-mode-forced) {
         --card-bg: #1e1e1e;
         --text-color: #e0e0e0;
         --border-color: #444;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 }
 
@@ -26,11 +38,12 @@ body {
     color: var(--text-color);
     margin: 0;
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* --- HEADER / NAVBAR --- */
 .site-header {
-    background: #1a1a1a;
+    background: var(--header-bg);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -147,8 +160,6 @@ body {
     outline: none;    
 }
 
-
-
 /* Perfil / Menu */
 .profile-btn {
     background: none;
@@ -176,9 +187,9 @@ body {
     position: absolute;
     right: 0;
     top: 100%;
-    background: white !important;
+    background: var(--dropdown-bg) !important;
     min-width: 220px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow);
     border-radius: 12px;
     overflow: hidden;
     z-index: 1000;
@@ -195,7 +206,7 @@ body {
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    color: #333 !important;
+    color: var(--text-color) !important;
     text-decoration: none;
     transition: background 0.2s, color 0.2s;
 }
@@ -206,7 +217,7 @@ body {
 }
 
 .profile-dropdown .dropdown-divider hr {
-    border-color: #eee;
+    border-color: var(--border-color);
 }
 
 .profile-dropdown li a i {

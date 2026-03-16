@@ -9,9 +9,8 @@
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
     bool isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Administrador"));
     bool isOwner = isAuthenticated
-                   && currentUserId != null
-                   && Model.UserId.HasValue
-                   && Model.UserId.Value.ToString() == currentUserId;
+                   && currentUserId != null                   
+                   && Model.UserId.ToString() == currentUserId;
     bool canEdit = isAdmin || isOwner;
 
     bool isDetailView = ViewData["IsDetailView"] as bool? ?? false;

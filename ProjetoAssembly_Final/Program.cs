@@ -1,16 +1,21 @@
 using Core.Common;
-using Repo.Repository;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Options;
 using Core.Model.ValueObjects;
 using IDContainer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Repo.Repository;
+
+DotNetEnv.Env.Load();
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                         throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -18,7 +23,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 SQL.Initialize(connectionString);
 
 builder.Services.AddControllers();
-builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
+builder.Services.AddRazorPages()
+    .AddRazorRuntimeCompilation()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>

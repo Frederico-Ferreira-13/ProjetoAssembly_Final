@@ -19,18 +19,18 @@ namespace Service.Services
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            var cloudName = config["CloudinarySettings:CloudName"];
-            var apiKey = config["CloudinarySettings:ApiKey"];
-            var apiSecret = config["CloudinarySettings:ApiSecret"];
-            _defaultImageUrl = config["CloudinarySettings:DefaultImageUrl"]
+            var cloudName = config["CloudinarySettings:CloudName"] ?? config["CLOUDINARY_CLOUD_NAME"];
+            var apiKey = config["CloudinarySettings:ApiKey"] ?? config["CLOUDINARY_API_KEY"];
+            var apiSecret = config["CloudinarySettings:ApiSecret"] ?? config["CLOUDINARY_API_SECRET"];
+            
+            _defaultImageUrl = config["CloudinarySettings:DefaultImageUrl"] ?? config["CLOUDINARY_DEFAULT_IMAGE_URL"]
                 ?? "http://res.cloudinary.com/demo/image/upload/v1/default/jpg";
 
             if(string.IsNullOrWhiteSpace(cloudName) || 
                 string.IsNullOrWhiteSpace(apiKey) ||
                 string.IsNullOrWhiteSpace(apiSecret))
             {
-                throw new InvalidOperationException(
-                    "Configurações do Cloudinary incompletas (CloudName, ApiKey ou ApiSecret em falta).");
+                throw new InvalidOperationException("Configurações do Cloudinary não encontradas. Verifica o .env ou appsettings.");
             }
 
            var account = new Account(cloudName, apiKey, apiSecret);

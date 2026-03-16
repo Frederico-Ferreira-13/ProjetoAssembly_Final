@@ -101,15 +101,18 @@ namespace Service.Services
                 );
             }
 
-            if (newComment.Rating < 1 || newComment.Rating > 5)
+            if(newComment.ParentCommentId == null)
             {
-                return Result<Comments>.Failure(
-                    Error.Validation(
-                        "A classificação deve estar entre 1 e 5.",
-                        new Dictionary<string, string[]> { { nameof(newComment.Rating), new[] { "Valor entre 1 e 5" } } }
-                    )
-                );
-            }
+                if (newComment.Rating < 1 || newComment.Rating > 5)
+                {
+                    return Result<Comments>.Failure(
+                        Error.Validation(
+                            "A classificação deve estar entre 1 e 5.",
+                            new Dictionary<string, string[]> { { nameof(newComment.Rating), new[] { "Valor entre 1 e 5" } } }
+                        )
+                    );
+                }
+            }            
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -119,7 +122,8 @@ namespace Service.Services
                      recipesId: newComment.RecipesId,
                      userId: currentUserId,
                      commentText: newComment.CommentText,
-                     rating: newComment.Rating
+                     rating: newComment.ParentCommentId == null ? newComment.Rating : 0,
+                    parentCommentId: newComment.ParentCommentId
                  );
 
                 await _commentsRepository.CreateAddAsync(commentsToCreate);

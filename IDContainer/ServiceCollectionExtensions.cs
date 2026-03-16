@@ -53,7 +53,7 @@ namespace IDContainer
             services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
             services.AddScoped<IFavoritesRepository, FavoritesRepository>();
 
-            services.AddScoped<CloudService>();
+            services.AddScoped<ICloudService, CloudService>();
 
             return services;
         }

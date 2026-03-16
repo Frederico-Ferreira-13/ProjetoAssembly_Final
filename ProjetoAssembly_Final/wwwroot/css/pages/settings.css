@@ -93,6 +93,7 @@
     outline: none;
     box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
     background: var(--card-bg);
+    color: var(--text-color);
 }
 
 /* --- PREFERÊNCIAS E SWITCHES --- */

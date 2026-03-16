@@ -11,7 +11,7 @@ namespace Repo.Repository
 {
     public class UsersRepository : SoftDeleteRepository<Users>, IUsersRepository
     {
-        private const string SelectColumns = "UserId, Name, UserName, Email, PasswordHash, Salt, IsApproved, UsersRoleId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
+        private const string SelectColumns = "UserId, Name, UserName, Email, ProfilePicture, PasswordHash, Salt, IsApproved, UsersRoleId, AccountId, CreatedAt, LastUpdatedAt, IsActive";
 
         public UsersRepository() : base("Users") { }
 
@@ -24,6 +24,7 @@ namespace Repo.Repository
                 name: reader.GetString(reader.GetOrdinal("Name")),
                 userName: reader.GetString(reader.GetOrdinal("UserName")),
                 email: reader.GetString(reader.GetOrdinal("Email")),
+                profilePicture: reader.IsDBNull(reader.GetOrdinal("ProfilePicture")) ? null : reader.GetString(reader.GetOrdinal("ProfilePicture")),
                 passwordHash: reader.GetString(reader.GetOrdinal("PasswordHash")),
                 salt: reader.GetString(reader.GetOrdinal("Salt")),
                 isApproved: reader.GetBoolean(reader.GetOrdinal("IsApproved")),
@@ -37,8 +38,8 @@ namespace Repo.Repository
 
         protected override string BuildInsertSql(Users model)
         {
-            return $@"INSERT INTO Users (Name, UserName, Email, PasswordHash, Salt, UsersRoleId, IsApproved, AccountId, CreatedAt, IsActive) 
-              VALUES (@Name, @UserName, @Email, @PasswordHash, @Salt, @UsersRoleId, @IsApproved, @AccountId, GETDATE(), 1)";
+            return $@"INSERT INTO Users (Name, UserName, Email, ProfilePicture, PasswordHash, Salt, UsersRoleId, IsApproved, AccountId, CreatedAt, IsActive) 
+              VALUES (@Name, @UserName, @Email, @ProfilePicture, @PasswordHash, @Salt, @UsersRoleId, @IsApproved, @AccountId, GETDATE(), 1)";
         }
 
         protected override SqlParameter[] GetInsertParameters(Users model)
@@ -48,6 +49,7 @@ namespace Repo.Repository
                 new SqlParameter("@Name", (object)model.Name ?? throw new ArgumentNullException(nameof(model.Name))),
                 new SqlParameter("@UserName", model.UserName),
                 new SqlParameter("@Email", model.Email),
+                new SqlParameter("@ProfilePicture", (object)model.ProfilePicture ?? DBNull.Value),
                 new SqlParameter("@PasswordHash", model.PasswordHash),
                 new SqlParameter("@Salt", model.Salt),
                 new SqlParameter("@UsersRoleId", model.UsersRoleId),
@@ -58,19 +60,19 @@ namespace Repo.Repository
 
         protected override string BuildUpdateSql(Users model)
         {
-            return @"UPDATE Users SET Name = @Name, UserName = @UserName, Email = @Email, PasswordHash = @PasswordHash, 
-                     Salt = @Salt, UsersRoleId = @UsersRoleId, IsApproved = @IsApproved, AccountId = @AccountId, 
-                     LastUpdatedAt = GETDATE(), IsActive = @IsActive 
-                     WHERE UserId = @Id";
+            return @"UPDATE Users SET Name = @Name, UserName = @UserName, Email = @Email, ProfilePicture = @ProfilePicture, 
+                    Salt = @Salt, UsersRoleId = @UsersRoleId, IsApproved = @IsApproved, AccountId = @AccountId, 
+                    LastUpdatedAt = GETDATE(), IsActive = @IsActive 
+                    WHERE UserId = @Id";
         }
 
         protected override SqlParameter[] GetUpdateParameters(Users model)
         {
-            var parameters = new List<SqlParameter>(GetInsertParameters(model))
-            {
-                new SqlParameter("@Id", model.GetId()),
-                new SqlParameter("@IsActive", model.IsActive)
-            };
+            var parameters = new List<SqlParameter>(GetInsertParameters(model));
+
+            parameters.Add(new SqlParameter("@Id", model.GetId()));
+            parameters.Add(new SqlParameter("@IsActive", model.IsActive));
+
             return parameters.ToArray();
         }
 

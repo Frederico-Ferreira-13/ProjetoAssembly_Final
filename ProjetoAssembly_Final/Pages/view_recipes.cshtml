@@ -2,7 +2,7 @@
 @model ProjetoAssembly_Final.Pages.view_recipesModel
 @using Microsoft.Extensions.Localization
 @using System.Security.Claims
-@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.view_recipesModel> Localizer
 @{
     Layout = "_layout";
     ViewData["Title"] = Model.Recipe?.Title;
@@ -15,7 +15,7 @@
     bool isOwner = isAuthenticated 
                    && currentUserId != null 
                    && Model.Recipe?.UserId != null 
-                   && Model.Recipe.UserId.Value.ToString() == currentUserId;
+                   && Model.Recipe.UserId.ToString() == currentUserId;
 
     bool canEdit = isAdmin || isOwner;
 }

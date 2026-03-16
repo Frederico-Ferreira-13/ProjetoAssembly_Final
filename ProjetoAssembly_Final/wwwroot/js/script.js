@@ -16,19 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
         }
-    });
-
-    // Gestão do Dark Mode (Definições)
-    const themeSelect = document.querySelector('select[name="InputTheme"]');
-    if (themeSelect) {
-        themeSelect.addEventListener('change', (e) => {
-            if (e.target.value === "Dark") {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        });
-    }
+    });    
 
     // Atualização do Sino de Notificações
     const pendingLink = document.getElementById('pendingBadgeLink');

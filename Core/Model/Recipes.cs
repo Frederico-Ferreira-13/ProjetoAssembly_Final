@@ -10,7 +10,7 @@ namespace Core.Model
     public class Recipes : IEntity, ISoftDeletable
     {
         public int RecipesId { get; private set; }
-        public int? UserId { get; protected set; }
+        public int UserId { get; protected set; }
         public int CategoriesId { get; protected set; }
         public int DifficultyId { get; protected set; }
         public string Title { get; protected set; }

@@ -654,7 +654,7 @@ namespace Service.Services
                 existingSettings.UpdateSettings(
                     settings.Theme,
                     settings.Language,
-                    settings.NotificationsEnabled
+                    settings.ReceiveNotifications
                 );
 
                 await _unitOfWork.UserSettings.UpdateAsync(existingSettings);
@@ -719,7 +719,7 @@ namespace Service.Services
                     userId: userId,
                     theme: "Light",
                     language: "pt-PT",
-                    notificationsEnabled: true
+                    receiveNotifications: true
                 );
 
                 await _unitOfWork.UserSettings.CreateAddAsync(defaultSettings);

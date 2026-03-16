@@ -1,6 +1,3 @@
-USE master;
-GO
-
 CREATE DATABASE ProjectoAssembly_Final;
 GO
 
@@ -12,12 +9,14 @@ CREATE TABLE UsersRole(
 	RoleName NVARCHAR(100) NOT NULL UNIQUE,
 	IsActive BIT NOT NULL DEFAULT 1
 );
+GO
 
 CREATE TABLE CategoryType(
 	CategoryTypeId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 	TypeName NVARCHAR(50) NOT NULL UNIQUE,
 	IsActive BIT NOT NULL DEFAULT 1
 );
+GO
 
 CREATE TABLE IngredientsType(
 	IngredientsTypeId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -30,20 +29,24 @@ CREATE TABLE Difficulty(
 	DifficultyName NVARCHAR(50) NOT NULL UNIQUE,
 	IsActive BIT NOT NULL DEFAULT 1
 );
+GO
 
-CREATE TABLE ACCOUNT(
+CREATE TABLE Account(
 	AccountId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 	AccountName NVARCHAR(255) NOT NULL,
 	SubscriptionLevel NVARCHAR(50) NOT NULL DEFAULT 'Free',
 	IsActive BIT NOT NULL DEFAULT 1,
 	CreatorUserId INT NULL
 );
+GO
 
 CREATE TABLE Users(
 	UserId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 	AccountId INT NOT NULL DEFAULT 1,
+	Name NVARCHAR(255) NOT NULL,
 	UserName NVARCHAR(255) NOT NULL UNIQUE,
 	Email NVARCHAR(255) NOT NULL UNIQUE,
+	ProfilePicture NVARCHAR(MAX) NULL,
 	PasswordHash NVARCHAR (255) NOT NULL,
 	Salt NVARCHAR(64) NOT NULL,
 	UsersRoleId INT NOT NULL DEFAULT 1,
@@ -54,6 +57,7 @@ CREATE TABLE Users(
 	CONSTRAINT FK_Users_Account FOREIGN KEY (AccountId) REFERENCES Account(AccountId),
 	CONSTRAINT FK_Users_UserRole FOREIGN KEY (UsersRoleId) REFERENCES UsersRole(UsersRoleId)
 );
+GO
 
 CREATE TABLE UserSettings (
     UserSettingId INT IDENTITY(1,1) PRIMARY KEY,
@@ -81,6 +85,7 @@ CREATE TABLE Category(
 	CONSTRAINT FK_Category_ParentCategory FOREIGN KEY (ParentCategoryId) REFERENCES Category(CategoriesId),
 	CONSTRAINT FK_Category_CategoryType FOREIGN KEY (CategoryTypeId) REFERENCES CategoryType(CategoryTypeId)
 );
+GO
 
 CREATE TABLE Recipes(
 	RecipesId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -96,10 +101,12 @@ CREATE TABLE Recipes(
 	CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
 	LastUpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	IsApproved BIT NOT NULL DEFAULT 0,
 	CONSTRAINT FK_Recipes_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
 	CONSTRAINT FK_Recipes_Category FOREIGN KEY (CategoriesId) REFERENCES Category(CategoriesId),
 	CONSTRAINT FK_Recipes_Difficulty FOREIGN KEY (DifficultyId) REFERENCES Difficulty(DifficultyId)
 );
+GO
 
 CREATE TABLE Favorites (
 	FavoritesId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -111,6 +118,7 @@ CREATE TABLE Favorites (
 	CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
 	CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipesId) REFERENCES Recipes(RecipesId)
 );
+GO
 
 CREATE TABLE Ingredients(
 	IngredientsId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -152,42 +160,94 @@ CREATE TABLE Comments(
 	RecipesId INT NOT NULL,
 	UserId INT NOT NULL,
 	CommentText NVARCHAR(500) NOT NULL,
-	Rating INT NULL CHECK (Rating BETWEEN 1 AND 5),
+	Rating INT NULL DEFAULT 0 CHECK (Rating BETWEEN 0 AND 5),
 	CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
 	LastUpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	IsEdited BIT NOT NULL DEFAULT 0,
 	IsDeleted BIT NOT NULL DEFAULT 0,
 	OriginalComment NVARCHAR(500) NULL,
+	ParentCommentId INT NULL,
 	CONSTRAINT FK_Comments_Recipes FOREIGN KEY (RecipesId) References Recipes(RecipesId),
-	CONSTRAINT FK_Comments_Users FOREIGN KEY (UserId) References Users(UserId)
+	CONSTRAINT FK_Comments_Users FOREIGN KEY (UserId) References Users(UserId),
+	CONSTRAINT FK_Comments_Parent FOREIGN KEY (ParentCommentId) REFERENCES Comments(CommentsId)
 );
 GO
 
-INSERT INTO UsersRole (RoleName) VALUES ('Admin'), ('User');
-INSERT INTO Account (AccountName) VALUES ('Sistema');
-INSERT INTO Difficulty (DifficultyName) VALUES ('F√°cil'), ('M√©dia'), ('Dif√≠cil');
-INSERT INTO CategoryType (TypeName) VALUES ('Comida'), ('Bebida');
-INSERT INTO Category (CategoryName, CategoryTypeId) VALUES ('Sopas', 1), ('Carne', 1), ('Peixe', 1), ('Sobremesas', 1);
+INSERT INTO UsersRole (RoleName, IsActive) VALUES ('Admin', 1), ('User', 1);
 GO
 
-DELETE FROM Recipes;
-DELETE FROM Category;
+INSERT INTO Account (AccountName, SubscriptionLevel, IsActive) VALUES ('Sistema', 'Free', 1);
+GO
+
+INSERT INTO Difficulty (DifficultyName, IsActive) VALUES ('F·cil', 1), ('MÈdia', 1), ('DifÌcil', 1);
+GO
+
+INSERT INTO CategoryType (TypeName, IsActive) VALUES ('Comida', 1), ('Bebida', 1);
 GO
 
 SET IDENTITY_INSERT Category ON;
-INSERT INTO Category (CategoriesId, AccountId, CategoryName, CategoryTypeId, IsActive) VALUES 
-(1, 1, 'Sopas', 1, 1),
-(2, 1, 'Carne', 1, 1),
-(3, 1, 'Peixe', 1, 1),
-(4, 1, 'Sobremesas', 1, 1);
+INSERT INTO Category (CategoriesId, AccountId, CategoryName, CategoryTypeId, IsActive)
+VALUES
+    (1, 1, 'Sopas',      1, 1),
+    (2, 1, 'Carne',      1, 1),
+    (3, 1, 'Peixe',      1, 1),
+	(4, 1, 'Vegetariano', 1, 1),
+    (5, 1, 'Sobremesas', 1, 1);
 SET IDENTITY_INSERT Category OFF;
 GO
 
-INSERT INTO Recipes (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, IsActive)
-VALUES 
-(1, 1, 1, 'Sopa de Legumes da Av√≥', 'Cozar tudo e triturar.', 15, 30, '4 Pessoas', 'sopa.jpg', 1),
-(1, 2, 2, 'Arroz de Pato Especial', 'Desfiar o pato e levar ao forno.', 20, 45, '6 Pessoas', 'arroz-de-pato.jpg', 1),
-(1, 3, 2, 'Bacalhau √† Br√°s', 'Desfiar o bacalhau e misturar com batata palha.', 15, 15, '2 Pessoas', 'bacalhau.jpg', 1),
-(1, 4, 1, 'Arroz Doce Cremoso', 'Cozinho com leite e canela.', 10, 40, '8 Pessoas', 'arroz-doce.jpg', 1);
+DECLARE @NewUserId INT;
+
+INSERT INTO Users (
+    AccountId, Name, UserName, Email, PasswordHash, Salt, 
+    UsersRoleId, IsApproved, CreatedAt, IsActive
+)
+VALUES (
+    1, 'Frederico Ferreira', 'Frederico_Admin', 'fredericocrf87@hotmail.com',
+    '$2a$12$8MCSOHsi2CXqd7qMY/Hiv.MK/KY9sjTIL4mzAQDe3Bz4dlGTK2dgm',
+    'PROVISORIO', 1, 1, GETDATE(), 1
+);
+
+SET @NewUserId = SCOPE_IDENTITY();
+
+INSERT INTO UserSettings (UserId, Theme, Language, ReceiveNotifications, IsActive, LastUpdatedAt)
+VALUES (@NewUserId, 'Dark', 'pt-PT', 1, 1, GETDATE());
+
+UPDATE Account SET CreatorUserId = @NewUserId WHERE AccountId = 1;
+
+INSERT INTO Recipes (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, IsActive, IsApproved)
+VALUES
+    (@NewUserId, 4, 1, 'Arroz Doce Cremoso',          'Cozinha o arroz em leite com canela.',                     10, 45, '6 pessoas', 'arroz-doce.jpg',        1, 1),
+    (@NewUserId, 2, 2, 'Arroz de Pato Tradicional',   'Coze o pato e leva ao forno com arroz.',                   30, 90, '4 pessoas', 'arroz-de-pato.jpg',     1, 1),
+    (@NewUserId, 1, 1, 'Sopa de Legumes Caseira',     'Tritura os legumes cozidos.',                               15, 35, '6 pessoas', 'sopa.jpg',              1, 1),
+    (@NewUserId, 3, 2, 'Bacalhau ‡ Br·s',             'Refoga bacalhau com batata palha e ovos.',                 20, 25, '4 pessoas', 'bacalhau.jpg',          1, 1),
+    (@NewUserId, 5, 3, 'Bolo de Chocolate Vegan',     'Mistura farinha, cacau e leite vegetal.',                  15, 35, '10 fatias', 'bolo-de-chocolate-vegan.jpg', 1, 1);
 GO
+
+PRINT '=== TODOS OS DADOS INICIAIS INSERIDOS COM SUCESSO ===';
+
+SELECT 'Utilizadores' AS Tabela, UserId, UserName, Email, UsersRoleId FROM Users ORDER BY UserId;
+SELECT 'Contas' AS Tabela, * FROM Account;
+SELECT 'Categorias' AS Tabela, * FROM Category ORDER BY CategoriesId;
+SELECT 'Receitas' AS Tabela, RecipesId, Title, UserId, IsApproved FROM Recipes ORDER BY RecipesId;
+GO
+
+UPDATE Recipes SET CategoriesId = 4 WHERE Title LIKE '%Arroz Doce%'
+
+UPDATE Recipes 
+SET CategoriesId = 5 
+WHERE Title = 'Bolo de Chocolate Vegan';
+
+
+UPDATE Recipes 
+SET CategoriesId = 5 
+WHERE Title = 'Bolo de Chocolate Vegan';
+
+UPDATE Recipes 
+SET CategoriesId = 4 
+WHERE Title = 'Arroz Doce Cremoso';
+
+SELECT Title, CategoriesId FROM Recipes WHERE Title IN ('Bolo de Chocolate Vegan', 'Arroz Doce Cremoso');
+
+ALTER TABLE Users ADD ProfilePicture NVARCHAR(MAX) NULL;

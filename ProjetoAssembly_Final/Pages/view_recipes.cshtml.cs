@@ -60,11 +60,12 @@ namespace ProjetoAssembly_Final.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostCommentAsync()
+        public async Task<IActionResult> OnPostCommentAsync(int? parentCommentId)
         {
-            Console.WriteLine($"RecipeId recebido: {RecipeId}");
-            Console.WriteLine($"CommentMessage: {CommentMessage}");
-            Console.WriteLine($"CommentRating: {CommentRating}");
+            Console.WriteLine("======= DEBUG RESPOSTA (REPLY) =======");
+            Console.WriteLine($"RecipeId: {RecipeId}");
+            Console.WriteLine($"ParentCommentId recebido: {parentCommentId}");
+            Console.WriteLine($"Mensagem: {CommentMessage}");
 
             if (RecipeId <= 0)
             {
@@ -80,7 +81,7 @@ namespace ProjetoAssembly_Final.Pages
                 return Page();
             }
 
-            if (CommentRating < 1 || CommentRating > 5)
+            if (parentCommentId == null && (CommentRating < 1 || CommentRating > 5))
             {
                 ModelState.AddModelError("CommentRating", "Avaliação deve ser entre 1 e 5 estrelas.");
                 await CarregarDadosDaPagina(RecipeId);
@@ -99,13 +100,18 @@ namespace ProjetoAssembly_Final.Pages
                     RecipeId,
                     currentUserId,
                     CommentMessage,
-                    CommentRating
+                    parentCommentId == null ? CommentRating : 1,
+                    parentCommentId
                 );
 
 
                 Console.WriteLine($"A criar comentário: RecipeId={newComment.RecipesId}, UserId={newComment.UserId}");
 
+                Console.WriteLine("LOG: Vou chamar o CreateCommentsAsync agora...");
+
                 var result = await _commentsService.CreateCommentsAsync(newComment);
+
+                Console.WriteLine($"LOG: Resposta do Serviço: {result.IsSuccessful}");
 
                 Console.WriteLine($"Resultado: IsSuccessful={result.IsSuccessful}, Message={result.Message}");
 
@@ -128,7 +134,7 @@ namespace ProjetoAssembly_Final.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostEditCommentAsync(int commentId, string editCommentText, int editRating)
+        public async Task<IActionResult> OnPostEditCommentAsync(int commentId, int recipeId, string editCommentText, int editRating)
         {
             Console.WriteLine($"[EDIT] CommentId={commentId}, RecipeId={RecipeId}, Text={editCommentText}, Rating={editRating}");
 
@@ -166,7 +172,7 @@ namespace ProjetoAssembly_Final.Pages
 
             // Criar objeto para atualização (o serviço valida se é o dono)
             var updateData = new Comments(
-                recipesId: RecipeId,
+                recipesId: recipeId,
                 userId: currentUserId,
                 commentText: editCommentText.Trim(),
                 rating: editRating
@@ -183,7 +189,7 @@ namespace ProjetoAssembly_Final.Pages
                 TempData["ErrorMessage"] = result.Message ?? "Erro ao atualizar comentário.";
             }
 
-            return RedirectToPage(new { id = RecipeId });
+            return RedirectToPage(new { id = recipeId });
         }
 
         public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)

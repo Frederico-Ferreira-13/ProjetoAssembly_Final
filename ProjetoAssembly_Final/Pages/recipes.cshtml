@@ -1,7 +1,7 @@
 ﻿@page
 @model ProjetoAssembly_Final.Pages.recipesModel
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
+@inject IStringLocalizer<ProjetoAssembly_Final.Pages.recipesModel> Localizer
 @{
     Layout = "_Layout";
     ViewData["Title"] = Localizer["Explorar Receitas"];
@@ -17,42 +17,35 @@
     <section class="category-section">
         <h2 class="section-title">@Localizer["Explorar Receitas"]</h2>
         <nav aria-label="@Localizer["Navegação de categorias"]" class="category-nav">
-            <a asp-page="/recipes" 
-               class="category-item @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")"
-               aria-current="@(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "page" : "false")">
+            <a asp-page="/recipes" class="category-item @(string.IsNullOrEmpty(Request.Query["categoryId"]) ? "active" : "")">               
                 <div class="category-icon"><i class="fa-solid fa-list"></i></div>
                 <span>@Localizer["Todas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9993"
-               class="category-item @(Request.Query["categoryId"] == "9993" ? "active" : "")"
-               aria-current="@(Request.Query["categoryId"] == "9993" ? "page" : "false")">
+            <a asp-page="/recipes" asp-route-categoryId="1"
+               class="category-item @(Request.Query["categoryId"] == "1" ? "active" : "")">
                 <div class="category-icon"><i class="fa-solid fa-bowl-food"></i></div>
                 <span>@Localizer["Sopas"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9992"
-               class="category-item @(Request.Query["categoryId"] == "9992" ? "active" : "")"
-               aria-current="@(Request.Query["categoryId"] == "9992" ? "page" : "false")">
+            <a asp-page="/recipes" asp-route-categoryId="2"
+               class="category-item @(Request.Query["categoryId"] == "2" ? "active" : "")">
                 <div class="category-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
                 <span>@Localizer["Carne"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9994"
-               class="category-item @(Request.Query["categoryId"] == "9994" ? "active" : "")"
-               aria-current="@(Request.Query["categoryId"] == "9994" ? "page" : "false")">
+            <a asp-page="/recipes" asp-route-categoryId="3"
+               class="category-item @(Request.Query["categoryId"] == "3" ? "active" : "")">
                 <div class="category-icon"><i class="fa-solid fa-fish"></i></div>
                 <span>@Localizer["Peixe"]</span>
             </a>
-            <a asp-page="/recipes" asp-route-categoryId="9995"
-               class="category-item @(Request.Query["categoryId"] == "9995" ? "active" : "")"
-               aria-current="@(Request.Query["categoryId"] == "9995" ? "page" : "false")">
-                <div class="category-icon"><i class="fa-solid fa-leaf"></i></div>
-                <span>@Localizer["Vegetariano"]</span>
-            </a>
-            <a asp-page="/recipes" asp-route-categoryId="9991"
-               class="category-item @(Request.Query["categoryId"] == "9991" ? "active" : "")"
-               aria-current="@(Request.Query["categoryId"] == "9991" ? "page" : "false")">
+            <a asp-page="/recipes" asp-route-categoryId="4"
+               class="category-item @(Request.Query["categoryId"] == "4" ? "active" : "")">
                 <div class="category-icon"><i class="fa-solid fa-cake-candles"></i></div>
                 <span>@Localizer["Sobremesas"]</span>
             </a>
+            <a asp-page="/recipes" asp-route-categoryId="5"
+               class="category-item @(Request.Query["categoryId"] == "5" ? "active" : "")">
+                <div class="category-icon"><i class="fa-solid fa-leaf"></i></div>
+                <span>@Localizer["Vegetariano"]</span>
+            </a>           
         </nav>        
     </section>
 
