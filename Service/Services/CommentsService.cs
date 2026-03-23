@@ -2,6 +2,7 @@
 using Contracts.Service;
 using Core.Common;
 using Core.Model;
+using Core.Model.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace Service.Services
         public async Task<Result<Comments>> CreateCommentsAsync(Comments newComment)
         {
             var currentUserIdResult = await _usersService.GetCurrentUserIdAsync();
-            if (!currentUserIdResult.IsSuccessful || currentUserIdResult.Value <= 0)
+            if (!currentUserIdResult.IsSuccessful)
             {
                 return Result<Comments>.Failure(
                     Error.Unauthorized(ErrorCodes.AuthUnauthorized, "Utilizador não autenticado.")
@@ -74,55 +75,36 @@ namespace Service.Services
                  );
             }
 
-            if (!await _unitOfWork.Recipes.ExistsByIdAsync(newComment.RecipesId))
-            {
-                return Result<Comments>.Failure(
-                    Error.NotFound(ErrorCodes.NotFound, $"Receita com ID {newComment.RecipesId} não encontrada.")
-                );
-            }
-
-            if (string.IsNullOrWhiteSpace(newComment.CommentText))
-            {
-                return Result<Comments>.Failure(
-                    Error.Validation(
-                        "O comentário não pode estar vazio.",
-                        new Dictionary<string, string[]> { { nameof(newComment.CommentText), new[] { "Campo obrigatório" } } }
-                    )
-                );
-            }
-
-            if (newComment.CommentText.Length > 500)
-            {
-                return Result<Comments>.Failure(
-                    Error.Validation(
-                        "O comentário não pode exceder 500 caracteres.",
-                        new Dictionary<string, string[]> { { nameof(newComment.CommentText), new[] { "Máximo 500 caracteres" } } }
-                    )
-                );
-            }
-
-            if(newComment.ParentCommentId == null)
-            {
-                if (newComment.Rating < 1 || newComment.Rating > 5)
-                {
-                    return Result<Comments>.Failure(
-                        Error.Validation(
-                            "A classificação deve estar entre 1 e 5.",
-                            new Dictionary<string, string[]> { { nameof(newComment.Rating), new[] { "Valor entre 1 e 5" } } }
-                        )
-                    );
-                }
-            }            
+            Console.WriteLine($"[DEBUG CREATE] User: {currentUserId}, Recipe: {newComment.RecipesId}, Rating: {newComment.Rating}, Parent: {newComment.ParentCommentId}");
 
             await _unitOfWork.BeginTransactionAsync();
-
+            
             try
             {
+                if(newComment.ParentCommentId == null)
+                {
+                    var recipeComments = await _commentsRepository.GetCommentsByRecipeIdAsync(newComment.RecipesId);
+                    var existingComment = recipeComments.FirstOrDefault(c => 
+                    c.UserId == currentUserId && 
+                    c.ParentCommentId == null && 
+                    !c.IsDeleted);
+
+                    if (existingComment != null)
+                    {
+                        Console.WriteLine($"[DEBUG CREATE] Encontrou comentário existente (ID: {existingComment.CommentsId}). A atualizar...");
+                        existingComment.UpdateComment(newComment.CommentText!);
+                        await _commentsRepository.UpdateAsync(existingComment);                        
+                        await _unitOfWork.CommitAsync();
+                        return Result<Comments>.Success(existingComment);
+                    }
+                }
+
+                Console.WriteLine("[DEBUG CREATE] Criando NOVO comentário/voto...");
                 var commentsToCreate = new Comments(
                      recipesId: newComment.RecipesId,
                      userId: currentUserId,
-                     commentText: newComment.CommentText,
-                     rating: newComment.ParentCommentId == null ? newComment.Rating : 0,
+                     commentText: newComment.CommentText!,
+                     rating: newComment.Rating,
                     parentCommentId: newComment.ParentCommentId
                  );
 
@@ -144,6 +126,7 @@ namespace Service.Services
             }
             catch(Exception ex)
             {
+                Console.WriteLine($"[DEBUG ERROR] Erro no CreateComments: {ex.Message}");
                 _unitOfWork.Rollback();
                 return Result<Comments>.Failure(
                     Error.InternalServer($"Erro inesperado ao criar comentário: {ex.Message}"));

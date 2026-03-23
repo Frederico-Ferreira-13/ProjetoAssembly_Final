@@ -1,33 +1,40 @@
 ﻿@model Core.Model.Recipes
-@if(Model != null)
+@if (Model != null)
 {
     bool isDetailView = ViewData["IsDetailView"] as bool? ?? false;
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
-    <div class="favorite-info">
-        <i class="fa-solid fa-heart"></i>
-        <span>@Model.FavoriteCount</span>
-    </div>
+    <div class="favorite-wrapper d-flex align-items-center gap-2">
 
-    @if (isDetailView)
-    {
-        @Html.AntiForgeryToken()
-
-        @if (User.Identity?.IsAuthenticated ?? false)
+        @if (isAuthenticated)
         {
             bool isFav = Model.IsFavorite;
+
             <button type="button"
-                    class="btn-favorite-wook @(isFav ? "active" : "")"
+                    class="btn-action btn-favorite @(isFav ? "active" : "")"
                     onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
                     title="@(isFav ? "Remover dos favoritos" : "Adicionar aos favoritos")">
-                <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
-                <!-- Sem <span class="fav-badge"> aqui - sem contador no botão -->
+                <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>               
+                @if (!isDetailView)
+                {
+                    <span>@(isFav ? "Favorito" : "Favoritar")</span>
+                }
             </button>
         }
         else
         {
-            <button type="button" class="btn-favorite-wook disabled" title="Inicia sessão para guardar">
+            <button type="button" class="btn-action btn-favorite disabled" title="Inicia sessão para guardar">
                 <i class="fa-regular fa-heart"></i>
+                @if (!isDetailView)
+                {
+                    <span>Favoritar</span>
+                }
             </button>
         }
-    }
+        
+        <div class="favorite-info-badge">
+            <i class="fa-solid fa-heart"></i>
+            <span id="fav-count-@Model.RecipesId">@Model.FavoriteCount</span>
+        </div>
+    </div>
 }

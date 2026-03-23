@@ -157,8 +157,7 @@
             </div>
         }
     </div>
-
-    @* Formulário para NOVO comentário principal *@
+    
     @if (isAuthenticated)
     {
         <section class="comments-form-section mt-5">
@@ -173,8 +172,14 @@
                         <div class="star-rating-control">
                             @for (int i = 5; i >= 1; i--)
                             {
-                                <input type="radio" id="star-@i" name="CommentRating" value="@i" required />
-                                <label for="star-@i"><i class="fa-solid fa-star"></i></label>
+                                <input type="radio"
+                                       id="new-star-@i"
+                                       name="CommentRating"
+                                       value="@i"                                       
+                                       required 
+                                       @(Model.UserRating == i ? "checked" : "")
+                                       onclick="submitRating('@Model.RecipeId', @i)" />
+                                <label for="new-star-@i"><i class="fa-solid fa-star"></i></label>
                             }
                         </div>
                     </div>

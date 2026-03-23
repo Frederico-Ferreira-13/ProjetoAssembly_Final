@@ -16,30 +16,42 @@ namespace Repo.Repository
 
         protected override Recipes MapFromReader(SqlDataReader reader)
         {
-            var recipe = new Recipes(
-                id: reader.GetInt32(reader.GetOrdinal("RecipesId")),
-                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
-                categoriesId: reader.GetInt32(reader.GetOrdinal("CategoriesId")),
-                difficultyId: reader.GetInt32(reader.GetOrdinal("DifficultyId")),
-                title: reader.GetString(reader.GetOrdinal("Title")),
-                instructions: reader.GetString(reader.GetOrdinal("Instructions")),                
-                prepTimeMinutes: (int)reader.GetInt16(reader.GetOrdinal("PrepTimeMinutes")),
-                cookTimeMinutes: (int)reader.GetInt16(reader.GetOrdinal("CookTimeMinutes")),
-                servings: reader.GetString(reader.GetOrdinal("Servings")),
-                imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader.GetString(reader.GetOrdinal("ImageUrl")),
-                createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("LastUpdatedAt")),
-                isActive: reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                isApproved: HasColumn(reader, "IsApproved") ? reader.GetBoolean(reader.GetOrdinal("IsApproved")) : false
-            );
+            try
+            {
+                var recipe = new Recipes(
+                    id: Convert.ToInt32(reader["RecipesId"]),
+                    userId: Convert.ToInt32(reader["UserId"]),
+                    categoriesId: Convert.ToInt32(reader["CategoriesId"]),
+                    difficultyId: Convert.ToInt32(reader["DifficultyId"]),
+                    title: reader["Title"]?.ToString() ?? string.Empty,
+                    instructions: reader["Instructions"]?.ToString() ?? string.Empty,
+                    prepTimeMinutes: Convert.ToInt32(reader["PrepTimeMinutes"]),
+                    cookTimeMinutes: Convert.ToInt32(reader["CookTimeMinutes"]),
+                    servings: reader["Servings"]?.ToString() ?? string.Empty,
+                    imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader["ImageUrl"].ToString(),
+                    createdAt: Convert.ToDateTime(reader["CreatedAt"]),
+                    lastUpdatedAt: reader.IsDBNull(reader.GetOrdinal("LastUpdatedAt")) ? null : (DateTime?)Convert.ToDateTime(reader["LastUpdatedAt"]),
+                    isActive: Convert.ToBoolean(reader["IsActive"]),
+                    isApproved: HasColumn(reader, "IsApproved") ? Convert.ToBoolean(reader["IsApproved"]) : false
+                );
 
-            if (HasColumn(reader, "FavoritesCount"))
-                recipe.FavoriteCount = reader.GetInt32(reader.GetOrdinal("FavoritesCount"));
+                if (HasColumn(reader, "FavoritesCount") && !reader.IsDBNull(reader.GetOrdinal("FavoritesCount")))
+                    recipe.FavoriteCount = Convert.ToInt32(reader["FavoritesCount"]);
 
-            if (HasColumn(reader, "IsFavorited"))
-                recipe.IsFavorite = reader.GetInt32(reader.GetOrdinal("IsFavorited")) == 1;
+                if (HasColumn(reader, "AverageRating") && !reader.IsDBNull(reader.GetOrdinal("AverageRating")))
+                    recipe.AverageRating = Convert.ToDouble(reader["AverageRating"]);
 
-            return recipe;
+                if (HasColumn(reader, "IsFavorited") && !reader.IsDBNull(reader.GetOrdinal("IsFavorited")))
+                    recipe.IsFavorite = Convert.ToInt32(reader["IsFavorited"]) == 1;
+
+                return recipe;
+            }
+            catch (Exception ex)
+            {
+                // Isto vai imprimir o erro exato na janela "Output" do Visual Studio
+                System.Diagnostics.Debug.WriteLine($"ERRO NO MAPEAMENTO DE RECEITA: {ex.Message}");
+                throw; // Relança para o Service apanhar
+            }
         }
 
         private bool HasColumn(SqlDataReader reader, string columnName)
@@ -62,14 +74,15 @@ namespace Repo.Repository
         {
             return new SqlParameter[]
             {
+                new SqlParameter("@RecipesId", entity.GetId()),
                 new SqlParameter("@UserId", entity.UserId),
                 new SqlParameter("@CategoriesId", entity.CategoriesId),
                 new SqlParameter("@DifficultyId", entity.DifficultyId),
-                new SqlParameter("@Title", entity.Title),
-                new SqlParameter("@Instructions", entity.Instructions),
+                new SqlParameter("@Title", entity.Title ?? (object)DBNull.Value),
+                new SqlParameter("@Instructions", entity.Instructions ?? (object)DBNull.Value),
                 new SqlParameter("@PrepTimeMinutes", entity.PrepTimeMinutes),
                 new SqlParameter("@CookTimeMinutes", entity.CookTimeMinutes),
-                new SqlParameter("@Servings", entity.Servings),
+                new SqlParameter("@Servings", entity.Servings ?? (object)DBNull.Value),
                 new SqlParameter("@ImageUrl", (object)entity.ImageUrl! ?? DBNull.Value),
                 new SqlParameter("@IsApproved", entity.IsApproved)
             };
@@ -93,9 +106,20 @@ namespace Repo.Repository
 
         protected override SqlParameter[] GetUpdateParameters(Recipes entity)
         {
-            var @params = GetInsertParameters(entity).ToList();
-            @params.Add(new SqlParameter("@RecipesId", entity.GetId()));
-            return @params.ToArray();
+            return new SqlParameter[]
+            {
+                new SqlParameter("@RecipesId", entity.RecipesId),
+                new SqlParameter("@UserId", entity.UserId),
+                new SqlParameter("@CategoriesId", entity.CategoriesId),
+                new SqlParameter("@DifficultyId", entity.DifficultyId),
+                new SqlParameter("@Title", entity.Title),
+                new SqlParameter("@Instructions", entity.Instructions),
+                new SqlParameter("@PrepTimeMinutes", entity.PrepTimeMinutes),
+                new SqlParameter("@CookTimeMinutes", entity.CookTimeMinutes),
+                new SqlParameter("@Servings", entity.Servings),
+                new SqlParameter("@ImageUrl", (object)entity.ImageUrl! ?? DBNull.Value),
+                new SqlParameter("@IsApproved", entity.IsApproved)
+            };
         }
 
         public async Task<List<Recipes>> GetUserIdRecipes(int userId)
@@ -114,6 +138,21 @@ namespace Repo.Repository
             return result.ToList();           
         }
 
+        public async Task UpdateRecipeAverageRatingAsync(int recipeId)
+        {
+            string sql = @"
+                UPDATE Recipes 
+                SET AverageRating = (
+                    SELECT ISNULL(AVG(CAST(RatingValue AS FLOAT)), 0) 
+                    FROM Ratings 
+                    WHERE RecipesId = @RecipeId AND IsActive = 1
+                )
+                WHERE RecipesId = @RecipeId";
+
+            var parameter = new SqlParameter("@RecipeId", recipeId);
+            await SQL.ExecuteNonQueryAsync(sql, parameter);
+        }
+
         public async Task<bool> ExistsByIdAsync(int recipeId)
         {
             var recipe = await ReadByIdAsync(recipeId);
@@ -124,16 +163,17 @@ namespace Repo.Repository
         {
             string sql = @"
                 SELECT r.*,
-                (SELECT COUNT(*) FROM Favorites f Where f.RecipesId = r.RecipesId) as FavoritesCount,
-                CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId)
+                (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoriteCount,
+                (SELECT ISNULL(AVG(CAST(RatingValue AS FLOAT)), 0) FROM Ratings rt WHERE rt.RecipesId = r.RecipesId AND rt.IsActive = 1) as AverageRating,
+                CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId AND f.IsActive = 1)
                     THEN 1 ELSE 0 END as IsFavorited
                 FROM Recipes r
-                WHERE (@CategoryId IS NULL OR r.CategoriesId = @CategoryId) AND r.IsActive = 1";
+                WHERE (@CategoryId IS NULL OR r.CategoriesId = @CategoryId) AND r.IsActive = 1 AND r.IsApproved = 1";
 
             var parameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", (object)currentUserId! ?? DBNull.Value),
-                new SqlParameter("@CategoryId", (object)categoryId! ?? DBNull.Value)
+                new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
+                new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value)
             };
 
             return await ExecuteListAsync(sql, parameters);
@@ -144,12 +184,13 @@ namespace Repo.Repository
         {
             string sql = $@"
                 SELECT r.*,
-                       (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId) as FavoritesCount,
-                       CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId)
+                       (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoriteCount,
+                       (SELECT ISNULL(AVG(CAST(RatingValue AS FLOAT)), 0) FROM Ratings rt WHERE rt.RecipesId = r.RecipesId AND rt.IsActive = 1) as AverageRating,
+                       CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId AND f.IsActive = 1)
                             THEN 1 ELSE 0 END as IsFavorited,
                        COUNT(*) OVER() as TotalRows
                 FROM Recipes r
-                WHERE r.IsActive = 1
+                WHERE r.IsActive = 1 AND r.IsApproved = 1
                     AND (@CategoryId IS NULL OR r.CategoriesId = @CategoryId)
                     AND (@SearchText IS NULL OR r.Title COLLATE Latin1_General_CI_AI LIKE '%' + @SearchText + '%')
                 ORDER BY r.CreatedAt DESC
@@ -157,9 +198,9 @@ namespace Repo.Repository
 
             SqlParameter[] parameters =
             {
-                new SqlParameter("@UserId", (object)currentUserId ?? DBNull.Value),
-                new SqlParameter("@CategoryId", (object)categoryId ?? DBNull.Value),
-                new SqlParameter("@SearchText", (object)search ?? DBNull.Value), // Mudamos o nome para @SearchText
+                new SqlParameter("@UserId", (object)currentUserId! ?? DBNull.Value),
+                new SqlParameter("@CategoryId", (object)categoryId! ?? DBNull.Value),
+                new SqlParameter("@SearchText", (object)search! ?? DBNull.Value), // Mudamos o nome para @SearchText
                 new SqlParameter("@Offset", (page - 1) * pageSize),
                 new SqlParameter("@PageLimit", pageSize)
             };
@@ -231,6 +272,70 @@ namespace Repo.Repository
             }
 
             return recipes;
+        }
+
+        public async Task<List<IngredientsRecips>> GetIngredientsByRecipeIdAsync(int recipeId)
+        {
+            var ingredientsList = new List<IngredientsRecips>();
+
+            string sql = @"
+                SELECT ir.*, i.IngredientName, i.IngredientsTypeId
+                FROM IngredientsRecips ir
+                INNER JOIN Ingredients i ON ir.IngredientsId = i.IngredientsId
+                WHERE ir.RecipesId = @RecipeId AND ir.IsActive = 1";
+
+            var parameter = new SqlParameter("@RecipeId", recipeId);
+
+            using (var reader = await SQL.ExecuteQueryAsync(sql, parameter))
+            {
+                while (reader.Read())
+                {                    
+                    var item = new IngredientsRecips(
+                        id: Convert.ToInt32(reader["IngredientsRecipsId"]),
+                        recipesId: Convert.ToInt32(reader["RecipesId"]),
+                        ingredientsId: Convert.ToInt32(reader["IngredientsId"]),
+                        quantityValue: Convert.ToDecimal(reader["QuantityValue"]),
+                        unit: reader["Unit"]?.ToString() ?? string.Empty,
+                        detail: reader["Detail"]?.ToString()
+                    );
+                   
+                    var ingredientInfo = new Ingredients(
+                        id: Convert.ToInt32(reader["IngredientsId"]),
+                        ingredientName: reader["IngredientName"]?.ToString() ?? "Desconhecido",
+                        ingredientsTypeId: Convert.ToInt32(reader["IngredientsTypeId"])
+                    );
+                    
+                    item.SetIngredient(ingredientInfo);
+
+                    ingredientsList.Add(item);
+                }
+            }
+            return ingredientsList;
+        }
+
+        public async Task UpsertRecipeRatingAsync(int recipeId, int userId, int rating)
+        {           
+            string sql = @"
+                IF EXISTS (SELECT 1 FROM Ratings WHERE RecipesId = @RecipeId AND UserId = @UserId)
+                BEGIN
+                    UPDATE Ratings 
+                    SET RatingValue = @Rating
+                    WHERE RecipesId = @RecipeId AND UserId = @UserId
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO Ratings (RecipesId, UserId, RatingValue, CreatedAt, IsActive)
+                    VALUES (@RecipeId, @UserId, @Rating, GETDATE(), 1)
+                END";
+
+            var parameters = new SqlParameter[]
+            {
+                new SqlParameter("@RecipeId", recipeId),
+                new SqlParameter("@UserId", userId),
+                new SqlParameter("@Rating", rating)
+            };
+
+            await SQL.ExecuteNonQueryAsync(sql, parameters);
         }
     }
 }

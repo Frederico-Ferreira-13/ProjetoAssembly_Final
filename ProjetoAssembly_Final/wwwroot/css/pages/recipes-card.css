@@ -10,6 +10,9 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
+    min-height: 450px;   
+    box-sizing: border-box;
 }
 
 .recipe-card:hover {
@@ -18,11 +21,13 @@
     border-color: var(--primary-green);
 }
 
-/* Imagem e botão de Favorito */
+/* --- IMAGEM E OVERLAYS --- */
 .card-img-wrapper {
     position: relative;
+    width: 100%;
     height: 260px;
-    overflow: hidden;    
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .card-img {
@@ -36,7 +41,6 @@
     transform: scale(1.09);
 }
 
-/* Overlay com rating + favoritos no topo da imagem */
 .card-stats-overlay {
     position: absolute;
     top: 12px;
@@ -51,77 +55,85 @@
 }
 
 .rating-badge,
-.favorite-badge {
+.favorite-badge,
+.stat-badge {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: 999px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: white !important;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .rating-badge i {
     color: #ffc107 !important;
 }
 
-.favorite-badge i,
-.favorite-badge .fa-heart,
-.favorite-badge .fa-solid,
-.favorite-badge .fa-regular {
+.favorite-badge i, .stat-badge.favorites i {
     color: #ff4d4d !important;
 }
 
-/* Corpo do Card */
+/* --- CORPO DO CARD --- */
 .card-body {
-    padding: 20px;
+    padding: 18px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Botão de Editar */
-.btn-edit-card {
-    display: inline-flex;
+/* --- AÇÕES DE ADMINISTRAÇÃO (EDITAR / ELIMINAR) --- */
+.card-admin-actions {
+    display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(40,167,69,0.1);
+    margin-bottom: 15px;
+}
+
+.btn-edit-card {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(40,167,69,0.05);
     color: var(--primary-green);
-    padding: 8px 16px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 10px;
     border: 1px solid var(--primary-green);
-    box-shadow: 0 2px 8px rgba(40,167,69,0.15);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: var(--transition);
 }
 
 .btn-edit-card:hover {
     background: var(--primary-green);
     color: white;
-    transform: translate(-2px);
-    box-shadow: 0 6px 16px rgba(40,167,69,0.3);
 }
 
-.btn-edit-card i {
-    font-size: 1rem;
+.btn-delete-card {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(231, 76, 60, 0.05);
+    color: var(--danger-red);
+    border: 1px solid rgba(231, 76, 60, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
 }
 
-/* Titulo */
-.card-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin: 0 0 14px;
-    color: var(--text-color);
-    line-height: 1.35;
-    height: 3.2em;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+.btn-delete-card:hover {
+    background: var(--danger-red);
+    color: white;
 }
 
 /* Metas (Tempo e Dificuldade) */
@@ -129,19 +141,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
-    font-size: 0.9rem;
-    color: var(--text-color);
-    opacity: 0.85;
+    margin-bottom: 15px;
+}
+
+.meta-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .difficulty-badge {
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .dif-easy {
@@ -162,90 +176,77 @@
 .meta-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: #666;
 }
 
-/* Botão de Ação */
-.btn-card {
-    background-color: var(--primary-green);
-    color: white;
-    text-align: center;
-    padding: 12px 24px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.95rem;
-    margin-top: auto;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(40,167,69,0.25);
-}
-
-.btn-card:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.35);
-}
-
-/* Botão de Edição no topo da imagem */
-.btn-favorite-action {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 11;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: none;
-    width: 44px;
-    height: 44px;
+.btn-fav-circle {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
+    color: #999;
 }
 
-.btn-favorite-action:hover:not(.disabled) {
-    background: var(--primary-green);
+.btn-fav-circle:hover:not(.disabled) {
+    transform: scale(1.1);
+    border-color: var(--danger-red);
+    color: var(--danger-red);
+}
+
+.btn-fav-circle.active {
+    background-color: #ffebee !important;
+    border-color: var(--danger-red);
+    color: var(--danger-red);
+}
+
+/* --- TEXTO E BOTÃO VER RECEITA --- */
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 16px;
+    color: var(--text-color);
+    line-height: 1.4;
+    height: 2.8em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- BOTÃO PRINCIPAL VER RECEITA --- */
+.btn-card {
+    background-color: var(--primary-green);
     color: white;
-    transform: scale(1.12);
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    margin-top: auto;
+    transition: 0.3s;
 }
 
-.btn-favorite-action.active {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-favorite-action.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.btn-card:hover {
+    background-color: var(--primary-dark);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    transform: translateY(-2px);
 }
 
 /* Mobile */
 @media (max-width: 576px) {
     .card-img-wrapper {
-        height: 220px;
+        height: 200px;
     }
 
     .card-title {
-        font-size: 1.15rem;
-    }
-
-    .btn-card {
-        padding: 10px 18px;
-        font-size: 0.9rem;
-    }
-
-    .card-stats-overlay {
-        top: 8px;
-        left: 8px;
-        right: 8px;
-    }
-
-    .rating-badge, .favorite-badge {
-        padding: 6px 10px;
-        font-size: 0.8rem;
+        font-size: 1.1rem;
     }
 }

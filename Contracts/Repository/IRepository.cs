@@ -10,7 +10,7 @@ namespace Contracts.Repository
         Task CreateAddAsync(TEntity entity);
         Task<TEntity?> ReadByIdAsync(int id);
         Task<IEnumerable<TEntity>> ReadAllAsync();
-        Task UpdateAsync(TEntity entity);
+        Task<bool> UpdateAsync(TEntity entity);
         Task RemoveAsync(TEntity entity);
 
         Task<int> SaveChangesAsync();

@@ -1,8 +1,10 @@
 ﻿using Contracts.Repository;
 using Core.Model;
 using Microsoft.Data.SqlClient;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace Repo.Repository
@@ -14,12 +16,31 @@ namespace Repo.Repository
 
         protected override Favorites MapFromReader(SqlDataReader reader)
         {
-            return new Favorites(
+            var favorite = new Favorites(
                 id: reader.GetInt32(reader.GetOrdinal("FavoritesId")),
                 userId: reader.GetInt32(reader.GetOrdinal("UserId")),
                 recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
                 createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
             );
+
+            favorite.Recipe = new Recipes(
+                id: reader.GetInt32(reader.GetOrdinal("RecipesId")),
+                userId: reader.GetInt32(reader.GetOrdinal("UserId")),
+                categoriesId: Convert.ToInt32(reader["CategoriesId"]),
+                difficultyId: Convert.ToInt32(reader["DifficultyId"]),
+                title: reader.GetString(reader.GetOrdinal("Title")),
+                instructions: "",
+                prepTimeMinutes: Convert.ToInt32(reader["PrepTimeMinutes"]),
+                cookTimeMinutes: Convert.ToInt32(reader["CookTimeMinutes"]),
+                servings: reader.GetString(reader.GetOrdinal("Servings")),
+                imageUrl: reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? null : reader.GetString(reader.GetOrdinal("ImageUrl")),
+                createdAt: reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                lastUpdatedAt: null,
+                isActive: true,
+                isApproved: true
+            );
+
+            return favorite;
         }
 
         protected override string BuildInsertSql(Favorites entity)
@@ -64,7 +85,7 @@ namespace Repo.Repository
             return await ExecuteListAsync(sql, parameters);
         }
 
-        public async Task<bool> ExistsAsync(int userId, int recipeId)
+        public async Task<bool> ExistsAsync(int recipeId, int userId)
         {
             string sql = $@"SELECT COUNT(1) FROM {_tableName}
                             WHERE UserId = @UserId AND RecipesId = @RecipesId";
@@ -90,7 +111,7 @@ namespace Repo.Repository
             return Convert.ToInt32(result);
         }
 
-        public async Task DeleteFavoriteAsync(int userId, int recipeId)
+        public async Task DeleteFavoriteAsync(int recipeId, int userId)
         {
             string sql = $@"DELETE FROM {_tableName}
                             WHERE UserId = @UserId AND RecipesId = @RecipesId";

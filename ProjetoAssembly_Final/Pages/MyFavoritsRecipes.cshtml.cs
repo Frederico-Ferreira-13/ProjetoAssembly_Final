@@ -1,11 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Core.Model;
 using Contracts.Repository;
 using Contracts.Service;
+using Core.Model;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjetoAssembly_Final.Pages
 {
+    [Authorize]
     public class MyFavoritsRecipesModel : PageModel
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -19,34 +24,40 @@ namespace ProjetoAssembly_Final.Pages
             _recipesService = recipesService;
         }
 
+        public class FavoriteRequest { public int RecipeId { get; set; } }
+
         public IEnumerable<Recipes> MyFavoriteRecipes { get; set; } = Enumerable.Empty<Recipes>();
 
         public async Task OnGetAsync()
         {
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-            var userId = userIdResult.IsSuccessful ? userIdResult.Value : 0;
-
-            var favs = await _unitOfWork.Favorites.GetByUserIdAsync(userId);
-            var list = favs.Select(f => f.Recipe).Where(r => r != null).Cast<Recipes>().ToList();
-            list.ForEach(r => r.IsFavorite = true);
-
-            // 2. INJETAR OS MOCKS que foram marcados
-            var allMocks = MockRecipes.GetFallbackMockRecipes();
-            foreach (var mockId in MockRecipes.FavoriteMockIds)
-            {
-                var mock = allMocks.FirstOrDefault(m => m.RecipesId == mockId);
-                if (mock != null)
-                {
-                    mock.IsFavorite = true;
-                    list.Add(mock);
-                }
+            if (!userIdResult.IsSuccessful || userIdResult.Value == 0)
+            {                
+                MyFavoriteRecipes = Enumerable.Empty<Recipes>();
+                return;
             }
 
-            MyFavoriteRecipes = list;
+            var userId = userIdResult.Value;
+
+            var favs = await _unitOfWork.Favorites.GetByUserIdAsync(userId);
+            var favoriteRecipes = favs
+                 .Select(f => f.Recipe)
+                 .Where(r => r != null)
+                 .Cast<Recipes>()
+                 .ToList();
+
+            favoriteRecipes.ForEach(r => r.IsFavorite = true);
+            MyFavoriteRecipes = favoriteRecipes;
         }
-        
-        public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)
-        {           
+
+        public async Task<IActionResult> OnPostToggleFavoriteAsync([FromBody] FavoriteRequest request)
+        {
+            int recipeId = request?.RecipeId ?? 0;
+            if (recipeId <= 0)
+            {
+                return BadRequest("ID inválido");
+            }
+
             if (!User.Identity?.IsAuthenticated ?? false)
             {
                 return Unauthorized();
@@ -55,19 +66,12 @@ namespace ProjetoAssembly_Final.Pages
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
             if (!userIdResult.IsSuccessful)
             {
-                return BadRequest("Não foi possível identificar o utilizador.");
+                return BadRequest("Não foi possível identificar o utilizador");
             }
-
-            var userId = userIdResult.Value;
 
             try
             {
                 var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
-                if (!result.IsSuccessful)
-                {
-                    return BadRequest(result.Message ?? "Erro ao alternar favorito.");
-                }
-
                 var updatedCount = await _recipesService.GetFavoriteCountAsync(recipeId);
 
                 return new JsonResult(new
@@ -78,9 +82,7 @@ namespace ProjetoAssembly_Final.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, "Erro interno ao processar favorito: " + ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
     }

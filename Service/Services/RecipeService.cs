@@ -53,7 +53,7 @@ namespace Service.Services
             return await _recipesRepository.ExistsByIdAsync(recipeId);
         }
 
-        public async Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId)
+        public async Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId, int? currentUserId)
         {
             if (recipeId <= 0)
             {
@@ -73,6 +73,13 @@ namespace Service.Services
                     ErrorCodes.NotFound,
                     $"Receita com ID {recipeId} não encontrada.")
                 );
+            }
+
+            recipe.FavoriteCount = await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
+
+            if (currentUserId.HasValue)
+            {
+                recipe.IsFavorite = await _favoritesRepository.ExistsAsync(recipeId, currentUserId.Value);
             }
 
             return Result<Recipes>.Success(recipe);
@@ -234,10 +241,10 @@ namespace Service.Services
 
                 var newCount = await _favoritesRepository.GetCountByRecipeIdAsync(recipeId);
 
-                return Result<object>.Success(new
+                return Result<object>.Success(new Dictionary<string, object>
                 {
-                    isFavorite = !isFavorite,
-                    newCount = newCount
+                    { "isFavorite", !isFavorite },
+                    { "newCount", newCount }
                 });
             }
             catch (Exception ex)
@@ -389,6 +396,7 @@ namespace Service.Services
             }
 
             int currentUserId = userIdResult.Value;
+            var currentUser = await _unitOfWork.Users.ReadByIdAsync(currentUserId);
 
             var existingRecipe = await _recipesRepository.ReadByIdAsync(recipeToUpdate.RecipesId);
             if (existingRecipe == null)
@@ -399,7 +407,8 @@ namespace Service.Services
                         $"Receita com ID {recipeToUpdate.RecipesId} não encontrada."));
             }
 
-            if (existingRecipe.UserId != currentUserId)
+            bool isAdmin = currentUser?.UsersRoleId == 1;
+            if (existingRecipe.UserId != currentUserId && !isAdmin)
             {
                 return Result.Failure(
                     Error.Forbidden(
@@ -483,11 +492,11 @@ namespace Service.Services
             try
             {
                 existingRecipe.UpdateDetails(
-                    newTitle: recipeToUpdate.Title,
-                    newInstructions: recipeToUpdate.Instructions,
-                    newPrepTime: recipeToUpdate.PrepTimeMinutes,
-                    newCookTime: recipeToUpdate.CookTimeMinutes,
-                    newServings: recipeToUpdate.Servings
+                    recipeToUpdate.Title,
+                    recipeToUpdate.Instructions,
+                    recipeToUpdate.PrepTimeMinutes,
+                    recipeToUpdate.CookTimeMinutes,
+                    recipeToUpdate.Servings
                 );
 
                 existingRecipe.ChangeCategory(recipeToUpdate.CategoriesId);
@@ -532,11 +541,12 @@ namespace Service.Services
             }
 
             int currentUserId = userIdResult.Value;
-
+            var currentUser = await _unitOfWork.Users.ReadByIdAsync(currentUserId);
             var existingRecipe = await _recipesRepository.ReadByIdAsync(recipeId);
-            if (existingRecipe == null)
+
+            if (existingRecipe!.UserId != currentUserId && currentUser?.UsersRoleId != 1)
             {
-                return Result.Success("Receita não encontrada ou já eliminada.");
+                return Result.Failure(Error.Forbidden(ErrorCodes.AuthForbidden, "Sem permissão para eliminar."));
             }
 
             if (existingRecipe.UserId != currentUserId)
@@ -611,6 +621,81 @@ namespace Service.Services
                 _unitOfWork.Rollback();
                 return Result.Failure(
                     Error.InternalServer($"Erro ao aprovar receita: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result<IEnumerable<Recipes>>> GetRecipesWithFavoritesAsync(int? userId, int? categoryId)
+        {            
+            var recipes = await _recipesRepository.GetRecipesWithFavoritesAsync(userId, categoryId);
+
+            return Result<IEnumerable<Recipes>>.Success(recipes);
+        }
+
+        public async Task<Result> UpdateRecipeRatingAsync(int recipeId, int userId, int rating)
+        {
+            if (recipeId <= 0 || rating < 1 || rating > 5)
+            {
+                return Result.Failure(Error.Validation("Dados de avaliação inválidos."));
+            }
+
+            var exists = await _recipesRepository.ExistsByIdAsync(recipeId);
+            if (!exists)
+            {
+                return Result.Failure(Error.NotFound(ErrorCodes.NotFound, $"Receita {recipeId} não encontrada."));
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                await _recipesRepository.UpsertRecipeRatingAsync(recipeId, userId, rating);
+                await _recipesRepository.UpdateRecipeAverageRatingAsync(recipeId);
+                await _unitOfWork.CommitAsync();
+                return Result.Success("Classificação da receita atualizada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result.Failure(Error.InternalServer($"Erro ao atualizar rating: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result<IEnumerable<IngredientsRecips>>> GetIngredientsByRecipeIdAsync(int recipeId)
+        {
+            if (recipeId <= 0)
+            {
+                return Result<IEnumerable<IngredientsRecips>>.Failure(
+                    Error.Validation("ID da receita inválido.")
+                );
+            }
+
+            var ingredients = await _recipesRepository.GetIngredientsByRecipeIdAsync(recipeId);
+
+            return Result<IEnumerable<IngredientsRecips>>.Success(ingredients);
+        }
+
+        public async Task<Result<IEnumerable<Recipes>>> GetFavoriteRecipesByUserIdAsync(int userId)
+        {
+            if (userId <= 0)
+            {
+                return Result<IEnumerable<Recipes>>.Failure(
+                    Error.Validation(
+                        "ID do utilizador inválido.",
+                        new Dictionary<string, string[]> { { nameof(userId), new[] { "Deve ser maior que zero" } } }
+                    )
+                );
+            }
+
+            try
+            {
+                var favoriteRecipes = await _recipesRepository.GetRecipesWithFavoritesAsync(userId, null);
+                return Result<IEnumerable<Recipes>>.Success(favoriteRecipes);
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<Recipes>>.Failure(
+                    Error.InternalServer($"Erro ao obter receitas favoritas: {ex.Message}")
+                );
             }
         }
     }

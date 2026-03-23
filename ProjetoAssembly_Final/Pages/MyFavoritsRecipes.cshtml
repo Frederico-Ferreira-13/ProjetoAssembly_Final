@@ -4,44 +4,46 @@
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.MyFavoritsRecipesModel> Localizer
 @{
     Layout = "_Layout";
-    ViewData["Title"] = Localizer["Os Meus Favoritos"];
-    ViewData["IsDetailView"] = false;
+    ViewData["Title"] = Localizer["Os Meus Favoritos"];   
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/myfavoritesrecipes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />    
 }
 
-<div class="main-wrapper">
-    <header class="favorites-header">
-        <h1>
-            <i class="fa-solid fa-heart"></i>
-            @Localizer["As Minhas Receitas Favoritas"]
-        </h1>
-        <p>@Localizer["Todas as receitas que guardaste num só lugar. ❤️"]</p>
-    </header>
+<div class="favorites-page">
+    <h1 class="favorites-title">
+        <i class="fa-solid fa-heart text-danger"></i>
+        @Localizer["Os Meus Favoritos"]
+    </h1>
+    <p class="favorites-subtitle">
+        @Localizer["As receitas que guardaste com carinho ❤️"]
+    </p>
 
-    <section class="recipe-section">
-        <div id="recipe-container" class="favorites-grid">
-            @if (Model.MyFavoriteRecipes != null && Model.MyFavoriteRecipes.Any())
-            {
-                @foreach (var recipe in Model.MyFavoriteRecipes)
+    <div class="favorites-container">
+        @if (Model.MyFavoriteRecipes != null && Model.MyFavoriteRecipes.Any())
+        {
+            <div class="favorites-grid">
+                @foreach (var receita in Model.MyFavoriteRecipes)
                 {
-                    <partial name="_RecipesCard" model="recipe" />
+                    <partial name="_RecipesCard" model="receita" />
                 }
-            }
-            else
-            {
-                <div class="empty-state-notice">
-                    <i class="fa-regular fa-heart"></i>
-                    <p>@Localizer["Ainda não guardaste nenhuma receita como favorita."]</p>
-                    <p>@Localizer["Explora e adiciona as tuas preferidas!"]</p>
-                    <a asp-page="/recipes" class="btn-explore">
-                        <i class="fa-solid fa-search"></i> @Localizer["Explorar Receitas"]
-                    </a>
-                </div>
-            }
-        </div>
-    </section>
-</div></div>
+            </div>
+        }
+        else
+        {
+            <div class="no-favorites">
+                <i class="fa-regular fa-heart fa-5x"></i>
+                <h2>@Localizer["Ainda não tens favoritos"]</h2>
+                <p>@Localizer["Explora as receitas e clica no coração para guardar as tuas preferidas!"]</p>
+                <a asp-page="/recipes" class="btn-explore">
+                    <i class="fa-solid fa-search"></i>
+                    @Localizer["Ver Receitas"]
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+

@@ -201,6 +201,49 @@ function hideReplyForm(commentId) {
     }
 }
 
+async function submitRating(recipeId, stars) {
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : null;
+
+    if (!token) {
+        console.error("Token de verificação não encontrado.");
+        return;
+    }
+
+    try {
+        const url = `${window.location.pathname}?handler=RateOnly`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // O Razor Pages procura este header específico
+                'RequestVerificationToken': token,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                recipeId: parseInt(recipeId),
+                rating: parseInt(stars)
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                // Feedback visual antes de fazer reload (opcional)
+                location.reload();
+            } else {
+                alert("Erro: " + (data.message || "Não foi possível gravar a avaliação."));
+            }
+        } else {
+            console.error("Erro no servidor:", response.status);
+            alert("Erro na comunicação com o servidor.");
+        }
+    } catch (error) {
+        console.error("Erro na submissão:", error);
+    }
+}
+
 // Exportar funções para uso global (necessário para os onclick inline)
 window.enableEditMode = enableEditMode;
 window.cancelEdit = cancelEdit;
@@ -208,3 +251,4 @@ window.validateEditForm = validateEditForm;
 window.deleteComment = deleteComment;
 window.showReplyForm = showReplyForm;
 window.hideReplyForm = hideReplyForm;
+window.submitRating = submitRating;

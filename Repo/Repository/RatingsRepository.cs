@@ -9,7 +9,7 @@ namespace Repo.Repository
 {
     public class RatingsRepository : Repository<Ratings>, IRatingRepository
     {
-        protected override string PrimaryKeyName => "RantingsId";
+        protected override string PrimaryKeyName => "RatingsId";
         public RatingsRepository() : base("Ratings") { }
 
         protected override Ratings MapFromReader(SqlDataReader reader)
@@ -57,7 +57,7 @@ namespace Repo.Repository
 
         public async Task<Ratings?> GetRatingByUserIdAndRecipeIdAsync(int userId, int recipesId)
         {
-            string sql = $@"SELECT RatingId, RecipesId, UserId, RatingValue, CreatedAt
+            string sql = $@"SELECT RatingsId, RecipesId, UserId, RatingValue, CreatedAt
                             FROM {_tableName}
                             WHERE UserId = @UserId AND RecipesId = @RecipesId";
 
@@ -121,6 +121,28 @@ namespace Repo.Repository
 
             var count = await SQL.ExecuteScalarAsync(sql, parameters);
             return Convert.ToInt32(count) > 0;
+        }
+
+        public async Task UpsertRatingAsync(int recipeId, int userId, int value)
+        {            
+            string sql = @"
+                UPDATE Ratings SET RatingValue = @Value, CreatedAt = GETDATE() 
+                WHERE RecipesId = @RecipeId AND UserId = @UserId;
+        
+                IF @@ROWCOUNT = 0
+                BEGIN
+                    INSERT INTO Ratings (RecipesId, UserId, RatingValue, CreatedAt, IsActive)
+                    VALUES (@RecipeId, @UserId, @Value, GETDATE(), 1);
+                END";
+
+            var parameters = new SqlParameter[]
+            {
+                new SqlParameter("@RecipeId", recipeId),
+                new SqlParameter("@UserId", userId),
+                new SqlParameter("@Value", value)
+            };
+
+            await SQL.ExecuteNonQueryAsync(sql, parameters);
         }
     }
 }

@@ -24,7 +24,6 @@
     <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/comments.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/pages/favorits.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/view-recipes.css" asp-append-version="true" />
 }
 
@@ -58,7 +57,10 @@
     }
 
     <div class="recipe-hero">
-        <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)" alt="@Model.Recipe?.Title">
+        <img src="/img/@(string.IsNullOrEmpty(Model.Recipe?.ImageUrl) ? "default.jpg" : Model.Recipe.ImageUrl)" 
+             alt="@Model.Recipe?.Title" 
+             onerror="this.onerror=null; this.src='/img/default.jpg';">
+        
         <div class="hero-overlay">
             <h1 class="hero-title">@Model.Recipe?.Title</h1>
 
@@ -71,27 +73,29 @@
                 </div>
                 <div class="hero-meta-item">
                     <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : Model.Recipe?.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
-                        @(Model.Recipe?.DifficultyId == 1 ? "Fácil" : Model.Recipe?.DifficultyId == 2 ? "Média" : "Difícil")
+                        @(Model.Recipe?.DifficultyId == 1 ? Localizer["Fácil"] : Model.Recipe?.DifficultyId == 2 ? Localizer["Média"] : Localizer["Difícil"])
                     </span>
-                </div>
+                </div>              
             </div>
 
-            <div class="hero-actions">
-                @if (isAuthenticated)
-                {
-                    bool isFav = Model.Recipe?.IsFavorite ?? false;
-                    <button type="button" class="btn-action btn-favorite @(isFav ? "active" : "")"
-                            onclick="handleToggleFavorite(event, this, @Model.Recipe?.RecipesId)">
-                        <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
-                        @(isFav ? Localizer["Favorito"] : Localizer["Favoritar"])
-                    </button>
-                }
+            <div class="hero-actions">               
+                <partial name="_FavoriteButton" 
+                         model="Model.Recipe" 
+                         view-data='@new ViewDataDictionary(ViewData) { { "IsDetailView", true } }' />
 
                 @if (canEdit)
                 {
                     <a asp-page="/editRecipe" asp-route-id="@Model.Recipe?.RecipesId" class="btn-action btn-edit">
                         <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar Receita"]
                     </a>
+
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@Model.Recipe?.RecipesId" 
+                          id="deleteForm-@(Model.Recipe?.RecipesId)" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="button" class="btn-action btn-delete" onclick="confirmDelete(@Model.Recipe?.RecipesId)">
+                            <i class="fa-solid fa-trash-can"></i> @Localizer["Eliminar"]
+                        </button>
+                    </form>
                 }
             </div>
         </div>
@@ -107,7 +111,9 @@
                     {
                         <li>
                             <i class="fa-solid fa-check check-icon"></i>
-                            @ing.QuantityValue @ing.Unit @Localizer["de"] @(ing.Ingredient?.IngredientName ?? "Ingrediente")
+                            <span>
+                                <strong>@ing.QuantityValue @ing.Unit</strong> @Localizer["de"] @(ing.Ingredient?.IngredientName ?? "Ingrediente")
+                            </span>
                         </li>
                     }
                 }
@@ -143,12 +149,14 @@
 
         <partial name="_CommentsSection" model='new ProjetoAssembly_Final.Pages.Shared._CommentsSectionModel {
             ListComments = Model.ListComments,
-            RecipeId = Model.Recipe?.RecipesId ?? 0
+            RecipeId = Model.Recipe?.RecipesId ?? 0,
+            UserRating = Model.Recipe?.UserRating ?? 0
         }' />
     </section>
 </main>
 
 @section Scripts {
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
     <script src="~/js/favorites.js" asp-append-version="true"></script>
     <script src="~/js/comments.js" asp-append-version="true"></script>
 }

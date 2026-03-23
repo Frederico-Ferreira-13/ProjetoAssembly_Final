@@ -17,6 +17,7 @@ namespace Contracts.Service
         Task<Result> DeactivateUserAsync(int userId);
         Task<Result> ActivateUserAsync(int userId);
         Task<Result> DeleteUserAsync(int userId);
+
         Task<Result<Users>> GetUserByUsernameOrEmailAsync(string identifier);
         Task<bool> UserExistsByEmailAsync(string email);
         Task<bool> IsUserNameUniqueAsync(string userName);

@@ -16,5 +16,7 @@ namespace Contracts.Service
         Task<Result<Ratings>> CreateRatingAsync(Ratings newRating);
         Task<Result> UpdateRatingAsync(int ratingId, int newRatingValue);
         Task<Result> DeleteRatingAsync(int ratingId);
+
+        Task<Result> SubmitOnlyRatingAsync(int recipeId, int value);
     }
 }

@@ -879,11 +879,7 @@ namespace Service.Services
             if (existingRole == null)
             {
                 return Result.Success($"Nível de Acesso com ID {id} não encontrado (idempotente).");
-            }
-
-            // Opcional: verificar se há utilizadores com este role
-            // var inUse = await _unitOfWork.Users.AnyWithRoleIdAsync(id);
-            // if (inUse) return Result.Failure(Error.BusinessRuleViolation(...));
+            }            
 
             await _unitOfWork.BeginTransactionAsync();
 

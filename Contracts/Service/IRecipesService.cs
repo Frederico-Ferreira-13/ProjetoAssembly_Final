@@ -8,8 +8,7 @@ namespace Contracts.Service
 {
     public interface IRecipesService
     {
-
-        Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId);
+        Task<Result<Recipes>> GetRecipeByIdAsync(int recipeId, int? currentUserId);
         Task<Result<IEnumerable<Recipes>>> GetRecipesByUserIdAsync(int userId);
         Task<Result<IEnumerable<Recipes>>> GetAllRecipesAsync();
 
@@ -28,5 +27,13 @@ namespace Contracts.Service
 
         Task<Result<IEnumerable<Recipes>>> GetPendingRecipesAsync();
         Task<Result> ApproveRecipeAsync(int recipeId);
+
+        Task<Result<IEnumerable<Recipes>>> GetRecipesWithFavoritesAsync(int? userId, int? categoryId);
+
+        Task<Result> UpdateRecipeRatingAsync(int recipeId, int userId, int rating);
+
+        Task<Result<IEnumerable<IngredientsRecips>>> GetIngredientsByRecipeIdAsync(int recipeId);
+
+        Task<Result<IEnumerable<Recipes>>> GetFavoriteRecipesByUserIdAsync(int userId);
     }
 }

@@ -269,6 +269,7 @@
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
+    gap: 5px;
 }
 
 .star-rating-control input {
@@ -279,13 +280,28 @@
     font-size: 1.5rem;
     color: #edf2f7;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.2s ease-in-out;
 }
 
 .star-rating-control label:hover,
 .star-rating-control label:hover ~ label,
 .star-rating-control input:checked ~ label {
-    color: #f1c40f;
+    color: #f1c40f !important;
+}
+
+.stars-display {
+    display: flex;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.stars-display .fa-star.checked,
+.stars-display .fa-solid.fa-star {
+    color: #f1c40f !important;
+}
+
+.stars-display .fa-regular.fa-star {
+    color: #cbd5e0; /* Cor cinza para estrelas vazias na listagem */
 }
 
 /* --- ALERTAS --- */

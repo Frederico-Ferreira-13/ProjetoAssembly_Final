@@ -9,6 +9,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/perfil.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
 }
 
 <div class="profile-container">
@@ -62,31 +63,7 @@
         {
             @foreach(var recipe in Model.MyRecipes)
             {
-                <article class="profile-recipe-card">
-                    <div class="card-img-container">
-                        @{
-                            var imgSrc = string.IsNullOrEmpty(recipe.ImageUrl)
-                            ? Url.Content("~/img/default.jpg")
-                            : (recipe.ImageUrl.StartsWith("~") ? Url.Content(recipe.ImageUrl) : Url.Content("~/img/" + recipe.ImageUrl));
-                        }
-                        <img src="@imgSrc" alt="@recipe.Title" class="profile-card-img">
-                    </div>                   
-                    
-                    <div class="profile-card-info">
-                        <h3>@recipe.Title</h3>
-
-                        <div class="profile-actions">
-                            
-                            <a asp-page="/editRecipe" asp-route-id="@recipe.RecipesId" class="btn-action edit">
-                                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]    
-                            </a>
-
-                            <button onclick="confirmDelete(@recipe.RecipesId)" class="btn-manage delete">
-                                <i class="fa-solid fa-trash"></i> @Localizer["Apagar"]
-                            </button>
-                        </div>
-                    </div>
-                </article> 
+                <partial name="_RecipesCard" model="recipe" />
             }
         }
         else
@@ -103,11 +80,6 @@
 </div>
 
 @section Scripts {
-    <script>
-        function confirmDelete(id) {
-            if (confirm("Tem a certeza que deseja eliminar esta receita?")) {
-                console.log("Eliminar receita ID: " + id);                
-            }
-        }
-    </script>
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
+    <script src="~/js/favorites.js" asp-append-version="true"></script>    
 }

@@ -13,20 +13,26 @@
                    && Model.UserId.ToString() == currentUserId;
     bool canEdit = isAdmin || isOwner;
 
-    bool isDetailView = ViewData["IsDetailView"] as bool? ?? false;
+    string imageSrc;
+    if (string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        imageSrc = Url.Content("~/img/default.jpg");
+    }
+    else if (Model.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+    {
+        imageSrc = Model.ImageUrl;
+    }
+    else
+    {
+        imageSrc = Model.ImageUrl.Contains("img/")
+        ? Url.Content("~/" + Model.ImageUrl.Replace("~/", ""))
+        : Url.Content("~/img/" + Model.ImageUrl);
+    }
 }
 
 <article class="recipe-card">
     <div class="card-img-wrapper">
-        <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId">
-            @{
-                var imageSrc = string.IsNullOrEmpty(Model.ImageUrl)
-                ? Url.Content("~/img/default.jpg")
-                : (Model.ImageUrl.Contains("img/")
-                    ? Url.Content("~/" + Model.ImageUrl.Replace("~/", ""))
-                    : Url.Content("~/img/" + Model.ImageUrl));
-            }
-
+        <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId">            
             <img src="@imageSrc"
                  alt="@Model.Title"
                  class="card-img"
@@ -35,61 +41,62 @@
         </a>
 
         <div class="card-stats-overlay">
-            <div class="rating-badge">
+            <div class="stat-badge rating" title="@Localizer["Avaliação Média"]">
                 <i class="fa-solid fa-star"></i>
                 <span>@(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "0.0")</span>
             </div>
 
-            <div class="favorite-badge">
-                <i class="fa-solid fa-heart"></i>
-                <span>@Model.FavoriteCount</span>
+            <div class="stat-badge favorites" title="@Localizer["Total de Favoritos"]">
+                <i class="fa-solid fa-heart"></i>                
+                <span id="fav-count-@Model.RecipesId">@Model.FavoriteCount</span>
             </div>
-        </div>        
-
-        @if (isDetailView)
-        {
-            if (isAuthenticated)
-            {
-                bool isFav = Model.IsFavorite;
-                <button type="button"
-                        class="btn-favorite-action @(isFav ? "active" : "")"
-                        onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
-                        title="@(isFav? Localizer["Remover dos favoritos"] : Localizer["Adicionar aos favoritos"])">
-                    <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
-                </button>
-            }
-            else
-            {
-                <button type="button" class="btn-favorite-action disabled" title="@Localizer["Inicia sessão para guardar"]">
-                    <i class="fa-regular fa-heart"></i>
-                </button>
-            }
-        }
-    </div>       
-
+        </div>
+    </div>
+        
     <div class="card-body">
-
+        @* Ações de Admin (Editar/Eliminar) *@
         @if (canEdit)
         {
-            <a asp-page="/editRecipe" asp-route-id="@Model.RecipesId" class="btn-edit-card" title="@Localizer["Editar Receita"]">
-                <i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar"]
-            </a>
+            <div class="card-admin-actions">
+                <a asp-page="/editRecipe" asp-route-id="@Model.RecipesId" class="btn-edit-card" title="@Localizer["Editar"]">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+
+                <form method="post" asp-page-handler="Delete" asp-route-id="@Model.RecipesId"
+                      asp-route-returnUrl="@Context.Request.Path"
+                      id="deleteForm-@Model.RecipesId" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn-delete-card" onclick="confirmDelete(@Model.RecipesId)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+            </div>
         }
 
-        <div class="recipe-meta">
-            <span class="difficulty-badge
-                        @(Model.DifficultyId == 1 ? "dif-easy" :
-                            Model.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
-                @(Model.DifficultyId == 1 ? "FÁCIL" :
-                        Model.DifficultyId == 2 ? "MÉDIA" : "DIFÍCIL")
-            </span>
-            <span class="meta-item">
-                <i class="fa-regular fa-clock"></i>
-                @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min\
-            </span>
+        @* META: Dificuldade + Tempo + Botão de Ação *@
+        <div class="recipe-meta-row">
+            <div class="recipe-meta-info">
+                <span class="difficulty-badge @(Model.DifficultyId == 1 ? "dif-easy" : Model.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
+                    @(Model.DifficultyId == 1 ? "FÁCIL" : Model.DifficultyId == 2 ? "MÉDIA" : "DIFÍCIL")
+                </span>
+                <span class="meta-item">
+                    <i class="fa-regular fa-clock"></i> @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min
+                </span>
+            </div>
+
+            @* BOTÃO DE FAVORITO (Ação de Clique) *@
+            @if (isAuthenticated)
+            {
+                <button type="button"
+                        class="btn-fav-circle @(Model.IsFavorite ? "active" : "")"
+                        onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
+                        title="@(Model.IsFavorite? Localizer["Remover"] : Localizer["Adicionar"])">
+                    <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
+                </button>
+            }
         </div>
 
-        <h3 class="card-title ">@Model.Title</h3>
+        <h3 class="card-title">@Model.Title</h3>
 
         <a asp-page="/view_recipes" asp-route-id="@Model.RecipesId" class="btn-card">
             @Localizer["Ver Receita"]

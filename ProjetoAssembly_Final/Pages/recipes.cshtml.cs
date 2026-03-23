@@ -4,19 +4,15 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.VisualBasic;
+using ProjetoAssembly_Final.Pages.Base;
 
 namespace ProjetoAssembly_Final.Pages
 {
-    public class recipesModel : PageModel
+    public class recipesModel : BaseRecipesPageModel
     {
-        private readonly IRecipesService _recipesService;
-        private readonly ITokenService _tokenService;
-
-        public recipesModel(IRecipesService recipesService, ITokenService tokenService)
-        {
-            _recipesService = recipesService;
-            _tokenService = tokenService;
-        }
+        public recipesModel(IRecipesService recipesService, ITokenService tokenService) : base(recipesService, tokenService)
+        {           
+        }       
 
         public IEnumerable<Recipes> ListRecipes { get; set; } = new List<Recipes>();
 
@@ -45,15 +41,18 @@ namespace ProjetoAssembly_Final.Pages
             var result = await _recipesService.SearchRecipesAsync(Search, CategoryId, P, pageSize, currentUserId);
 
             if (result.IsSuccessful && result.Value.Items != null)
-            {                
-                ListRecipes = result.Value.Items;               
+            {
+                ListRecipes = result.Value.Items
+                     .Where(r => r.IsApproved == true)
+                     .ToList();
+
                 TotalPages = (int)Math.Ceiling(result.Value.TotalCount / (double)pageSize);
             }
             else
             {
-                ListRecipes = MockRecipes.GetFallbackMockRecipes();
+                ListRecipes = new List<Recipes>();
                 TotalPages = 0;
             }
-        }        
+        }       
     }
 }

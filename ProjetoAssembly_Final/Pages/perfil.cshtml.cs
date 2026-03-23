@@ -1,19 +1,20 @@
+using Contracts.Service;
+using Core.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Core.Model;
-using Contracts.Service;
+using ProjetoAssembly_Final.Pages.Base;
+using Service.Services;
 
 namespace ProjetoAssembly_Final.Pages
 {
-    public class perfilModel : PageModel
-    {
-        private readonly IRecipesService _recipesService;
-        private readonly IUsersService _usersService;
+    public class perfilModel : BaseRecipesPageModel
+    {        
+        private readonly IUsersService _usersService;       
 
-        public perfilModel(IRecipesService recipesService, IUsersService usersService)
-        {
-            _recipesService = recipesService;
-            _usersService = usersService;
+        public perfilModel(IRecipesService recipesService, IUsersService usersService, ITokenService tokenService) 
+            : base(recipesService, tokenService)
+        {            
+            _usersService = usersService;            
         }
 
         public Users? CurrentUser { get; set; }
@@ -73,6 +74,6 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             return Page();
-        }
+        }        
     }
 }

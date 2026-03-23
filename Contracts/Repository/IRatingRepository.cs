@@ -13,5 +13,7 @@ namespace Contracts.Repository
 
         Task<double> GetAverageRatingAsync(int recipeId);
         Task<bool> ExistsByUserAndRecipeAsync(int recipeId, int userId);
+
+        Task UpsertRatingAsync(int recipeId, int userId, int value);
     }
 }

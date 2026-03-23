@@ -130,7 +130,7 @@ namespace Service.Services
                 );
             }
 
-            var recipeResult = await _recipesService.GetRecipeByIdAsync(newRating.RecipesId);
+            var recipeResult = await _recipesService.GetRecipeByIdAsync(newRating.RecipesId, currentUserId);
             if (!recipeResult.IsSuccessful)
             {
                 return Result<Ratings>.Failure(recipeResult.Error);
@@ -311,6 +311,63 @@ namespace Service.Services
                 _unitOfWork.Rollback();
                 return Result.Failure(
                     Error.InternalServer($"Erro ao remover avaliação: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result> SubmitOnlyRatingAsync(int recipeId, int value)
+        {
+            Console.WriteLine($"[DEBUG RATING] Início SubmitOnlyRating: Recipe={recipeId}, Value={value}");
+
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            if (!userIdResult.IsSuccessful)
+            {
+                Console.WriteLine("[DEBUG RATING] Falha ao obter UserId do contexto.");
+                return Result.Failure(userIdResult.Error);
+            }
+
+            int userId = userIdResult.Value;
+            Console.WriteLine($"[DEBUG RATING] Utilizador Autenticado ID: {userId}");
+
+            if (value < 1 || value > 5)
+            {
+                Console.WriteLine($"[DEBUG RATING] Valor de nota inválido: {value}");
+                return Result.Failure(Error.Validation("A nota deve estar entre 1 e 5."));
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var existing = await _ratingRepository.GetRatingByUserIdAndRecipeIdAsync(recipeId, userId);
+                if (existing != null)
+                {
+                    Console.WriteLine($"[DEBUG RATING] Rating existente encontrado (ID: {existing.RatingsId}). A atualizar para {value}...");
+                    existing.UpdateRating(value);
+                    await _ratingRepository.UpdateAsync(existing);
+                }
+                else
+                {
+                    Console.WriteLine("[DEBUG RATING] Nenhum rating encontrado. Criando novo registo...");
+                    var newRating = new Ratings(recipeId, userId, value);
+                    await _ratingRepository.CreateAddAsync(newRating);
+                }
+
+                await _unitOfWork.CommitAsync();
+                Console.WriteLine("[DEBUG RATING] Commit da transação realizado com sucesso.");
+
+                Console.WriteLine("[DEBUG RATING] A atualizar média da receita...");
+                await _unitOfWork.Recipes.UpdateRecipeAverageRatingAsync(recipeId);
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG RATING ERROR] Exceção: {ex.Message}");
+
+                if (ex.InnerException != null)
+                    Console.WriteLine($"[DEBUG RATING INNER] {ex.InnerException.Message}");
+
+                _unitOfWork.Rollback();
+                return Result.Failure(Error.InternalServer($"Erro ao submeter nota: {ex.Message}"));
             }
         }
     }

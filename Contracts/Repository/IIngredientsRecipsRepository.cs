@@ -10,5 +10,7 @@ namespace Contracts.Repository
         Task<List<IngredientsRecips>> GetByRecipesIdAsync(int recipeId);
         Task<bool> IsIngredientUsedInRecipeAsync(int recipeId, int ingredientId);
         Task<bool> IsIngredientUsedInAnyRecipeAsync(int ingredientId);
+        Task<List<IngredientsRecips>> GetByRecipesIdWithNamesAsync(int recipeId);
+        Task DeleteByRecipeIdAsync(int recipeId);
     }
 }

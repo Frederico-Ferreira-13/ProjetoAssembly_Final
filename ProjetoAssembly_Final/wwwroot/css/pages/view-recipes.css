@@ -1,5 +1,4 @@
 ﻿/* view-recipes.css */
-
 .view-recipe-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -23,10 +22,6 @@
     transition: transform 0.8s ease;
 }
 
-.recipe-hero:hover {
-    transform: scale(1.05);
-}
-
 .hero-overlay {
     position: absolute;
     inset: 0;
@@ -46,6 +41,34 @@
     text-shadow: 0 4px 20px rgba(0,0,0,0.7);
 }
 
+/* --- Badge de Contagem (O realce que pediste) --- */
+.favorite-info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 6px 18px;
+    border-radius: 20px;
+    color: white;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+    width: fit-content;
+}
+
+    .favorite-info-badge i {
+        color: #ff4d4d !important; /* Coração sempre Vermelho */
+        filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+    }
+
+    .favorite-info-badge span {
+        font-weight: 800; /* Realce máximo da numeração */
+        font-size: 1.15rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+/* --- Meta Info --- */
 .hero-meta {
     display: flex;
     flex-wrap: wrap;
@@ -66,7 +89,69 @@
     gap: 16px;
 }
 
-/* Conteúdo principal */
+/* --- Botões de Ação (Corrigidos com Borders de 2px) --- */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+    /* Favoritar */
+    .btn-action.btn-favorite {
+        background-color: white !important;
+        color: #ff4d4d !important;
+        border: 2px solid #ff4d4d !important;
+        min-width: 140px;
+    }
+
+        .btn-action.btn-favorite.active {
+            background-color: #ff4d4d !important;
+            color: white !important;
+            border-color: #e63939 !important;
+        }
+
+        .btn-action.btn-favorite:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 77, 77, 0.3);
+        }
+
+/* Editar */
+.btn-edit {
+    background: var(--primary-green);
+    color: white;
+    border: 2px solid var(--primary-green);
+}
+
+    .btn-edit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    }
+
+/* Eliminar (Estilo Outlined conforme pedido) */
+.btn-delete {
+    background: #f8f9fa;
+    color: #dc3545;
+    border: 2px solid #dc3545; /* Border de 2px bem definido */
+}
+
+    .btn-delete:hover {
+        background: #dc3545;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+    }
+
+/* --- Main Content Panels --- */
 .recipe-main-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -93,12 +178,6 @@
     gap: 12px;
 }
 
-.ingredients-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
 .ingredients-list li {
     padding: 14px 0;
     border-bottom: 1px solid var(--border-color);
@@ -106,17 +185,6 @@
     align-items: flex-start;
     gap: 12px;
     font-size: 1.05rem;
-    line-height: 1.5;
-}
-
-.ingredients-list li:last-child {
-    border-bottom: none;
-}
-
-.ingredients-list .check-icon {
-    color: var(--primary-green);
-    font-size: 1.3rem;
-    margin-top: 4px;
 }
 
 .instructions-text {
@@ -125,95 +193,32 @@
     white-space: pre-line;
 }
 
-/* Botões de ação */
-.btn-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 28px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.btn-favorite {
-    background: #ff4d4d;
-    color: white;
-}
-
-.btn-favorite:hover {
-    background: #e63939;
-    transform: translateY(-2px);
-}
-
-.btn-edit {
-    background: var(--primary-green);
-    color: white;
-}
-
-.btn-edit:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.btn-approve {
-    background: #28a745;
-    color: white;
-}
-
-.btn-approve:hover {
-    background: #218838;
-    transform: translateY(-2px);
-}
-
-/* Comentários */
-.comments-section {
-    margin-top: 60px;
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 32px;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.08);
-    border: 1px solid var(--border-color);
-}
-
-/* Responsividade */
+/* --- Responsive --- */
 @media (max-width: 992px) {
     .recipe-main-content {
         grid-template-columns: 1fr;
     }
 
-    .recipe-hero {
-        height: 50vh;
-        min-height: 400px;
-    }
-
     .hero-title {
         font-size: 3rem;
+    }
+
+    .recipe-hero {
+        height: 50vh;
     }
 }
 
 @media (max-width: 576px) {
-    .recipe-hero {
-        height: 40vh;
-        min-height: 300px;
-    }
-
     .hero-overlay {
         padding: 24px;
-    }
-
-    .hero-meta {
-        flex-direction: column;
-        gap: 12px;
     }
 
     .hero-actions {
         flex-direction: column;
     }
 
-    .panel-title {
-        font-size: 1.6rem;
+    .hero-meta {
+        flex-direction: column;
+        gap: 12px;
     }
 }

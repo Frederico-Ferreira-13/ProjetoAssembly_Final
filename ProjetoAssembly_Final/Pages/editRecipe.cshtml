@@ -10,16 +10,19 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/editRecipe.css" asp-append-version="true" />
 }
-<main class="container">   
+<main class="container">
     <div class="edit-recipe-wrapper">
         <div class="edit-card">
             <header class="edit-header">
-                <h2><i class="fa-solid fa-pen-to-square"></i>@Localizer["Editar Receita"]</h2>
+                <h2><i class="fa-solid fa-pen-to-square"></i> @Localizer["Editar Receita"]</h2>
                 <p class="edit-subtitle">@Localizer["Altera os detalhes da tua deliciosa criação."]</p>
             </header>
 
+            <div asp-validation-summary="All" class="text-danger alert alert-danger mt-3" role="alert"></div>
+
             <form method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Input.RecipesId" />
+                <input type="hidden" asp-for="Input.ImageUrl" />
 
                 <div class="form-grid">
                     <div class="form-group-custom full-width">
@@ -32,12 +35,12 @@
                         <label asp-for="Input.CategoriesId"><i class="fa-solid fa-tag"></i> @Localizer["Categoria"]</label>
                         <select asp-for="Input.CategoriesId" class="form-input-custom">
                             <option value="1">@Localizer["Entradas/Sopa"]</option>
-                            <option value="2">@Localizer["Prato Principal"]</option>
-                            <option value="3">@Localizer["Sobremesas"]</option>
-                            <option value="4">@Localizer["Vegetariano"]</option>
+                            <option value="2">@Localizer["Carne"]</option>
+                            <option value="3">@Localizer["Peixe"]</option>
+                            <option value="4">@Localizer["Sobremesas"]</option>
+                            <option value="5">@Localizer["Vegetariano"]</option>
                         </select>
                     </div>
-
 
                     <div class="form-group-custom">
                         <label asp-for="Input.DifficultyId"><i class="fa-solid fa-gauge-high"></i> @Localizer["Dificuldade"]</label>
@@ -51,59 +54,106 @@
                     <div class="form-group-custom">
                         <label asp-for="Input.PrepTimeMinutes"><i class="fa-regular fa-clock"></i> @Localizer["Tempo de Preparação (min)"]</label>
                         <input asp-for="Input.PrepTimeMinutes" type="number" class="form-input-custom" />
+                        <span asp-validation-for="Input.PrepTimeMinutes" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label asp-for="Input.CookTimeMinutes"><i class="fa-regular fa-clock"></i> @Localizer["Tempo de Cozedura (min)"]</label>
+                        <input asp-for="Input.CookTimeMinutes" type="number" class="form-input-custom" min="0" />
+                        <span asp-validation-for="Input.CookTimeMinutes" class="text-danger"></span>
                     </div>
 
                     <div class="form-group-custom">
                         <label asp-for="Input.Servings"><i class="fa-solid fa-users"></i> @Localizer["Doses"]</label>
                         <input asp-for="Input.Servings" class="form-input-custom" />
+                        <span asp-validation-for="Input.Servings" class="text-danger"></span>
                     </div>
 
                     <div class="form-group-custom full-width">
-                        <label><i class="fa-solid fa-imgage"></i> @Localizer["Alterar Imagem da Receita"]</label>
-                        <input type="file" name="RecipeImage" class="form-input-custom" accept="image/*"/>
+                        <label><i class="fa-solid fa-image"></i> @Localizer["Alterar Imagem da Receita"]</label>
+
+                        <div class="image-preview-wrapper">
+                            @if (!string.IsNullOrEmpty(Model.Input.ImageUrl))
+                            {
+                                <img src="@Model.Input.ImageUrl" id="imgPreview" alt="Preview da Receita" />
+                            }
+                            else
+                            {
+                                <img src="/images/default-recipe.jpg" id="imgPreview" alt="Default" />
+                            }
+                        </div>
+
+                        <input type="file" asp-for="RecipeImage" class="form-input-custom" accept="image/*" onchange="previewFile(this)" />
+                        <p class="help-text"><small>@Localizer["Selecione um novo ficheiro para substituir a imagem atual."]</small></p>
+                        <span asp-validation-for="RecipeImage" class="text-danger"></span>
                     </div>
 
                     <div class="form-group-custom full-width">
                         <label class="section-label">
                             <i class="fa-solid fa-basket-shopping"></i> @Localizer["Ingredientes"]
                         </label>
-
                         <div id="ingredient-list">
-                            @if(Model.Input.Ingredients != null && Model.Input.Ingredients.Any())
+                            @if (Model.Input.Ingredients != null && Model.Input.Ingredients.Any())
+                            {
+                                foreach (var item in Model.Input.Ingredients)
                                 {
-                                    foreach(var item in Model.Input.Ingredients)
-                                    {
-                                        <div class="ingredient-row">
-                                            <input type="number" name="QuantityValue[]" value="@item.QuantityValue" step="0.01" placeholder="Qtd" class="form-input-custom qty" />
-                                            <input type="text" name="Unit[]" value="@item.Unit" placeholder="Unid." class="form-input-custom unit" />
-                                            <input type="text" name="IngredientName[]" value="@item.Ingredient?.IngredientName" placeholder="Ingrediente" class="form-input-custom" required />
-                                            <input type="text" name="ingredientDetail[]" value="@item.Detail" placeholder="Nota/Tipo" class="form-input-custom detail" />
+                                    <div class="ingredient-row">
+                                        <input type="hidden" name="IngredientRecipeId" value="@item.IngredientsRecipsId" />
 
-                                            <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <div class="ingredient-row">                                        
-                                        <input type="number" name="QuantityValue[]" step="0.01" placeholder="Qtd" class="form-input-custom qty" />
-                                        <input type="text" name="Unit[]" placeholder="Unid." class="form-input-custom unit" />
-                                        <input type="text" name="IngredientName[]" placeholder="Ingrediente" class="form-input-custom" required />
-                                        <input type="text" name="ingredientDetail[]" placeholder="Nota/Tipo" class="form-input-custom detail" />
+                                        <input type="number"
+                                               name="QuantityValue"
+                                               value="@item.QuantityValue.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                               step="any"
+                                               placeholder="Qtd"
+                                               class="form-input-custom qty" />
+
+                                        <select name="Unit" class="form-input-custom unit-select">
+                                            <option value="">@Localizer["Unid."]</option>
+                                            @foreach (var unit in Core.Common.RecipeConstants.UnitOptions)
+                                            {
+                                                <option value="@unit" selected="@(item.Unit == unit ? "selected" : null)">@unit</option>
+                                            }
+                                        </select>
+
+                                        <input type="text" name="IngredientName" value="@item.Ingredient?.IngredientName" placeholder="Ingrediente" class="form-input-custom ingredient-name" required />
+                                        <input type="text" name="ingredientDetail" value="@item.Detail" placeholder="Nota/Tipo" class="form-input-custom detail" />
+
+                                        <button type="button" class="btn-remove">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </div>
                                 }
+                            }
                         </div>
-                        <button type="button" id="btn-add-ingredient" class="btn-secondary">
+
+                        <template id="ingredient-template">
+                            <div class="ingredient-row">
+                                <input type="number" name="QuantityValue" step="any" placeholder="Qtd" class="form-input-custom qty" />
+                                <select name="Unit" class="form-input-custom unit-select">
+                                    <option value="">@Localizer["Unid."]</option>
+                                    @foreach (var unit in Core.Common.RecipeConstants.UnitOptions)
+                                    {
+                                        <option value="@unit">@unit</option>
+                                    }
+                                </select>
+                                <input type="text" name="IngredientName" placeholder="Ingrediente" class="form-input-custom ingredient-name" required />
+                                <input type="text" name="ingredientDetail" placeholder="Nota/Tipo" class="form-input-custom detail" />
+                                <button type="button" class="btn-remove">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </template>
+
+                        <button type="button" id="btn-add-ingredient" class="btn-secondary mt-2">
                             <i class="fa-solid fa-plus"></i> @Localizer["Adicionar Ingrediente"]
                         </button>
                     </div>
 
                     <div class="form-group-custom full-width">
-                        <label asp-for="Input.Instructions"><i class="fa-solid fa-utensils"> @Localizer["Modo de Preparação"]</i></label>
+                        <label asp-for="Input.Instructions"><i class="fa-solid fa-utensils"></i> @Localizer["Modo de Preparação"]</label>
                         <textarea asp-for="Input.Instructions" class="form-input-custom textarea-custom"
-                                    placeholder="@Localizer["Explica o passo a passo da tua receita..."]"></textarea>
+                                  placeholder="@Localizer["Explica o passo a passo da tua receita..."]"></textarea>
+                        <span asp-validation-for="Input.Instructions" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -112,7 +162,7 @@
                     <button type="submit" class="btn-save">
                         <i class="fa-solid fa-floppy-disk"></i> @Localizer["Guardar Alterações"]
                     </button>
-                </div>                       
+                </div>
             </form>
         </div>
     </div>
@@ -120,7 +170,21 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/ingredients.js"></script>
+    <script src="~/js/ingredients.js" asp-append-version="true"></script>
     <script src="~/js/script.js"></script>
+
+    <script>
+        // Função para mostrar o preview da imagem assim que o utilizador escolhe o ficheiro
+        function previewFile(input) {
+            var preview = document.getElementById('imgPreview');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 }
 

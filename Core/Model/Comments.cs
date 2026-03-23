@@ -118,6 +118,26 @@ namespace Core.Model
             }
         }
 
+        public void UpdateRating(int newRating)
+        {
+            if (IsDeleted)
+            {
+                throw new InvalidOperationException("Não é possível atualizar a nota de um comentário eliminado.");
+            }
+
+            if (newRating < 1 || newRating > 5)
+            {
+                throw new ArgumentException("A nota deve estar entre 1 e 5.", nameof(newRating));
+            }
+
+            if (Rating != newRating)
+            {
+                Rating = newRating;
+                LastUpdatedAt = DateTime.UtcNow;                
+                IsEdited = true; 
+            }
+        }
+
         public void Delete()
         {
             if (!IsDeleted)

@@ -1,0 +1,104 @@
+﻿/* myfavoritesrecipes.css - Página Favoritos - SIMPLES e FUNCIONAL */
+
+/* Container geral */
+.favorites-page {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Título */
+.favorites-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+    .favorites-title i {
+        color: #e74c3c;
+    }
+
+/* Subtítulo */
+.favorites-subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+/* Container da grid */
+.favorites-container {
+    width: 100%;
+}
+
+/* Grid de cards */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 380px));
+    gap: 30px;
+    justify-content: center; /* centra quando há poucos cards */
+}
+
+    /* Força tamanho fixo nos cards (resolve o esticar) */
+    .favorites-grid .recipe-card {
+        max-width: 380px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+/* Empty state simples e bonito */
+.no-favorites {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+    .no-favorites i {
+        color: var(--primary-green);
+        margin-bottom: 20px;
+    }
+
+    .no-favorites h2 {
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+        color: var(--text-color);
+    }
+
+    .no-favorites p {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+.btn-explore {
+    background: var(--primary-green);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+}
+
+    .btn-explore:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .favorites-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .favorites-grid .recipe-card {
+            max-width: 100%;
+        }
+}

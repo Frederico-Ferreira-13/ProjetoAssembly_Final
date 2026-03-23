@@ -24,6 +24,11 @@ namespace Contracts.Service
         Task<Result<IEnumerable<IngredientsRecips>>> GetIngredientsByRecipeIdAsync(int recipeId);
         Task<Result<IngredientsRecips>> AddIngredientToRecipeAsync(IngredientsRecips newIngredientsRecipes);
         Task<Result> UpdateIngredientsInRecipeAsync(int id, IngredientsRecips ingredientsRecipesToUpdate);
-        Task<Result> RemoveIngredientFromRecipeAsync(int id);
+        Task<Result> RemoveIngredientFromRecipeAsync(int id);        
+        Task<Result<List<IngredientsRecips>>> GetByRecipesIdWithNamesAsync(int recipeId);
+
+        List<string> GetUnitOptions();
+        Task<Result> UpdateRecipeIngredientsAsync(int recipeId, List<string> quantities, List<string> units, List<string> names,
+            List<string> details);
     }
 }

@@ -10,6 +10,7 @@ namespace ProjetoAssembly_Final.Pages.Shared
     {
         public List<Comments> ListComments { get; set; } = new();
         public int RecipeId { get; set; }
+        public int UserRating { get; set; }
 
         public string? CommentMessage { get; set; }
         public int CommentRating { get; set; }

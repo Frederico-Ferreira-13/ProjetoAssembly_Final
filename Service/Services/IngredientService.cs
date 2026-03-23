@@ -2,6 +2,7 @@
 using Contracts.Service;
 using Core.Common;
 using Core.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,13 @@ namespace Service.Services
         private readonly IIngredientsRecipsRepository _ingredientsRecipsRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRecipesService _recipesService;
-        private readonly IUsersService _usersService;        
+        private readonly IUsersService _usersService;
+        private readonly ILogger<IngredientsRecips> _logger;
+
 
         public IngredientService(IIngredientsRepository ingredientsRepository, IIngredientsTypeRepository ingredientsTypeRepository,
             IUnitOfWork unitOfWork, IIngredientsRecipsRepository ingredientsRecipsRepository, IRecipesService recipesService, 
-            IUsersService usersService)
+            IUsersService usersService, ILogger<IngredientsRecips> logger)
         {
             _ingredientsRepository = ingredientsRepository ?? throw new ArgumentNullException(nameof(ingredientsRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));            
@@ -28,6 +31,7 @@ namespace Service.Services
             _ingredientsTypeRepository = ingredientsTypeRepository ??  throw new ArgumentNullException(nameof(ingredientsTypeRepository));
             _recipesService = recipesService ?? throw new ArgumentNullException(nameof(_recipesService));
             _usersService = usersService ?? throw new ArgumentNullException(nameof(usersService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Result<Ingredients>> GetIngredientByIdAsync(int ingredientId)
@@ -733,6 +737,105 @@ namespace Service.Services
                 _unitOfWork.Rollback();
                 return Result.Failure(
                     Error.InternalServer($"Erro ao remover ingrediente da receita: {ex.Message}"));
+            }
+        }
+
+        public async Task<Result<List<IngredientsRecips>>> GetByRecipesIdWithNamesAsync(int recipeId)
+        {           
+            if (!await _unitOfWork.Recipes.ExistsByIdAsync(recipeId))
+            {
+                return Result<List<IngredientsRecips>>.Failure(
+                    Error.NotFound(ErrorCodes.NotFound, $"Receita com ID {recipeId} não existe."));
+            }
+
+            try
+            {                
+                var list = await _ingredientsRecipsRepository.GetByRecipesIdWithNamesAsync(recipeId);
+
+                return Result<List<IngredientsRecips>>.Success(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                return Result<List<IngredientsRecips>>.Failure(
+                    Error.InternalServer($"Erro ao carregar ingredientes com nomes: {ex.Message}"));
+            }
+        }
+
+        public List<string> GetUnitOptions() => RecipeConstants.UnitOptions;
+
+        public async Task<Result> UpdateRecipeIngredientsAsync(int recipeId, List<string> quantities, List<string> units, List<string> names, List<string> details)
+        {            
+            var isOwner = await _recipesService.IsRecipeOwnerAsync(recipeId);
+            var currentUserResult = await _usersService.GetCurrentUserAsync();
+            bool isAdmin = currentUserResult.IsSuccessful &&
+                           currentUserResult.Value?.UsersRoleId == 1;
+
+            if (!isOwner && !isAdmin)
+            {
+                return Result.Failure(
+                    Error.Forbidden(
+                    ErrorCodes.AuthForbidden,
+                    "Apenas o dono ou um administrador podem editar os ingredientes."
+                    )
+                );
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                _logger.LogInformation("A apagar ingredientes antigos para receita {RecipeId}", recipeId);
+                await _ingredientsRecipsRepository.DeleteByRecipeIdAsync(recipeId);
+
+
+                _logger.LogInformation("Adicionar {Count} novos ingredientes", names.Count);
+
+                for (int i = 0; i < names.Count; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(names[i])) continue;
+
+                    _logger.LogInformation("Processando ingrediente {i}: Nome={Name}", i, names[i]);
+
+                    var ingredientResult = await _ingredientsRepository.GetByNameAsync(names[i]);
+                    int ingredientId;
+
+                    if (ingredientResult == null)
+                    {
+                        _logger.LogInformation("Ingrediente novo: {Name}", names[i]);
+                        var newIng = new Ingredients(names[i], 1);
+                        await _ingredientsRepository.CreateAddAsync(newIng);
+                        ingredientId = newIng.IngredientsId;
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Ingrediente existente: {Name} (ID {Id})", names[i], ingredientResult.IngredientsId);
+                        ingredientId = ingredientResult.IngredientsId;
+                    }
+
+                    decimal qty = decimal.TryParse(quantities[i],
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out var q) ? q : 0;
+                    string unit = units[i];
+                    string? detail = (details != null && details.Count > i) ? details[i] : null;
+
+                    var link = new IngredientsRecips(recipeId, ingredientId, qty, unit);
+
+                    link.Update(qty, unit, detail);
+
+                    _logger.LogInformation("A criar link: RecipeId={RecipeId}, IngredientId={IngredientId}, Qty={Qty}, Unit={Unit}, Detail={Detail}", recipeId, ingredientId, qty, unit, detail);
+                    await _ingredientsRecipsRepository.CreateAddAsync(link);
+                }
+
+                await _unitOfWork.CommitAsync();
+                _logger.LogInformation("Ingredientes da receita {RecipeId} atualizados com sucesso", recipeId);
+                return Result.Success("Ingredientes da receita atualizados com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                _logger.LogError(ex, "Erro ao atualizar ingredientes da receita {RecipeId}", recipeId);
+                return Result.Failure(Error.InternalServer($"Erro ao atualizar ingredientes: {ex.Message}"));
             }
         }
     }

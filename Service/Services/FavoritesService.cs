@@ -177,7 +177,7 @@ namespace Service.Services
 
                 if(existing != null)
                 {                    
-                    await _unitOfWork.Favorites.UpdateAsync(existing);
+                    await _unitOfWork.Favorites.RemoveAsync(existing);
                     isNowFavorite = false;
                 }
                 else
@@ -188,7 +188,6 @@ namespace Service.Services
                 }
 
                 await _unitOfWork.CommitAsync();
-
                 return Result<bool>.Success(isNowFavorite);
             }
             catch(Exception ex)

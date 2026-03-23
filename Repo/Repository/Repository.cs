@@ -100,14 +100,15 @@ namespace Repo.Repository
             return entities;
         }
 
-        public async Task UpdateAsync(TEntity entity)
+        public async Task<bool> UpdateAsync(TEntity entity)
         {
             string sql = BuildUpdateSql(entity);
             SqlParameter[] parameters = GetUpdateParameters(entity);
 
             try
-            {                
-                await SQL.ExecuteNonQueryAsync(sql, parameters);
+            {
+                int rowsAffected = await SQL.ExecuteNonQueryAsync(sql, parameters);
+                return rowsAffected > 0;
             }
             catch (Exception ex)
             {

@@ -74,13 +74,16 @@
                 @for (int i = 0; i < Model.RecipeList.Count; i++)
                 {
                     var recipe = Model.RecipeList[i];
+
                     var slideImg = string.IsNullOrEmpty(recipe.ImageUrl)
                     ? Url.Content("~/img/default.jpg")
-                    : (recipe.ImageUrl.Contains("img/")
-                    ? Url.Content("~/" + recipe.ImageUrl.Replace("~/", ""))
-                    : Url.Content("~/img/" + recipe.ImageUrl));
+                    : (recipe.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? recipe.ImageUrl
+                    : Url.Content("~/img/" + recipe.ImageUrl.Replace("img/", "").Replace("~/", "")));
 
-                    <div class="mySlides fade" style="@(i == 0 ? "display:block;" : "display:none;")">
+                    var displayStyle = (i == 0) ? "display:block;" : "display:none;";
+
+                    <div class="mySlides fade" style="@displayStyle">
                         <a asp-page="/view_recipes" asp-route-id="@recipe.RecipesId" class="slide-link">
                             <img src="@slideImg" alt="@recipe.Title">
                             <div class="slide-badge">@Localizer["Destaque"]</div>
@@ -131,3 +134,8 @@
         </div>
     </section>
 </main>
+
+@section Scripts {
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
+    <script src="~/js/favorites.js" asp-append-version="true"></script>
+}

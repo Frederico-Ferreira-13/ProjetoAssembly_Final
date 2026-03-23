@@ -25,7 +25,7 @@ namespace Core.Model
             this.IngredientsRecipsId = default;
         }
 
-        public IngredientsRecips(int recipesId, int ingredientsId, decimal quantityValue, [NotNull] string unit)
+        public IngredientsRecips(int recipesId, int ingredientsId, decimal quantityValue, [NotNull] string unit, string? detail = null)
         {
             Validate(recipesId, ingredientsId, quantityValue, unit);
 
@@ -35,10 +35,11 @@ namespace Core.Model
             IngredientsId = ingredientsId;
             QuantityValue = quantityValue;
             Unit = unit;
+            Detail = detail ?? string.Empty;
         }
 
         public IngredientsRecips(int id, int recipesId, int ingredientsId, decimal quantityValue,
-             string unit)
+             string unit, string? detail = null)
         {
             IngredientsRecipsId = id;            
 
@@ -46,6 +47,7 @@ namespace Core.Model
             IngredientsId = ingredientsId;
             QuantityValue = quantityValue;
             Unit = unit;
+            Detail = detail ?? string.Empty;
         }       
 
         public void Update(decimal newQuantityValue, [NotNull] string newUnit, string? newDetail)
@@ -53,13 +55,19 @@ namespace Core.Model
 
             ValidateQuantityAndUnit(newQuantityValue, newUnit);
 
-            if (QuantityValue != newQuantityValue || !Unit.Equals(newUnit, StringComparison.OrdinalIgnoreCase))
+            if (QuantityValue != newQuantityValue || !Unit.Equals(newUnit, StringComparison.OrdinalIgnoreCase) ||
+                Detail != newDetail)
             {
                 QuantityValue = newQuantityValue;
                 Unit = newUnit;
-                Detail = newDetail;
+                Detail = newDetail ?? string.Empty;
             }
-        }      
+        }
+
+        public void SetIngredient(Ingredients ingredient)
+        {
+            this.Ingredient = ingredient;
+        }
 
         private static void Validate(int recipesId, int ingredientsId, decimal quantityValue, [NotNull] string? unit)
         {
@@ -96,7 +104,7 @@ namespace Core.Model
             {
                 throw new ArgumentException("A Unidade contém caracteres inválidos.", nameof(unit));
             }
-        }
+        }        
 
         public int GetId() => IngredientsRecipsId;
 

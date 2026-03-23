@@ -269,6 +269,15 @@ section-title::after {
     }
 }
 
+.recipe-grid {
+    justify-items: center; /* centra os cards quando não preenchem a linha */
+}
+
+.recipe-grid .recipe-card {
+    max-width: 380px; /* ou 360px – ajusta ao teu gosto */
+    width: 100%;
+}
+
 @media (max-width: 576px) {
     .main-wrapper {
         padding: 0 15px;
@@ -285,5 +294,9 @@ section-title::after {
 
     .btn-search {
         padding: 0 1.4rem;
+    }
+
+    .recipe-grid .recipe-card {
+        max-width: 100%;
     }
 }

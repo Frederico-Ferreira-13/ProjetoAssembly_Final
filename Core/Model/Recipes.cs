@@ -11,13 +11,13 @@ namespace Core.Model
     {
         public int RecipesId { get; private set; }
         public int UserId { get; protected set; }
-        public int CategoriesId { get; protected set; }
-        public int DifficultyId { get; protected set; }
-        public string Title { get; protected set; }
-        public string Instructions { get; protected set; }
-        public int PrepTimeMinutes { get; protected set; }
-        public int CookTimeMinutes { get; protected set; }
-        public string Servings { get; protected set; }
+        public int CategoriesId { get;  set; }
+        public int DifficultyId { get;  set; }
+        public string Title { get;  set; }
+        public string Instructions { get; set; }
+        public int PrepTimeMinutes { get; set; }
+        public int CookTimeMinutes { get; set; }
+        public string Servings { get;  set; }
         public string? ImageUrl { get; protected set; }
         public DateTime CreatedAt { get; protected set; }
         public DateTime? LastUpdatedAt { get; protected set; }
@@ -26,14 +26,20 @@ namespace Core.Model
 
         public int FavoriteCount { get; set; } = 0;
         public bool IsFavorite { get; set; } = false;
-        public double AverageRating { get; set; } = 0.0;       
+        public double AverageRating { get; set; } = 0.0;
+        public int UserRating { get; set; } = 0;
 
         public virtual Users? User { get; private set; }
 
         public virtual ICollection<IngredientsRecips> Ingredients { get; protected set; } = new List<IngredientsRecips>();
 
         private const int MinTitleLength = 5;
-        private const int MinInstructionsLength = 20;       
+        private const int MinInstructionsLength = 20;
+
+        public Recipes()
+        {
+            Ingredients = new List<IngredientsRecips>();
+        }
 
         public Recipes(int userId, int categoriesId, int difficultyId, string title, string instructions,
                         int prepTimeMinutes, int cookTimeMinutes, string servings, string? imageUrl = null)
@@ -228,6 +234,17 @@ namespace Core.Model
             if (prepTimeMinutes + cookTimeMinutes == 0)
             {
                 throw new ArgumentException("O tempo total (preparação + cozedura) de ser maior que zero.");
+            }
+        }
+
+        public void LoadIngredients(IEnumerable<IngredientsRecips> ingredients)
+        {
+            if (ingredients == null) return;
+            
+            Ingredients.Clear();
+            foreach (var ingredient in ingredients)
+            {
+                Ingredients.Add(ingredient);
             }
         }
 

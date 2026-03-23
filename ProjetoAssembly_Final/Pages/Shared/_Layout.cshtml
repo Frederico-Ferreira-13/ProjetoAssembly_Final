@@ -1,7 +1,19 @@
 ﻿@using Microsoft.Extensions.Localization
+@using Contracts.Service
+@inject IRecipesService _recipesService
 @inject IStringLocalizer<ProjetoAssembly_Final.Pages.IndexModel> Localizer
 @{
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;    
+    int pendingCount = 0;
+
+    if (User.IsInRole("Admin"))
+    {
+        var pendingResult = await _recipesService.GetPendingRecipesAsync();
+        if (pendingResult.IsSuccessful && pendingResult.Value != null)
+        {
+            pendingCount = pendingResult.Value.Count();
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="@System.Threading.Thread.CurrentThread.CurrentUICulture.Name">
@@ -14,6 +26,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <link rel="stylesheet" href="~/css/global/layout.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/global/styles.css" asp-append-version="true">  
@@ -59,6 +72,21 @@
             </ul>
 
             <div class="nav-right">
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="notifications-menu">
+                        <a asp-page="/PendingRecipes" class="notification-btn" title="@Localizer["Receitas Pendentes"]">
+                            <i class="fa-solid fa-bell"></i>
+                            @if (pendingCount > 0)
+                            {
+                                <span id="pending-count-badge" class="notification-badge">
+                                    @pendingCount
+                                </span>
+                            }
+                        </a>
+                    </div>
+                }
+
                 <form action="/recipes" method="get" class="search-form">
                     <div class="search-container">
                         <button type="submit" class="search-btn" aria-label="@Localizer["Pesquisar"]">
@@ -122,8 +150,27 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="~/js/menu-toggle.js" asp-append-version="true"></script>
     <script src="~/js/script.js" asp-append-version="true"></script>
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '@Localizer["Sucesso!"]',
+                text: '@TempData["SuccessMessage"]',
+                timer: 3000,
+                showConfirmButton: false,
+                background: getComputedStyle(document.body).getPropertyValue('--swal-bg').trim() || '#fff',
+                color: getComputedStyle(document.body).getPropertyValue('--swal-text').trim() || '#333'
+            });
+        </script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

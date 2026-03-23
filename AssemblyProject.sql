@@ -251,3 +251,5 @@ WHERE Title = 'Arroz Doce Cremoso';
 SELECT Title, CategoriesId FROM Recipes WHERE Title IN ('Bolo de Chocolate Vegan', 'Arroz Doce Cremoso');
 
 ALTER TABLE Users ADD ProfilePicture NVARCHAR(MAX) NULL;
+
+SELECT * FROM Users;

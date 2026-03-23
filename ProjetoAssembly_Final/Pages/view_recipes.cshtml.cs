@@ -2,25 +2,29 @@ using Contracts.Service;
 using Core.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ProjetoAssembly_Final.Pages.Base;
+using System.ClientModel.Primitives;
 using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
 {
-    public class view_recipesModel : PageModel
+    public class RateRequest
     {
-        private readonly IRecipesService _recipesService;
-        private readonly ICommentsService _commentsService;
-        private readonly ITokenService _tokenService;
+        public int RecipeId { get; set; }
+        public int Rating { get; set; }
+    }
+
+    public class view_recipesModel : BaseRecipesPageModel
+    {        
+        private readonly ICommentsService _commentsService;       
 
         private static readonly HashSet<int> _mockFavoriteStatus = new();
 
-        public view_recipesModel(IRecipesService recipesService, ICommentsService commentsService, ITokenService tokenService)
-        {
-            _recipesService = recipesService;
-            _commentsService = commentsService;
-            _tokenService = tokenService;
+        public view_recipesModel(IRecipesService recipesService, ICommentsService commentsService, ITokenService tokenService) : base(recipesService, tokenService)
+        {            
+            _commentsService = commentsService;            
         }
-
+        
         public Recipes Recipe { get; private set; } = default!;
         public List<Comments> ListComments { get; set; } = new();
 
@@ -46,9 +50,7 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             Id = id;
-            RecipeId = id;
-
-            var result = await _recipesService.GetRecipeByIdAsync(id);
+            RecipeId = id;            
 
             await CarregarDadosDaPagina(id);
 
@@ -62,13 +64,11 @@ namespace ProjetoAssembly_Final.Pages
 
         public async Task<IActionResult> OnPostCommentAsync(int? parentCommentId)
         {
-            Console.WriteLine("======= DEBUG RESPOSTA (REPLY) =======");
-            Console.WriteLine($"RecipeId: {RecipeId}");
-            Console.WriteLine($"ParentCommentId recebido: {parentCommentId}");
-            Console.WriteLine($"Mensagem: {CommentMessage}");
+            Console.WriteLine($"[DEBUG PAGE] OnPostCommentAsync: RecipeId={RecipeId}, Rating={CommentRating}, Parent={parentCommentId}");
 
             if (RecipeId <= 0)
             {
+                Console.WriteLine("[DEBUG PAGE] Erro: RecipeId inválido.");
                 ModelState.AddModelError(string.Empty, "ID da receita inválido.");
                 await CarregarDadosDaPagina(RecipeId > 0 ? RecipeId : 1);
                 return Page();
@@ -79,14 +79,7 @@ namespace ProjetoAssembly_Final.Pages
                 ModelState.AddModelError("CommentMessage", "O comentário não pode estar vazio.");
                 await CarregarDadosDaPagina(RecipeId);
                 return Page();
-            }
-
-            if (parentCommentId == null && (CommentRating < 1 || CommentRating > 5))
-            {
-                ModelState.AddModelError("CommentRating", "Avaliação deve ser entre 1 e 5 estrelas.");
-                await CarregarDadosDaPagina(RecipeId);
-                return Page();
-            }
+            }            
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
@@ -96,37 +89,40 @@ namespace ProjetoAssembly_Final.Pages
 
             try
             {
+                Console.WriteLine($"[DEBUG PAGE] Criando objeto Comments. Texto: {CommentMessage?.Substring(0, Math.Min(10, CommentMessage.Length))}...");
+
                 var newComment = new Comments(
-                    RecipeId,
+                            RecipeId,
                     currentUserId,
-                    CommentMessage,
+                    CommentMessage!,
                     parentCommentId == null ? CommentRating : 1,
                     parentCommentId
                 );
-
-
-                Console.WriteLine($"A criar comentário: RecipeId={newComment.RecipesId}, UserId={newComment.UserId}");
-
-                Console.WriteLine("LOG: Vou chamar o CreateCommentsAsync agora...");
-
-                var result = await _commentsService.CreateCommentsAsync(newComment);
-
-                Console.WriteLine($"LOG: Resposta do Serviço: {result.IsSuccessful}");
-
-                Console.WriteLine($"Resultado: IsSuccessful={result.IsSuccessful}, Message={result.Message}");
+                
+                var result = await _commentsService.CreateCommentsAsync(newComment);               
 
                 if (result.IsSuccessful)
                 {
+                    if (parentCommentId == null && CommentRating > 0)
+                    {
+                        Console.WriteLine($"[DEBUG PAGE] Comentário principal: Atualizando nota para {CommentRating}");
+                        await _recipesService.UpdateRecipeRatingAsync(RecipeId, currentUserId, CommentRating);
+                    }
+                    else
+                    {
+                        Console.WriteLine("[DEBUG PAGE] Resposta detectada ou rating zero: Não altera a nota global.");
+                    }
+
                     TempData["SuccessMessage"] = "Comentário publicado com sucesso!";
                     return RedirectToPage(new { id = RecipeId });
                 }
 
+                Console.WriteLine($"[DEBUG PAGE] Falha no Service: {result.Message}");
                 ModelState.AddModelError(string.Empty, result.Message ?? "Erro ao publicar comentário.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"EXCEÇÃO: {ex.GetType().Name}: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                Console.WriteLine($"[DEBUG PAGE ERROR] Exceção: {ex.Message}");
                 ModelState.AddModelError(string.Empty, $"Erro: {ex.Message}");
             }
 
@@ -134,43 +130,51 @@ namespace ProjetoAssembly_Final.Pages
             return Page();
         }
 
+        public async Task<JsonResult> OnPostRateOnly([FromBody] RateRequest data)
+        {
+            if (data == null)
+            {
+                Console.WriteLine("[DEBUG PAGE] OnPostRateOnly: Dados recebidos são NULOS.");
+                return new JsonResult(new { success = false, message = "Dados inválidos." });
+            }
+
+            Console.WriteLine($"[DEBUG PAGE] OnPostRateOnly: Recipe={data.RecipeId}, Rating={data.Rating}");
+
+            if (data == null || data.RecipeId <= 0 || data.Rating < 1 || data.Rating > 5)
+                return new JsonResult(new { success = false, message = "Dados inválidos." });
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+                return new JsonResult(new { success = false, message = "Login necessário." });
+
+            try
+            {                
+                var result = await _recipesService.UpdateRecipeRatingAsync(data.RecipeId, currentUserId, data.Rating);
+
+                if (result.IsSuccessful)
+                {
+                    Console.WriteLine("[DEBUG PAGE] UpdateRecipeRatingAsync teve sucesso.");
+                    return new JsonResult(new { success = true });
+                }
+
+                Console.WriteLine($"[DEBUG PAGE] Falha no UpdateRecipeRating: {result.Message}");
+                return new JsonResult(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG PAGE ERROR] Exceção no RateOnly: {ex.Message}");
+                return new JsonResult(new { success = false, message = "Erro: " + ex.Message });
+            }
+        }
+
         public async Task<IActionResult> OnPostEditCommentAsync(int commentId, int recipeId, string editCommentText, int editRating)
         {
-            Console.WriteLine($"[EDIT] CommentId={commentId}, RecipeId={RecipeId}, Text={editCommentText}, Rating={editRating}");
-
-            // Validar inputs
-            if (commentId <= 0)
-            {
-                TempData["ErrorMessage"] = "ID do comentário inválido.";
-                return RedirectToPage(new { id = RecipeId });
-            }
-
-            if (string.IsNullOrWhiteSpace(editCommentText))
-            {
-                TempData["ErrorMessage"] = "O comentário não pode estar vazio.";
-                return RedirectToPage(new { id = RecipeId });
-            }
-
-            if (editCommentText.Length > 500)
-            {
-                TempData["ErrorMessage"] = "O comentário não pode exceder 500 caracteres.";
-                return RedirectToPage(new { id = RecipeId });
-            }
-
-            if (editRating < 1 || editRating > 5)
-            {
-                TempData["ErrorMessage"] = "Avaliação deve ser entre 1 e 5 estrelas.";
-                return RedirectToPage(new { id = RecipeId });
-            }
-
-            // Verificar utilizador autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
             {
                 return Unauthorized();
             }
 
-            // Criar objeto para atualização (o serviço valida se é o dono)
             var updateData = new Comments(
                 recipesId: recipeId,
                 userId: currentUserId,
@@ -190,107 +194,28 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             return RedirectToPage(new { id = recipeId });
-        }
+        }       
 
-        public async Task<IActionResult> OnPostToggleFavoriteAsync(int recipeId)
-        {
-            if(!User.Identity?.IsAuthenticated ?? false)
-            {
-                return Unauthorized();
-            }
-
-            if (recipeId >= 9991 && recipeId <= 9995)
-            {
-                bool isNowFavorite;
-                if (MockRecipes.FavoriteMockIds.Contains(recipeId))
-                {
-                    MockRecipes.FavoriteMockIds.Remove(recipeId);
-                    isNowFavorite = false;
-                }
-                else
-                {
-                    MockRecipes.FavoriteMockIds.Remove(recipeId);
-                    isNowFavorite = true;
-                }
-
-                return new JsonResult(new
-                {
-                    isFavorite = isNowFavorite,
-                    newCount = isNowFavorite ? 124 : 123
-                });
-
-            }
-
-            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
-            if (!userIdResult.IsSuccessful)
-            {
-                return BadRequest("Não foi possível identificar o utilziador ");
-            }
-
-            try
-            {
-                var result = await _recipesService.ToggleFavoriteAsync(recipeId, userIdResult.Value);
-                if (!result.IsSuccessful)
-                {
-                    return BadRequest(result.Message ?? "Erro ao alternar favorito.");
-                }
-
-                var updatedCount = await _recipesService.GetFavoriteCountAsync(recipeId);
-
-                return new JsonResult(new
-                {
-                    isFavorite = result.Value,
-                    newCount = updatedCount
-                });
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Erro ao processar favorito: {ex.Message}");
-                return StatusCode(500, "Ocorreu um erro ao processar a solicitação.");
-            }
-        }
-
-        
- 
         private async Task CarregarDadosDaPagina(int id)
         {
-            Console.WriteLine($"Carregando dados para receita ID: {id}");
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            int? currentUserId = userIdResult.IsSuccessful ? userIdResult.Value : null;
 
-            var result = await _recipesService.GetRecipeByIdAsync(id);
-            if(result?.IsSuccessful == true && result.Value != null)
+            var result = await _recipesService.GetRecipeByIdAsync(id, currentUserId);
+            if (result.IsSuccessful && result.Value != null)
             {
                 Recipe = result.Value;
                 IsReviewMode = !Recipe.IsActive;
-            }
-            else if(id >= 9991 && id <= 9995)
-            {
-                LoadMockRecipe(id);
-                IsReviewMode = false;
+
+                var ingredientsResult = await _recipesService.GetIngredientsByRecipeIdAsync(id);
+                if (ingredientsResult.IsSuccessful)
+                {
+                    Recipe.LoadIngredients(ingredientsResult.Value);
+                }
             }
 
             var commentsResult = await _commentsService.GetCommentsByRecipeIdAsync(id);
-            if(commentsResult.IsSuccessful)
-            {
-                ListComments = commentsResult.Value ?? new List<Comments>();
-                Console.WriteLine($"Comentários carregados: {ListComments.Count}");
-            }
-            else
-            {
-                Console.WriteLine($"Erro ao carregar comentários: {commentsResult.Message}");
-                ListComments = new List<Comments>();
-            }
-        }
-
-        private void LoadMockRecipe(int id)
-        {
-            var mocks = MockRecipes.GetFallbackMockRecipes();
-            this.Recipe = mocks.FirstOrDefault(r => r.RecipesId == id);
-
-            if (this.Recipe != null)
-            {
-                this.Recipe.IsFavorite = MockRecipes.FavoriteMockIds.Contains(id);
-                this.IsReviewMode = false;
-            }
-        }
+            ListComments = commentsResult.IsSuccessful ? (commentsResult.Value ?? new()) : new();
+        }        
     }
 }
