@@ -7,6 +7,7 @@ namespace Contracts.Repository
 {
     public interface IRecipesRepository : IRepository<Recipes>
     {
+        Task<int> GetUserRatingAsync(int recipeId, int userId);
         Task<List<Recipes>> GetUserIdRecipes(int userId);
         Task<bool> ExistsByIdAsync(int recipeId);
 

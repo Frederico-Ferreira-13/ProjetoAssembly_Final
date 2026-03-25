@@ -1,0 +1,78 @@
+﻿/* rating.css */
+
+/* Estrelas para input (Radio) */
+.star-rating-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    backdrop-filter: blur(4px);
+}
+
+.star-rating-control {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star-rating-control input {
+    display: none;
+}
+
+.star-rating-control label {
+    font-size: 1.5rem;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 0 2px;
+}
+
+.hero-meta .star-rating-control label {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* --- LÓGICA DE SELEÇÃO E HOVER --- */
+
+.star-rating-control input:checked ~ label,
+.star-rating-control label:hover,
+.star-rating-control label:hover ~ label {
+    color: #f1c40f !important;
+    text-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+    opacity: 1;
+}
+
+.hero-meta .star-rating-control input:checked ~ label {
+    color: #f1c40f !important;
+}
+
+.star-rating-control label::after hover {
+    transform: scale(1.2);
+}
+
+/* --- ESTRELAS ESTÁTICAS (LISTAGEM/COMENTÁRIOS) --- */
+.stars-display {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.stars-display .fa-star {
+    font-size: 0.9rem;
+}
+
+.stars-display .fa-star.checked,
+.stars-display .fa-solid.fa-star {
+    color: #f1c40f !important;
+}
+
+.stars-display .fa-regular.fa-star {
+    color: #cbd5e0; /* Cor cinza para estrelas vazias na listagem */
+}
+
+.rating-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #f7fafc;
+}

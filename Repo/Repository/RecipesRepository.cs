@@ -44,6 +44,11 @@ namespace Repo.Repository
                 if (HasColumn(reader, "IsFavorited") && !reader.IsDBNull(reader.GetOrdinal("IsFavorited")))
                     recipe.IsFavorite = Convert.ToInt32(reader["IsFavorited"]) == 1;
 
+                if (HasColumn(reader, "UserRating") && !reader.IsDBNull(reader.GetOrdinal("UserRating")))
+                {
+                    recipe.UserRating = Convert.ToInt32(reader["UserRating"]);
+                }
+
                 return recipe;
             }
             catch (Exception ex)
@@ -122,6 +127,29 @@ namespace Repo.Repository
             };
         }
 
+        public async Task<int> GetUserRatingAsync(int recipeId, int userId)
+        {
+            string sql = @"
+                SELECT RatingValue 
+                FROM Ratings 
+                WHERE RecipesId = @RecipeId AND UserId = @UserId AND IsActive = 1";
+
+            var parameters = new SqlParameter[]
+            {
+                new SqlParameter("@RecipeId", recipeId),
+                new SqlParameter("@UserId", userId)
+            };
+
+            using (var reader = await SQL.ExecuteQueryAsync(sql, parameters))
+            {
+                if (reader.Read())
+                {
+                    return Convert.ToInt32(reader["RatingValue"]);
+                }
+            }
+
+            return 0;
+        }
         public async Task<List<Recipes>> GetUserIdRecipes(int userId)
         {
             List<Recipes> recipes = new List<Recipes>();
@@ -185,7 +213,8 @@ namespace Repo.Repository
             string sql = $@"
                 SELECT r.*,
                        (SELECT COUNT(*) FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.IsActive = 1) as FavoriteCount,
-                       (SELECT ISNULL(AVG(CAST(RatingValue AS FLOAT)), 0) FROM Ratings rt WHERE rt.RecipesId = r.RecipesId AND rt.IsActive = 1) as AverageRating,
+                       (SELECT ISNULL(AVG(CAST(RatingValue AS FLOAT)), 0) FROM Ratings rt WHERE rt.RecipesId = r.RecipesId AND rt.IsActive = 1) as AverageRating,           
+                       (SELECT TOP 1 RatingValue FROM Ratings rt WHERE rt.RecipesId = r.RecipesId AND rt.UserId = @UserId AND rt.IsActive = 1) as UserRating,
                        CASE WHEN EXISTS (SELECT 1 FROM Favorites f WHERE f.RecipesId = r.RecipesId AND f.UserId = @UserId AND f.IsActive = 1)
                             THEN 1 ELSE 0 END as IsFavorited,
                        COUNT(*) OVER() as TotalRows

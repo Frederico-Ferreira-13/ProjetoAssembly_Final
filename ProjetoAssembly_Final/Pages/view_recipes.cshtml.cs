@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProjetoAssembly_Final.Pages.Base;
 using System.ClientModel.Primitives;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
@@ -44,46 +45,46 @@ namespace ProjetoAssembly_Final.Pages
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            if(id <= 0) 
+            Console.WriteLine($"\n[DEBUG GET] A carregar receita ID: {id}");
+            if (id <= 0) 
             {
+                Console.WriteLine("[DEBUG GET] ID inválido, a redirecionar para Index.");
                 return RedirectToPage("/Index");
             }
 
             Id = id;
-            RecipeId = id;            
-
+            RecipeId = id;
             await CarregarDadosDaPagina(id);
 
             if (Recipe == null)
             {
+                Console.WriteLine($"[DEBUG GET] Receita {id} não encontrada no Service.");
                 return NotFound();
-            }                     
+            }            
 
+            Console.WriteLine($"[DEBUG GET] Sucesso: {Recipe.Title} carregada com {ListComments.Count} comentários.");
             return Page();
         }
 
         public async Task<IActionResult> OnPostCommentAsync(int? parentCommentId)
         {
-            Console.WriteLine($"[DEBUG PAGE] OnPostCommentAsync: RecipeId={RecipeId}, Rating={CommentRating}, Parent={parentCommentId}");
-
-            if (RecipeId <= 0)
-            {
-                Console.WriteLine("[DEBUG PAGE] Erro: RecipeId inválido.");
-                ModelState.AddModelError(string.Empty, "ID da receita inválido.");
-                await CarregarDadosDaPagina(RecipeId > 0 ? RecipeId : 1);
-                return Page();
-            }
+            Console.WriteLine("\n--- [DEBUG POST COMMENT] INÍCIO ---");
+            Console.WriteLine($"Form Data -> RecipeId: {RecipeId}, Rating: {CommentRating}, Parent: {parentCommentId}");
+            Console.WriteLine($"Message: '{CommentMessage}'");            
 
             if (string.IsNullOrWhiteSpace(CommentMessage))
             {
                 ModelState.AddModelError("CommentMessage", "O comentário não pode estar vazio.");
                 await CarregarDadosDaPagina(RecipeId);
                 return Page();
-            }            
-
+            }
+                       
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"User Claim ID: {userIdClaim ?? "NULO"}");
+
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
             {
+                Console.WriteLine("[DEBUG ERROR] Utilizador não autenticado ou ID inválido.");
                 return Unauthorized();
             }
 
@@ -92,28 +93,20 @@ namespace ProjetoAssembly_Final.Pages
                 Console.WriteLine($"[DEBUG PAGE] Criando objeto Comments. Texto: {CommentMessage?.Substring(0, Math.Min(10, CommentMessage.Length))}...");
 
                 var newComment = new Comments(
-                            RecipeId,
+                    RecipeId,
                     currentUserId,
                     CommentMessage!,
-                    parentCommentId == null ? CommentRating : 1,
+                    0,
                     parentCommentId
                 );
-                
+
+                Console.WriteLine("[DEBUG] A chamar _commentsService.CreateCommentsAsync...");
                 var result = await _commentsService.CreateCommentsAsync(newComment);               
 
                 if (result.IsSuccessful)
                 {
-                    if (parentCommentId == null && CommentRating > 0)
-                    {
-                        Console.WriteLine($"[DEBUG PAGE] Comentário principal: Atualizando nota para {CommentRating}");
-                        await _recipesService.UpdateRecipeRatingAsync(RecipeId, currentUserId, CommentRating);
-                    }
-                    else
-                    {
-                        Console.WriteLine("[DEBUG PAGE] Resposta detectada ou rating zero: Não altera a nota global.");
-                    }
-
-                    TempData["SuccessMessage"] = "Comentário publicado com sucesso!";
+                    Console.WriteLine("[DEBUG] Comentário criado com sucesso.");
+                    TempData["SuccessMessage"] = "Comentário publicado!";
                     return RedirectToPage(new { id = RecipeId });
                 }
 
@@ -132,43 +125,28 @@ namespace ProjetoAssembly_Final.Pages
 
         public async Task<JsonResult> OnPostRateOnly([FromBody] RateRequest data)
         {
-            if (data == null)
-            {
-                Console.WriteLine("[DEBUG PAGE] OnPostRateOnly: Dados recebidos são NULOS.");
-                return new JsonResult(new { success = false, message = "Dados inválidos." });
-            }
+            Console.WriteLine("\n--- [DEBUG AJAX RATE] Atualização de Estrelas ---");
 
-            Console.WriteLine($"[DEBUG PAGE] OnPostRateOnly: Recipe={data.RecipeId}, Rating={data.Rating}");
-
-            if (data == null || data.RecipeId <= 0 || data.Rating < 1 || data.Rating > 5)
-                return new JsonResult(new { success = false, message = "Dados inválidos." });
+            if (data == null || data.Rating < 1 || data.Rating > 5)
+                return new JsonResult(new { success = false, message = "Avaliação inválida." });
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            if (!int.TryParse(userIdClaim, out int currentUserId))
                 return new JsonResult(new { success = false, message = "Login necessário." });
 
-            try
-            {                
-                var result = await _recipesService.UpdateRecipeRatingAsync(data.RecipeId, currentUserId, data.Rating);
+            // Atualiza apenas a tabela de Ratings/Receita
+            var result = await _recipesService.UpdateRecipeRatingAsync(data.RecipeId, currentUserId, data.Rating);
 
-                if (result.IsSuccessful)
-                {
-                    Console.WriteLine("[DEBUG PAGE] UpdateRecipeRatingAsync teve sucesso.");
-                    return new JsonResult(new { success = true });
-                }
+            Console.WriteLine($"[DEBUG] Nota {data.Rating} guardada para Receita {data.RecipeId}. Sucesso: {result.IsSuccessful}");
 
-                Console.WriteLine($"[DEBUG PAGE] Falha no UpdateRecipeRating: {result.Message}");
-                return new JsonResult(new { success = false, message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[DEBUG PAGE ERROR] Exceção no RateOnly: {ex.Message}");
-                return new JsonResult(new { success = false, message = "Erro: " + ex.Message });
-            }
+            return new JsonResult(new { success = result.IsSuccessful, message = result.Message });
         }
 
         public async Task<IActionResult> OnPostEditCommentAsync(int commentId, int recipeId, string editCommentText, int editRating)
         {
+            Console.WriteLine("\n--- [DEBUG EDIT COMMENT] INÍCIO ---");
+            Console.WriteLine($"CommentID: {commentId}, RecipeID: {recipeId}, New Rating: {editRating}");
+
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
             {
@@ -183,6 +161,7 @@ namespace ProjetoAssembly_Final.Pages
             );
 
             var result = await _commentsService.UpdateCommentsAsync(commentId, updateData);
+            Console.WriteLine($"[DEBUG] Update bem-sucedido? {result.IsSuccessful}");
 
             if (result.IsSuccessful)
             {
@@ -194,10 +173,43 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             return RedirectToPage(new { id = recipeId });
-        }       
+        }
+
+        public async Task<IActionResult> OnPostDeleteCommentAsync(int commentId, int recipeId)
+        {
+            Console.WriteLine($"[DEBUG PAGE] OnPostDeleteCommentAsync: CommentId={commentId}, RecipeId={recipeId}");
+            
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _commentsService.DeleteCommentsAsync(commentId);
+
+                if (result.IsSuccessful)
+                {
+                    TempData["SuccessMessage"] = "Comentário eliminado com sucesso!";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.Message ?? "Erro ao eliminar comentário.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG PAGE ERROR] Erro ao eliminar: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocorreu um erro inesperado ao eliminar o comentário.";
+            }
+            
+            return RedirectToPage(new { id = recipeId });
+        }
 
         private async Task CarregarDadosDaPagina(int id)
         {
+            Console.WriteLine($"[DEBUG] CarregarDadosDaPagina para ID: {id}");
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();
             int? currentUserId = userIdResult.IsSuccessful ? userIdResult.Value : null;
 
@@ -207,15 +219,19 @@ namespace ProjetoAssembly_Final.Pages
                 Recipe = result.Value;
                 IsReviewMode = !Recipe.IsActive;
 
+                Console.WriteLine($"[DEBUG] Dados Receita -> Título: {Recipe.Title}, Imagem: {Recipe.ImageUrl}");
+
                 var ingredientsResult = await _recipesService.GetIngredientsByRecipeIdAsync(id);
                 if (ingredientsResult.IsSuccessful)
                 {
                     Recipe.LoadIngredients(ingredientsResult.Value);
+                    Console.WriteLine($"[DEBUG] Ingredientes carregados: {ingredientsResult.Value?.Count() ?? 0}");
                 }
             }
 
             var commentsResult = await _commentsService.GetCommentsByRecipeIdAsync(id);
             ListComments = commentsResult.IsSuccessful ? (commentsResult.Value ?? new()) : new();
+            Console.WriteLine($"[DEBUG] Comentários carregados: {ListComments.Count}");
         }        
     }
 }

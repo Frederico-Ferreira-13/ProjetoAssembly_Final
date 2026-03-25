@@ -59,6 +59,9 @@ CREATE TABLE Users(
 );
 GO
 
+ALTER TABLE Account
+ADD CONSTRAINT FK_Account_CreatorUser FOREIGN KEY (CreatorUserId) REFERENCES Users(UserId);
+
 CREATE TABLE UserSettings (
     UserSettingId INT IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
@@ -70,9 +73,6 @@ CREATE TABLE UserSettings (
     CONSTRAINT FK_UserSettings_Users FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 GO
-
-ALTER TABLE Account
-ADD CONSTRAINT FK_Account_CreatorUser FOREIGN KEY (CreatorUserId) REFERENCES Users(UserId);
 
 CREATE TABLE Category(
 	CategoriesId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -102,21 +102,10 @@ CREATE TABLE Recipes(
 	LastUpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	IsApproved BIT NOT NULL DEFAULT 0,
+	AverageRating FLOAT NOT NULL DEFAULT 0,
 	CONSTRAINT FK_Recipes_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
 	CONSTRAINT FK_Recipes_Category FOREIGN KEY (CategoriesId) REFERENCES Category(CategoriesId),
 	CONSTRAINT FK_Recipes_Difficulty FOREIGN KEY (DifficultyId) REFERENCES Difficulty(DifficultyId)
-);
-GO
-
-CREATE TABLE Favorites (
-	FavoritesId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-	UserId INT NOT NULL,
-	RecipesId INT NOT NULL,
-	CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT UQ_Favorites_UserRecipes UNIQUE (UserId, RecipesId),
-	CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
-	CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipesId) REFERENCES Recipes(RecipesId)
 );
 GO
 
@@ -135,10 +124,23 @@ CREATE TABLE IngredientsRecips(
 	IngredientsId INT NOT NULL,
 	QuantityValue DECIMAL (10, 2) NOT NULL,
 	Unit NVARCHAR(50) NOT NULL,
+	Detail NVARCHAR(255) NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT UQ_IngredientsRecips UNIQUE (RecipesId, IngredientsId),
 	CONSTRAINT FK_IngRecips_Recipes FOREIGN KEY (RecipesId) References Recipes(RecipesId),
 	CONSTRAINT FK_IngRecips_Ingredients FOREIGN KEY (IngredientsId) References Ingredients(IngredientsId)
+);
+GO
+
+CREATE TABLE Favorites(
+	FavoritesId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	UserId INT NOT NULL,
+	RecipesId INT NOT NULL,
+	CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Favorites_UserRecipes UNIQUE (UserId, RecipesId),
+	CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
+	CONSTRAINT FK_Favorites_Recipes FOREIGN KEY (RecipesId) REFERENCES Recipes(RecipesId)
 );
 GO
 
@@ -186,44 +188,36 @@ GO
 INSERT INTO CategoryType (TypeName, IsActive) VALUES ('Comida', 1), ('Bebida', 1);
 GO
 
+INSERT INTO IngredientsType (IngredientsTypeName) VALUES ('Geral'), ('Mercearia'), ('Frescos'), ('Especiarias'), ('Laticínios');
+GO
+
 SET IDENTITY_INSERT Category ON;
-INSERT INTO Category (CategoriesId, AccountId, CategoryName, CategoryTypeId, IsActive)
+INSERT INTO Category (CategoriesId, AccountId, CategoryName, CategoryTypeId)
 VALUES
-    (1, 1, 'Sopas',      1, 1),
-    (2, 1, 'Carne',      1, 1),
-    (3, 1, 'Peixe',      1, 1),
-	(4, 1, 'Vegetariano', 1, 1),
-    (5, 1, 'Sobremesas', 1, 1);
+    (1, 1, 'Sopas', 1),
+    (2, 1, 'Carne', 1),
+    (3, 1, 'Peixe', 1),
+	(4, 1, 'Vegetariano', 1),
+    (5, 1, 'Sobremesas', 1);
 SET IDENTITY_INSERT Category OFF;
 GO
 
-DECLARE @NewUserId INT;
+INSERT INTO Users (AccountId, Name, UserName, Email, PasswordHash, Salt, UsersRoleId, IsApproved)
+VALUES (1, 'Frederico Ferreira', 'Frederico_Admin', 'fredericocrf87@hotmail.com', '$2a$12$8MCSOHsi2CXqd7qMY/Hiv.MK/KY9sjTIL4mzAQDe3Bz4dlGTK2dgm', 'SALT_ADMIN', 1, 1);
 
-INSERT INTO Users (
-    AccountId, Name, UserName, Email, PasswordHash, Salt, 
-    UsersRoleId, IsApproved, CreatedAt, IsActive
-)
-VALUES (
-    1, 'Frederico Ferreira', 'Frederico_Admin', 'fredericocrf87@hotmail.com',
-    '$2a$12$8MCSOHsi2CXqd7qMY/Hiv.MK/KY9sjTIL4mzAQDe3Bz4dlGTK2dgm',
-    'PROVISORIO', 1, 1, GETDATE(), 1
-);
+INSERT INTO Users (AccountId, Name, UserName, Email, PasswordHash, Salt, UsersRoleId, IsApproved)
+VALUES (1, 'User Teste', 'UserTeste', 'teste@fredericoreceitas.pt', '$2a$12$tecgzT9tqeVR6iWmz2bM.udA0LWNvWhBnniKt.C/3SeI.PO/he5kC', 'SALT_TESTE', 2, 1);
 
-SET @NewUserId = SCOPE_IDENTITY();
-
-INSERT INTO UserSettings (UserId, Theme, Language, ReceiveNotifications, IsActive, LastUpdatedAt)
-VALUES (@NewUserId, 'Dark', 'pt-PT', 1, 1, GETDATE());
-
-UPDATE Account SET CreatorUserId = @NewUserId WHERE AccountId = 1;
-
-INSERT INTO Recipes (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, IsActive, IsApproved)
+INSERT INTO Recipes (UserId, CategoriesId, DifficultyId, Title, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, ImageUrl, IsApproved)
 VALUES
-    (@NewUserId, 4, 1, 'Arroz Doce Cremoso',          'Cozinha o arroz em leite com canela.',                     10, 45, '6 pessoas', 'arroz-doce.jpg',        1, 1),
-    (@NewUserId, 2, 2, 'Arroz de Pato Tradicional',   'Coze o pato e leva ao forno com arroz.',                   30, 90, '4 pessoas', 'arroz-de-pato.jpg',     1, 1),
-    (@NewUserId, 1, 1, 'Sopa de Legumes Caseira',     'Tritura os legumes cozidos.',                               15, 35, '6 pessoas', 'sopa.jpg',              1, 1),
-    (@NewUserId, 3, 2, 'Bacalhau à Brás',             'Refoga bacalhau com batata palha e ovos.',                 20, 25, '4 pessoas', 'bacalhau.jpg',          1, 1),
-    (@NewUserId, 5, 3, 'Bolo de Chocolate Vegan',     'Mistura farinha, cacau e leite vegetal.',                  15, 35, '10 fatias', 'bolo-de-chocolate-vegan.jpg', 1, 1);
+    (1, 4, 1, 'Arroz Doce Cremoso', 'Cozinha o arroz em leite com canela.', 10, 45, '6 pessoas', 'arroz-doce.jpg', 1),
+    (2, 2, 2, 'Arroz de Pato Tradicional', 'Coze o pato e leva ao forno com arroz.', 30, 90, '4 pessoas', 'arroz-de-pato.jpg', 1),
+    (1, 1, 1, 'Sopa de Legumes Caseira', 'Tritura os legumes cozidos.', 15, 35, '6 pessoas', 'sopa.jpg', 1),
+    (1, 3, 2, 'Bacalhau à Brás', 'Refoga bacalhau com batata palha e ovos.', 20, 25, '4 pessoas', 'bacalhau.jpg', 1),
+    (2, 5, 3, 'Bolo de Chocolate Vegan', 'Mistura farinha, cacau e leite vegetal.', 15, 35, '10 fatias', 'bolo-de-chocolate-vegan.jpg', 1);
 GO
+
+UPDATE Recipes SET IsApproved = 0 WHERE RecipesId = 5;
 
 PRINT '=== TODOS OS DADOS INICIAIS INSERIDOS COM SUCESSO ===';
 
@@ -250,6 +244,86 @@ WHERE Title = 'Arroz Doce Cremoso';
 
 SELECT Title, CategoriesId FROM Recipes WHERE Title IN ('Bolo de Chocolate Vegan', 'Arroz Doce Cremoso');
 
-ALTER TABLE Users ADD ProfilePicture NVARCHAR(MAX) NULL;
+SELECT RecipesId, Title, IsActive FROM Recipes WHERE RecipesId = 1;
 
-SELECT * FROM Users;
+SELECT * FROM IngredientsRecips
+
+SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '%Ingredients%';
+
+SELECT ir.*, i.IngredientName 
+FROM IngredientsRecips ir
+INNER JOIN Ingredients i ON ir.IngredientsId = i.IngredientsId
+WHERE ir.RecipesId = 1;
+
+SELECT * FROM Recipes WHERE RecipesId = 1;
+SELECT * FROM IngredientsRecips WHERE RecipesId = 1;
+SELECT * FROM Comments WHERE RecipesId = 1;
+
+SELECT RecipesId, Title, CategoriesId, DifficultyId 
+FROM Recipes 
+ORDER BY RecipesId;
+
+SELECT * FROM Recipes WHERE RecipesId = 1;
+SELECT ir.*, i.IngredientName 
+FROM IngredientsRecips ir
+INNER JOIN Ingredients i ON ir.IngredientsId = i.IngredientsId
+WHERE ir.RecipesId = 1;
+
+SELECT RecipesId, Title, PrepTimeMinutes FROM Recipes WHERE RecipesId = 1;
+SELECT * FROM IngredientsRecips WHERE RecipesId = 1;
+
+INSERT INTO IngredientsType (IngredientsTypeName) 
+VALUES ('Geral'), ('Mercearia'), ('Frescos'), ('Especiarias'), ('Laticínios');
+GO
+
+SELECT * FROM IngredientsType;
+
+SELECT * FROM IngredientsRecips;
+
+Select * FROM Recipes
+
+SELECT RecipesId, PrepTimeMinutes, CookTimeMinutes FROM Recipes WHERE RecipesId;
+SELECT ir.*, i.IngredientName 
+FROM IngredientsRecips ir
+INNER JOIN Ingredients i ON ir.IngredientsId = i.IngredientsId
+WHERE ir.RecipesId;
+
+SELECT * FROM Recipes 
+WHERE IsActive = 1 
+  AND (Title LIKE @Search OR @Search IS NULL)
+  AND (CategoriesId = @CatId OR @CatId IS NULL)
+
+  SELECT * FROM Favorites
+
+  SELECT * FROM Favorites WHERE UserId = 1
+
+  SELECT * FROM Users
+  
+SELECT 
+    r.RecipesId, 
+    r.Title, 
+    r.UserId, 
+    r.CategoriesId, 
+    r.DifficultyId, 
+    r.PrepTimeMinutes, 
+    r.CookTimeMinutes, 
+    r.Servings, 
+    r.ImageUrl, 
+    r.IsApproved, 
+    r.IsActive,
+    ISNULL(AVG(CAST(rt.RatingValue AS FLOAT)), 0) as AverageRating,
+    COUNT(DISTINCT f.FavoritesId) as FavoriteCount
+FROM Recipes r
+LEFT JOIN Ratings rt ON r.RecipesId = rt.RecipesId AND rt.IsActive = 1
+LEFT JOIN Favorites f ON r.RecipesId = f.RecipesId AND f.IsActive = 1
+WHERE r.IsActive = 1 -- Opcional: apenas receitas ativas
+GROUP BY 
+    r.RecipesId, r.Title, r.UserId, r.CategoriesId, r.DifficultyId, 
+    r.PrepTimeMinutes, r.CookTimeMinutes, r.Servings, r.ImageUrl, 
+    r.IsApproved, r.IsActive;
+
+	SELECT * FROM Ratings
+
+	select * from IngredientsRecips
+
+	ALTER TABLE Recipes ADD AverageRating FLOAT NOT NULL DEFAULT 0;

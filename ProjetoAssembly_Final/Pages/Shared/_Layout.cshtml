@@ -162,7 +162,7 @@
             Swal.fire({
                 icon: 'success',
                 title: '@Localizer["Sucesso!"]',
-                text: '@TempData["SuccessMessage"]',
+                text: '@Html.Raw(TempData["SuccessMessage"])',
                 timer: 3000,
                 showConfirmButton: false,
                 background: getComputedStyle(document.body).getPropertyValue('--swal-bg').trim() || '#fff',

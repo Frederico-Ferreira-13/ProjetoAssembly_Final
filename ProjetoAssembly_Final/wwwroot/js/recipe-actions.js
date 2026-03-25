@@ -7,7 +7,7 @@
         const swalText = style.getPropertyValue('--swal-text').trim() || '#333333';       
 
         Swal.fire({
-            title: 'Eliminar Receita?',
+            title: 'Eliminar?',
             text: "Esta ação não pode ser revertida!",
             icon: 'warning',
             showCancelButton: true,

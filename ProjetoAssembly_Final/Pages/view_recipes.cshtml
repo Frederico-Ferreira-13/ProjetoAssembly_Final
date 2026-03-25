@@ -21,10 +21,10 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recipe.css" asp-append-version="true" />    
     <link rel="stylesheet" href="~/css/pages/comments.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/view-recipes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/rating.css" asp-append-version="true" />
 }
 
 <div id="antiforgery-token-container">
@@ -75,7 +75,16 @@
                     <span class="difficulty-badge @(Model.Recipe?.DifficultyId == 1 ? "dif-easy" : Model.Recipe?.DifficultyId == 2 ? "dif-medium" : "dif-hard")">
                         @(Model.Recipe?.DifficultyId == 1 ? Localizer["Fácil"] : Model.Recipe?.DifficultyId == 2 ? Localizer["Média"] : Localizer["Difícil"])
                     </span>
-                </div>              
+                </div>
+                
+                <div class="hero-meta-item ms-3">
+                    <div class="recipe-rating-container">                        
+                        <partial name="_StarRating" model='(Model.Recipe?.UserRating ?? 0, "GlobalRecipeRating")' />
+                        <span class="rating-label text-white-50" style="font-size: 0.8rem;">
+                            (@(Model.Recipe?.AverageRating.ToString("F1") ?? "0.0"))
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-actions">               
@@ -159,4 +168,5 @@
     <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
     <script src="~/js/favorites.js" asp-append-version="true"></script>
     <script src="~/js/comments.js" asp-append-version="true"></script>
+    <script src="~/js/rating.js" asp-append-version="true"></script>
 }

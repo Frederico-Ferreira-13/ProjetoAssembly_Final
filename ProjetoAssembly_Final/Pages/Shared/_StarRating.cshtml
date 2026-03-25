@@ -1,0 +1,26 @@
+﻿@model (int Value, string InputName)
+
+<div class="star-rating-control">
+
+    <span style="font-size: 10px; display:block; color: #ccc;">
+        DEBUG: @Model.InputName | Valor: @Model.Value
+    </span>
+
+    <span style="font-size: 10px; display:block;">DEBUG: @Model.InputName (Val: @Model.Value)</span>
+    @for (int i = 5; i >= 1; i--)
+    {        
+        var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
+        var recipeId = ViewContext.RouteData.Values["id"];
+
+        <input type="radio"
+               id="star-@uniqueId-@i"
+               name="@Model.InputName"
+               value="@i"
+               @(Model.Value == i ? "checked" : "")
+               onclick="submitRating(@recipeId, @i)"
+               required />
+        <label for="star-@uniqueId-@i">
+            <i class="fa-solid fa-star"></i>
+        </label>
+    }
+</div>

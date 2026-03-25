@@ -102,6 +102,7 @@ CREATE TABLE Recipes(
 	LastUpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	IsApproved BIT NOT NULL DEFAULT 0,
+	AverageRating FLOAT NOT NULL DEFAULT 0,
 	CONSTRAINT FK_Recipes_Users FOREIGN KEY (UserId) REFERENCES Users(UserId),
 	CONSTRAINT FK_Recipes_Category FOREIGN KEY (CategoriesId) REFERENCES Category(CategoriesId),
 	CONSTRAINT FK_Recipes_Difficulty FOREIGN KEY (DifficultyId) REFERENCES Difficulty(DifficultyId)
@@ -324,3 +325,5 @@ GROUP BY
 	SELECT * FROM Ratings
 
 	select * from IngredientsRecips
+
+	ALTER TABLE Recipes ADD AverageRating FLOAT NOT NULL DEFAULT 0;

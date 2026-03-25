@@ -80,6 +80,7 @@ namespace Service.Services
             if (currentUserId.HasValue)
             {
                 recipe.IsFavorite = await _favoritesRepository.ExistsAsync(recipeId, currentUserId.Value);
+                recipe.UserRating = await _recipesRepository.GetUserRatingAsync(recipeId, currentUserId.Value);
             }
 
             return Result<Recipes>.Success(recipe);
@@ -633,6 +634,12 @@ namespace Service.Services
 
         public async Task<Result> UpdateRecipeRatingAsync(int recipeId, int userId, int rating)
         {
+            var userIdResult = await _tokenService.GetUserIdFromContextAsync();
+            if (!userIdResult.IsSuccessful || userIdResult.Value != userId)
+            {
+                return Result.Failure(Error.Forbidden(ErrorCodes.AuthForbidden, "Não pode avaliar em nome de outro utilizador."));
+            }
+
             if (recipeId <= 0 || rating < 1 || rating > 5)
             {
                 return Result.Failure(Error.Validation("Dados de avaliação inválidos."));

@@ -39,24 +39,31 @@ function cancelEdit(commentId) {
 }
 
 async function deleteComment(commentId) {
-    if (confirm('Tem a certeza que deseja eliminar este comentário')) {
+    // Obtém o RecipeId que deve estar disponível no modelo da página
+    const recipeId = document.querySelector('input[name="RecipeId"]')?.value;
+
+    if (confirm('Tem a certeza que deseja eliminar este comentário?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '?handler=DeleteComment';
+        // Adiciona o RecipeId na URL do handler para garantir o redirecionamento correto
+        form.action = `?handler=DeleteComment&recipeId=${recipeId}`;
 
         const commentInput = document.createElement('input');
         commentInput.type = 'hidden';
         commentInput.name = 'commentId';
         commentInput.value = commentId;
 
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '__RequestVerificationToken';
-        tokenInput.value = token;
+        // O token é essencial para evitar o erro 400 (Bad Request)
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        if (token) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = token;
+            form.appendChild(tokenInput);
+        }
 
         form.appendChild(commentInput);
-        form.appendChild(tokenInput);
         document.body.appendChild(form);
         form.submit();
     }
@@ -201,48 +208,7 @@ function hideReplyForm(commentId) {
     }
 }
 
-async function submitRating(recipeId, stars) {
-    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-    const token = tokenInput ? tokenInput.value : null;
 
-    if (!token) {
-        console.error("Token de verificação não encontrado.");
-        return;
-    }
-
-    try {
-        const url = `${window.location.pathname}?handler=RateOnly`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // O Razor Pages procura este header específico
-                'RequestVerificationToken': token,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                recipeId: parseInt(recipeId),
-                rating: parseInt(stars)
-            })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                // Feedback visual antes de fazer reload (opcional)
-                location.reload();
-            } else {
-                alert("Erro: " + (data.message || "Não foi possível gravar a avaliação."));
-            }
-        } else {
-            console.error("Erro no servidor:", response.status);
-            alert("Erro na comunicação com o servidor.");
-        }
-    } catch (error) {
-        console.error("Erro na submissão:", error);
-    }
-}
 
 // Exportar funções para uso global (necessário para os onclick inline)
 window.enableEditMode = enableEditMode;
@@ -251,4 +217,3 @@ window.validateEditForm = validateEditForm;
 window.deleteComment = deleteComment;
 window.showReplyForm = showReplyForm;
 window.hideReplyForm = hideReplyForm;
-window.submitRating = submitRating;
