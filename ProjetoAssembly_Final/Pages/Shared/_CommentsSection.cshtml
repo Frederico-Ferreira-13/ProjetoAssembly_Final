@@ -8,24 +8,20 @@
     var isAdmin = User.IsInRole("Admin") || User.IsInRole("Administrator");
 }
 
-<div style="background: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; margin-bottom: 20px; font-family: monospace; font-size: 12px;">
-    <strong>[DEBUG] Info da Secção:</strong><br />
-    RecipeId: @Model.RecipeId |
-    Total Comentários: @(Model.ListComments?.Count() ?? 0) |
-    User IsAuthenticated: @isAuthenticated
-</div>
-
 <div class="comments-section-wrapper">
+
     <div id="comments-list-container" class="comments-list">
         @if (Model.ListComments != null && Model.ListComments.Any())
         {
+            @* Filtramos apenas os comentários "raiz" (ParentCommentId == null) *@
             @foreach (var c in Model.ListComments.Where(x => x.ParentCommentId == null).OrderByDescending(x => x.CreatedAt))
-            {                
+            {
                 var isOwner = isAuthenticated && currentUserId == c.UserId.ToString();
                 var canEdit = (isOwner || isAdmin) && !c.IsDeleted;
                 var displayName = !string.IsNullOrEmpty(c.UserName) ? c.UserName : (!string.IsNullOrEmpty(c.Name) ? c.Name : "Utilizador");
 
                 <div class="thread-group mb-4">
+                    @* --- COMENTÁRIO PRINCIPAL --- *@
                     <article class="comment-card main-comment" id="comment-@c.CommentsId">
                         <div class="comment-user-info">
                             <div class="user-avatar-circle">
@@ -39,16 +35,6 @@
                                         <i class="fa-solid fa-pen"></i> @Localizer["editado"]
                                     </span>
                                 }
-                                <div class="stars-display">
-                                    @for (int i = 0; i < c.Rating; i++)
-                                    {
-                                        <i class="fa-solid fa-star checked"></i>
-                                    }
-                                    @for (int i = c.Rating; i < 5; i++)
-                                    {
-                                        <i class="fa-regular fa-star"></i>
-                                    }
-                                </div>
                             </div>
                             <time class="comment-date">@c.CreatedAt.ToString("dd/MM/yyyy")</time>
                         </div>
@@ -74,21 +60,19 @@
                             </div>
                         </div>
 
+                        @* Formulário de Edição do Comentário Principal *@
                         @if (canEdit)
                         {
                             <div class="comment-edit-form" id="comment-edit-@c.CommentsId" style="display: none;">
-                                <form method="post" asp-page-handler="EditComment">
+                                <form method="post" asp-page-handler="EditComment" onsubmit="return validateEditForm(@c.CommentsId)">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="commentId" value="@c.CommentsId" />
                                     <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
+                                    <input type="hidden" name="editRating" value="@c.Rating" />
 
-                                    <div class="rating-input-group">
-                                        <label>@Localizer["Avaliação"]:</label>
-                                        <partial name="_StarRating" model='(c.Rating, "editRating")' />
-                                    </div>
-
-                                    <textarea name="editCommentText" class="form-control-modern" rows="3">@c.CommentText</textarea>
-                                    <div class="edit-actions">
+                                    <textarea id="edit-text-@c.CommentsId" name="editCommentText" class="form-control-modern" rows="3">@c.CommentText</textarea>
+                                    <div class="edit-actions mt-2">
+                                        <small class="char-counter"><span id="char-count-@c.CommentsId">0</span>/500</small>
                                         <button type="button" class="btn-cancel" onclick="cancelEdit(@c.CommentsId)">@Localizer["Cancelar"]</button>
                                         <button type="submit" class="btn-save">@Localizer["Guardar"]</button>
                                     </div>
@@ -97,7 +81,27 @@
                         }
                     </article>
 
-                    @* Listagem de Respostas *@
+                    @* --- FORMULÁRIO DE RESPOSTA (THREAD) --- *@
+                    @if (isAuthenticated)
+                    {
+                        <div class="comment-reply-form mt-2 reply-form-wrapper" id="reply-form-container-@c.CommentsId" style="display: none; margin-left: 50px;">
+                            <form method="post" asp-page-handler="Comment">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
+                                <input type="hidden" name="parentCommentId" value="@c.CommentsId" />
+
+                                <textarea name="CommentMessage" class="form-control-modern" rows="2"
+                              placeholder="@Localizer["Escreva a sua resposta..."]" required maxlength="500"></textarea>
+
+                                <div class="edit-actions mt-2 text-end">
+                                    <button type="button" class="btn-cancel" onclick="hideReplyForm(@c.CommentsId)">@Localizer["Cancelar"]</button>
+                                    <button type="submit" class="btn-save">@Localizer["Responder"]</button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+
+                    @* --- LISTAGEM DE RESPOSTAS (FILHOS) --- *@
                     @{
                         var replies = Model.ListComments.Where(r => r.ParentCommentId == c.CommentsId).OrderBy(r => r.CreatedAt);
                     }
@@ -114,16 +118,11 @@
                                         <div class="user-avatar-circle small-avatar"><i class="fa-solid fa-user"></i></div>
                                         <div class="user-details">
                                             <strong>@(reply.UserName ?? "Utilizador")</strong>
-                                            @if (reply.IsEdited)
-                                            {
-                                                <span class="edited-badge" title="Editado"><i class="fa-solid fa-pen"></i></span>
-                                            }
-                                            <span class="reply-tag"><i class="fa-solid fa-share"></i> em resposta a @displayName</span>
+                                            <span class="reply-tag"><i class="fa-solid fa-share"></i> @Localizer["em resposta a"] @displayName</span>
                                         </div>
                                         <time class="comment-date">@reply.CreatedAt.ToString("dd/MM/yyyy")</time>
                                     </div>
 
-                                    @* Conteúdo da Resposta *@
                                     <div class="comment-content" id="comment-display-@reply.CommentsId">
                                         <p>@reply.CommentText</p>
                                         <div class="comment-actions">
@@ -139,17 +138,16 @@
                                         </div>
                                     </div>
 
-                                    @* Form de Edição da Resposta *@
                                     @if (canEditReply)
                                     {
                                         <div class="comment-edit-form" id="comment-edit-@reply.CommentsId" style="display: none;">
-                                            <form method="post" asp-page-handler="EditComment">
+                                            <form method="post" asp-page-handler="EditComment" onsubmit="return validateEditForm(@reply.CommentsId)">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="commentId" value="@reply.CommentsId" />
                                                 <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
                                                 <input type="hidden" name="editRating" value="@reply.Rating" />
 
-                                                <textarea name="editCommentText" class="form-control-modern" rows="2">@reply.CommentText</textarea>
+                                                <textarea id="edit-text-@reply.CommentsId" name="editCommentText" class="form-control-modern" rows="2">@reply.CommentText</textarea>
                                                 <div class="edit-actions mt-2">
                                                     <button type="button" class="btn-cancel" onclick="cancelEdit(@reply.CommentsId)">@Localizer["Cancelar"]</button>
                                                     <button type="submit" class="btn-save">@Localizer["Guardar"]</button>
@@ -166,7 +164,7 @@
         }
     </div>
 
-    @* Formulário Geral de Novo Comentário *@
+    @* --- FORMULÁRIO PRINCIPAL DE NOVO COMENTÁRIO --- *@
     @if (isAuthenticated)
     {
         <section class="comments-form-section mt-5">
@@ -174,7 +172,7 @@
                 <h3><i class="fa-solid fa-pen-to-square"></i> @Localizer["Deixe a sua opinião"]</h3>
                 <form method="post" asp-page-handler="Comment">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="RecipeId" value="@Model.RecipeId" />                   
+                    <input type="hidden" name="RecipeId" value="@Model.RecipeId" />
 
                     <div class="form-group">
                         <textarea name="CommentMessage" class="form-control-modern" rows="4" required maxlength="500" placeholder="@Localizer["O que achou desta receita?"]"></textarea>

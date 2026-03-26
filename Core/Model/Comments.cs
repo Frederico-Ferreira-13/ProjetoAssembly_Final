@@ -51,11 +51,7 @@ namespace Core.Model
             if (commentText.Length > 500)
             {
                 throw new ArgumentException("Comentário não pode exceder 500 caracteres.", nameof(commentText));
-            }
-            if (parentCommentId == null && (rating < 1 || rating > 5))
-            {
-                throw new ArgumentException("Rating deve ser entre 1 e 5.", nameof(rating));
-            }
+            }            
 
             RecipesId = recipesId;
             UserId = userId;

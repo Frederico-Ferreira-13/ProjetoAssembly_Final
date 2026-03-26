@@ -1,219 +1,95 @@
-﻿function enableEditMode(commentId, currentText, currentRating) {
-    console.log('[Comments] Ativando edição:', { commentId, currentText, currentRating });
+﻿/**
+ * Funções de Gestão de Comentários com Debug Ativo
+ */
 
-    // Esconder visualização
-    const displayEl = document.getElementById(`comment-display-${commentId}`);
-    if (displayEl) {
-        displayEl.style.display = 'none';
+function showReplyForm(commentId) {
+    console.log(`[DEBUG] A tentar abrir formulário de resposta para o ID: ${commentId}`);
+
+    // 1. Verificar se encontra todos os wrappers para fechar
+    const allWrappers = document.querySelectorAll('.reply-form-wrapper');
+    console.log(`[DEBUG] Encontrados ${allWrappers.length} formulários de resposta na página.`);
+
+    allWrappers.forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // 2. Tentar encontrar o elemento específico
+    const targetId = `reply-form-container-${commentId}`;
+    const form = document.getElementById(targetId);
+
+    if (form) {
+        console.log(`[DEBUG] Sucesso: Elemento ${targetId} encontrado. A mudar display para block.`);
+        form.style.display = 'block';
+
+        const textarea = form.querySelector('textarea');
+        if (textarea) {
+            console.log(`[DEBUG] Textarea encontrado. A dar foco...`);
+            textarea.focus();
+        }
+    } else {
+        console.error(`[ERRO CRÍTICO] Não encontrei nenhum elemento com o ID: ${targetId}`);
+        console.warn(`[DICA] Verifica se no teu HTML o ID está escrito exatamente como: id="reply-form-container-${commentId}"`);
     }
+}
 
-    // Mostrar formulário de edição
+function hideReplyForm(commentId) {
+    console.log(`[DEBUG] A esconder formulário ${commentId}`);
+    const form = document.getElementById(`reply-form-container-${commentId}`);
+    if (form) form.style.display = 'none';
+}
+
+function enableEditMode(commentId) {
+    console.log(`[DEBUG] Modo Edição iniciado para o comentário: ${commentId}`);
+
+    const displayEl = document.getElementById(`comment-display-${commentId}`);
     const editForm = document.getElementById(`comment-edit-${commentId}`);
+    const textarea = document.getElementById(`edit-text-${commentId}`);
+
+    if (!displayEl) console.warn(`[DEBUG] Não encontrei o elemento de visualização: comment-display-${commentId}`);
+    if (!editForm) console.warn(`[DEBUG] Não encontrei o formulário de edição: comment-edit-${commentId}`);
+    if (!textarea) console.warn(`[DEBUG] Não encontrei o textarea: edit-text-${commentId}`);
+
+    if (displayEl) displayEl.style.display = 'none';
     if (editForm) {
         editForm.style.display = 'block';
-
-        // Focar no textarea e colocar cursor no fim
-        const textarea = document.getElementById(`edit-text-${commentId}`);
         if (textarea) {
             textarea.focus();
             const len = textarea.value.length;
             textarea.setSelectionRange(len, len);
+
+            // Log do estado inicial da edição
+            console.log(`[DEBUG] Edição aberta. Conteúdo atual: "${textarea.value.substring(0, 20)}..."`);
         }
     }
 }
 
 function cancelEdit(commentId) {
-    console.log('[Comments] Cancelando edição:', commentId);
-
-    // Mostrar visualização
+    console.log(`[DEBUG] Cancelar edição para: ${commentId}`);
     const displayEl = document.getElementById(`comment-display-${commentId}`);
-    if (displayEl) {
-        displayEl.style.display = 'block';
-    }
-
-    // Esconder formulário
     const editForm = document.getElementById(`comment-edit-${commentId}`);
-    if (editForm) {
-        editForm.style.display = 'none';
-    }
-}
 
-async function deleteComment(commentId) {
-    // Obtém o RecipeId que deve estar disponível no modelo da página
-    const recipeId = document.querySelector('input[name="RecipeId"]')?.value;
-
-    if (confirm('Tem a certeza que deseja eliminar este comentário?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        // Adiciona o RecipeId na URL do handler para garantir o redirecionamento correto
-        form.action = `?handler=DeleteComment&recipeId=${recipeId}`;
-
-        const commentInput = document.createElement('input');
-        commentInput.type = 'hidden';
-        commentInput.name = 'commentId';
-        commentInput.value = commentId;
-
-        // O token é essencial para evitar o erro 400 (Bad Request)
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-        if (token) {
-            const tokenInput = document.createElement('input');
-            tokenInput.type = 'hidden';
-            tokenInput.name = '__RequestVerificationToken';
-            tokenInput.value = token;
-            form.appendChild(tokenInput);
-        }
-
-        form.appendChild(commentInput);
-        document.body.appendChild(form);
-        form.submit();
-    }
+    if (displayEl) displayEl.style.display = 'block';
+    if (editForm) editForm.style.display = 'none';
 }
 
 function validateEditForm(commentId) {
+    console.log(`[DEBUG] A validar submissão para ID: ${commentId}`);
     const textarea = document.getElementById(`edit-text-${commentId}`);
+
     if (!textarea) {
-        console.error('[Comments] Textarea não encontrado:', commentId);
+        console.error("[DEBUG] Erro de validação: Textarea não encontrado.");
         return false;
     }
 
     const text = textarea.value.trim();
+    console.log(`[DEBUG] Texto a validar: "${text.substring(0, 30)}..." (Tamanho: ${text.length})`);
 
-    // Validação de texto vazio
     if (text.length === 0) {
         alert('O comentário não pode estar vazio.');
-        textarea.focus();
         return false;
     }
-
-    // Validação de tamanho máximo
-    if (text.length > 500) {
-        alert('O comentário não pode exceder 500 caracteres.');
-        textarea.focus();
-        return false;
-    }
-
-    console.log('[Comments] Formulário válido, a submeter...');
     return true;
 }
 
-function initCharCounters() {
-    document.addEventListener('input', function (e) {
-        // Verificar se é um textarea de edição
-        if (e.target && e.target.matches('textarea[id^="edit-text-"]')) {
-            const match = e.target.id.match(/edit-text-(\d+)/);
-            if (match) {
-                const commentId = match[1];
-                const count = e.target.value.length;
-                const counter = document.getElementById(`char-count-${commentId}`);
-
-                if (counter) {
-                    counter.textContent = count;
-
-                    // Mudar cor se próximo do limite
-                    if (count > 450) {
-                        counter.style.color = '#e74c3c';
-                    } else if (count > 400) {
-                        counter.style.color = '#f39c12';
-                    } else {
-                        counter.style.color = '';
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateEditTimers() {
-    const timers = document.querySelectorAll('.edit-timer');
-
-    timers.forEach(timer => {
-        const created = new Date(timer.dataset.created);
-        const now = new Date();
-        const elapsed = (now - created) / 1000; // segundos
-        const remaining = 300 - elapsed; // 5 minutos = 300 segundos
-
-        const timeDisplay = timer.querySelector('.time-remaining');
-
-        if (remaining <= 0) {
-            // Tempo expirado - remover botão de editar
-            const actions = timer.closest('.comment-actions');
-            if (actions) {
-                actions.innerHTML = `
-                    <span class="edit-expired">
-                        <i class="fa-solid fa-clock"></i> 
-                        Tempo de edição expirado
-                    </span>
-                `;
-            }
-        } else if (timeDisplay) {
-            // Formatar tempo restante
-            const minutes = Math.floor(remaining / 60);
-            const seconds = Math.floor(remaining % 60);
-            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-            // Alerta visual se menos de 1 minuto
-            if (remaining < 60) {
-                timeDisplay.style.color = '#e74c3c';
-                timeDisplay.style.fontWeight = 'bold';
-            }
-        }
-    });
-}
-
-function initEditTimers() {
-    // Executar imediatamente
-    updateEditTimers();
-
-    // Atualizar a cada segundo
-    setInterval(updateEditTimers, 1000);
-}
-
-function initComments() {
-    console.log('[Comments] Inicializando...');
-
-    initCharCounters();
-    initEditTimers();
-
-    console.log('[Comments] Pronto!');
-}
-
-// Inicializar quando o DOM estiver pronto
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initComments);
-} else {
-    // DOM já carregado
-    initComments();
-}
-
-function showReplyForm(commentId) {
-    console.log('[Comments] Abrindo formulário de resposta para:', commentId);
-
-    document.querySelectorAll('.reply-form-wrapper').forEach(el => {
-        el.style.display = 'none';
-    });
-
-    const form = document.getElementById(`reply-form-container-${commentId}`);
-    if (form) {
-        form.style.display = 'block';
-
-        const textarea = form.querySelector('textarea');
-        if (textarea) textarea.focus();
-    }
-}
-
-function hideReplyForm(commentId) {
-    const form = document.getElementById(`reply-form-container-${commentId}`);
-    if (form) {
-        form.style.display = 'none';
-    }
-}
-
-
-
-// Exportar funções para uso global (necessário para os onclick inline)
-window.enableEditMode = enableEditMode;
-window.cancelEdit = cancelEdit;
-window.validateEditForm = validateEditForm;
-window.deleteComment = deleteComment;
-window.showReplyForm = showReplyForm;
-window.hideReplyForm = hideReplyForm;
+// Log de Inicialização
+console.log("%c[SISTEMA] Script de Comentários carregado com sucesso.", "color: green; font-weight: bold;");

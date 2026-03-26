@@ -69,6 +69,12 @@ namespace ProjetoAssembly_Final.Pages
         public async Task<IActionResult> OnPostCommentAsync(int? parentCommentId)
         {
             Console.WriteLine("\n--- [DEBUG POST COMMENT] INÍCIO ---");
+
+            if (parentCommentId == null && int.TryParse(Request.Form["parentCommentId"], out int pId))
+            {
+                parentCommentId = pId;
+            }
+
             Console.WriteLine($"Form Data -> RecipeId: {RecipeId}, Rating: {CommentRating}, Parent: {parentCommentId}");
             Console.WriteLine($"Message: '{CommentMessage}'");            
 
