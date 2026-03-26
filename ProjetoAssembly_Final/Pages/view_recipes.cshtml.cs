@@ -54,7 +54,7 @@ namespace ProjetoAssembly_Final.Pages
 
             Id = id;
             RecipeId = id;
-            await CarregarDadosDaPagina(id);
+            await LoadPageData(id);
 
             if (Recipe == null)
             {
@@ -75,7 +75,7 @@ namespace ProjetoAssembly_Final.Pages
             if (string.IsNullOrWhiteSpace(CommentMessage))
             {
                 ModelState.AddModelError("CommentMessage", "O comentário não pode estar vazio.");
-                await CarregarDadosDaPagina(RecipeId);
+                await LoadPageData(RecipeId);
                 return Page();
             }
                        
@@ -119,7 +119,7 @@ namespace ProjetoAssembly_Final.Pages
                 ModelState.AddModelError(string.Empty, $"Erro: {ex.Message}");
             }
 
-            await CarregarDadosDaPagina(RecipeId);
+            await LoadPageData(RecipeId);
             return Page();
         }
 
@@ -207,7 +207,7 @@ namespace ProjetoAssembly_Final.Pages
             return RedirectToPage(new { id = recipeId });
         }
 
-        private async Task CarregarDadosDaPagina(int id)
+        private async Task LoadPageData(int id)
         {
             Console.WriteLine($"[DEBUG] CarregarDadosDaPagina para ID: {id}");
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();

@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="~/css/pages/favoritesbottom.css" asp-append-version="true" />
 }
 
+<div id="antiforgery-token-container">
+    @Html.AntiForgeryToken()
+</div>
+
 <div class="main-wrapper">
     <section class="category-section">
         <h2 class="section-title">@Localizer["Explorar Receitas"]</h2>
@@ -203,6 +207,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
-    <script src="~/js/favorites.js" asp-append-version="true"></script>
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>    
 }

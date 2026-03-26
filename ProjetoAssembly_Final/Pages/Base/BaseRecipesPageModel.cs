@@ -72,6 +72,8 @@ namespace ProjetoAssembly_Final.Pages.Base
 
         public async Task<IActionResult> OnPostToggleFavoriteAsync([FromBody] FavoriteRequest request)
         {
+            Console.WriteLine($"[DEBUG] Pedido de Favorito recebido para ID: {request?.RecipeId}");
+
             if (request?.RecipeId <= 0) return BadRequest("ID inválido");
 
             var userIdResult = await _tokenService.GetUserIdFromContextAsync();

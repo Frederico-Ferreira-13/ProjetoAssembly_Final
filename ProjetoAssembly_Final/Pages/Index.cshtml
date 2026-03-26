@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="~/css/pages/recipes-card.css" asp-append-version="true" />
 }
 
+<div id="antiforgery-token-container">
+    @Html.AntiForgeryToken()
+</div>
+
 <link rel="preload" as="image" href="@Url.Content("~/img/hero.jpg")">
 
 <header class="hero">
@@ -136,6 +140,5 @@
 </main>
 
 @section Scripts {
-    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>
-    <script src="~/js/favorites.js" asp-append-version="true"></script>
+    <script src="~/js/recipe-actions.js" asp-append-version="true"></script>    
 }

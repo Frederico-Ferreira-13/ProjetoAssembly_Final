@@ -17,7 +17,7 @@
                 <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>               
                 @if (!isDetailView)
                 {
-                    <span>@(isFav ? "Favorito" : "Favoritar")</span>
+                    <span class="fav-label">@(isFav ? "Remover dos Favoritos" : "Adicionar aos Favoritos")</span>
                 }
             </button>
         }
@@ -34,7 +34,7 @@
         
         <div class="favorite-info-badge">
             <i class="fa-solid fa-heart"></i>
-            <span id="fav-count-@Model.RecipesId">@Model.FavoriteCount</span>
+            <span class="fav-count-display" data-recipe-id="@Model.RecipesId">@Model.FavoriteCount</span>
         </div>
     </div>
 }

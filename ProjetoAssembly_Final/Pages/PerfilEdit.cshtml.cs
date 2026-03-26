@@ -46,8 +46,7 @@ namespace ProjetoAssembly_Final.Pages
         }
 
         public async Task<IActionResult> OnPostAsync()
-        {
-            // 1. Debug: Verificar se o método é sequer atingido
+        {            
             Console.WriteLine("--- Iniciando OnPostAsync ---");
 
             var userResult = await _usersService.GetCurrentUserAsync();
@@ -57,8 +56,7 @@ namespace ProjetoAssembly_Final.Pages
             }
 
             var userToUpdate = userResult.Value;
-
-            // 2. Debug: Verificar a Imagem
+            
             if (PhotoUpload != null && PhotoUpload.Length > 0)
             {
                 Console.WriteLine($"--- Tentando upload: {PhotoUpload.FileName}, Tamanho: {PhotoUpload.Length} ---");

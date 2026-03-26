@@ -49,14 +49,18 @@
     min-width: 140px;
     height: 45px;
     border: 2px solid #e74c3c; /* var(--danger-red) */
-    background-color: #ffffff !important;
-    color: #e74c3c !important;
+    background-color: #ffffff;
+    color: #e74c3c;
 }
 
 /* Estado Ativo (Já é favorito) */
 .btn-action.btn-favorite.active {
-    background-color: #e74c3c !important;
-    color: white !important;
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+
+.btn-action.btn-favorite i {
+    color: inherit !important;
 }
 
 .btn-action.btn-favorite:hover:not(.disabled) {

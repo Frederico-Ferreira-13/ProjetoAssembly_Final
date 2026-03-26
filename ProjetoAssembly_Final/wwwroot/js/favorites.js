@@ -1,7 +1,4 @@
-﻿/**
- * Lógica de Favoritos com Debugs - Projeto Assembly
- */
-async function handleToggleFavorite(event, btn, recipeId) {
+﻿async function handleToggleFavorite(event, btn, recipeId) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -16,14 +13,14 @@ async function handleToggleFavorite(event, btn, recipeId) {
     if (!token) {
         console.error("❌ Erro: Token Antiforgery não encontrado!");
         return;
-    }    
+    }
 
     try {
 
         btn.style.opacity = "0.7";
         btn.disabled = true;
 
-        const response = await fetch(`${window.location.pathname}?handler=ToggleFavorite`, {
+        const response = await fetch(`/view_recipes/${recipeId}?handler=ToggleFavorite`, {
             method: 'POST',
             headers: {
                 'RequestVerificationToken': token,
@@ -31,7 +28,7 @@ async function handleToggleFavorite(event, btn, recipeId) {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ recipeId: parseInt(recipeId) })
-        });        
+        });
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -47,34 +44,28 @@ async function handleToggleFavorite(event, btn, recipeId) {
 
         if (data.isFavorite) {
             btn.classList.add('active');
-            if (icon) {
-                icon.classList.replace('fa-regular', 'fa-solid');
-            }
+            if (icon) icon.className = "fa-solid fa-heart"; // Força ícone preenchido
             if (spanText) spanText.textContent = "Favorito";
             btn.title = "Remover dos favoritos";
         } else {
             btn.classList.remove('active');
-            if (icon) {
-                icon.classList.replace('fa-solid', 'fa-regular');
-            }
+            if (icon) icon.className = "fa-regular fa-heart"; // Força ícone contorno
             if (spanText) spanText.textContent = "Favoritar";
             btn.title = "Adicionar aos favoritos";
         }
 
         // 3. ATUALIZAR O CONTADOR ESPECÍFICO (O "Pulo do Gato")
         // Isto procura o ID que tens no _RecipesCard: id="fav-count-@Model.RecipesId"
-        const specificBadge = document.getElementById(`fav-count-${recipeId}`);
+        const allCounts = document.querySelectorAll(`.fav-count-display[data-recipe-id="${recipeId}"], #fav-count-${recipeId}`);
+        allCounts.forEach(el => {
+            el.textContent = data.newCount;
+        });
 
-        if (specificBadge) {
-            specificBadge.textContent = data.newCount;
-            console.log(`✅ Contador da receita ${recipeId} atualizado para: ${data.newCount}`);
-        }
+        console.log(`✅ UI atualizada. Novo total: ${data.newCount}`);
 
     } catch (error) {
         console.error("🔥 Erro Crítico:", error);
-        alert("Não foi possível atualizar o favorito. Tente novamente.");
     } finally {
-        // Restaurar estado do botão
         btn.style.opacity = "1";
         btn.disabled = false;
     }

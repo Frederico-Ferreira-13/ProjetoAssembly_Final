@@ -48,7 +48,7 @@
 
             <div class="stat-badge favorites" title="@Localizer["Total de Favoritos"]">
                 <i class="fa-solid fa-heart"></i>                
-                <span id="fav-count-@Model.RecipesId">@Model.FavoriteCount</span>
+                <span clas="fav-count-display" data-recipe-id="@Model.RecipesId">@Model.FavoriteCount</span>
             </div>
         </div>
     </div>
@@ -85,15 +85,12 @@
             </div>
 
             @* BOTÃO DE FAVORITO (Ação de Clique) *@
-            @if (isAuthenticated)
+            @if (isAuthenticated && Model.IsFavorite)
             {
-                <button type="button"
-                        class="btn-fav-circle @(Model.IsFavorite ? "active" : "")"
-                        onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
-                        title="@(Model.IsFavorite? Localizer["Remover"] : Localizer["Adicionar"])">
-                    <i class="@(Model.IsFavorite ? "fa-solid" : "fa-regular") fa-heart"></i>
-                </button>
-            }
+                <div class="fav-indicator active" title="@Localizer["Guardada nos favoritos"]">
+                    <i class="fa-solid fa-heart text-danger"></i>
+                </div>
+            }       
         </div>
 
         <h3 class="card-title">@Model.Title</h3>
