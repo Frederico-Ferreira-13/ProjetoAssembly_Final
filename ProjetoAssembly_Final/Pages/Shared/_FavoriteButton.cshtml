@@ -5,7 +5,6 @@
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
     <div class="favorite-wrapper d-flex align-items-center gap-2">
-
         @if (isAuthenticated)
         {
             bool isFav = Model.IsFavorite;
@@ -14,24 +13,27 @@
                     class="btn-action btn-favorite @(isFav ? "active" : "")"
                     onclick="handleToggleFavorite(event, this, @Model.RecipesId)"
                     title="@(isFav ? "Remover dos favoritos" : "Adicionar aos favoritos")">
-                <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>               
+                <i class="@(isFav ? "fa-solid" : "fa-regular") fa-heart"></i>
+
+                @* Só mostra o texto se NÃO for a vista de detalhe (na listagem, por exemplo) *@
                 @if (!isDetailView)
                 {
-                    <span class="fav-label">@(isFav ? "Remover dos Favoritos" : "Adicionar aos Favoritos")</span>
+                    <span class="fav-label">@(isFav ? "Remover" : "Adicionar")</span>
                 }
             </button>
         }
         else
         {
-            <button type="button" class="btn-action btn-favorite disabled" title="Inicia sessão para guardar">
+            
+            <a asp-page="/login" class="btn-action btn-favorite" title="Inicia sessão para guardar">
                 <i class="fa-regular fa-heart"></i>
                 @if (!isDetailView)
                 {
                     <span>Favoritar</span>
                 }
-            </button>
+            </a>
         }
-        
+
         <div class="favorite-info-badge">
             <i class="fa-solid fa-heart"></i>
             <span class="fav-count-display" data-recipe-id="@Model.RecipesId">@Model.FavoriteCount</span>
