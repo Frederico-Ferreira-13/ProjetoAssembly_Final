@@ -25,7 +25,7 @@ namespace Repo.Repository
                 recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
                 ingredientsId: reader.GetInt32(reader.GetOrdinal("IngredientsId")),
                 quantityValue: reader.GetDecimal(reader.GetOrdinal("QuantityValue")),
-                unit: reader.GetString(reader.GetOrdinal("Unit"))
+                unit: reader.GetString(reader.GetOrdinal("Unit")),
                 detail: reader.IsDBNull(reader.GetOrdinal("Detail")) ? null : reader.GetString(reader.GetOrdinal("Detail")),
                 isActive: activeFromDb
             );
