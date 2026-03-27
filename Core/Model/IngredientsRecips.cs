@@ -40,16 +40,16 @@ namespace Core.Model
         }
 
         public IngredientsRecips(int id, int recipesId, int ingredientsId, decimal quantityValue,
-             string unit, string? detail = null)
+              string unit, string? detail = null, bool isActive = true)
         {
-            IngredientsRecipsId = id;            
-
+            IngredientsRecipsId = id;
             RecipesId = recipesId;
             IngredientsId = ingredientsId;
             QuantityValue = quantityValue;
             Unit = unit;
             Detail = detail ?? string.Empty;
-        }       
+            IsActive = isActive;
+        }
 
         public void Update(decimal newQuantityValue, [NotNull] string newUnit, string? newDetail)
         {           
@@ -123,6 +123,6 @@ namespace Core.Model
             IngredientsRecipsId = id;
         }
 
-        public bool GetIsActive() => true;
+        public bool GetIsActive() => IsActive;
     }
 }

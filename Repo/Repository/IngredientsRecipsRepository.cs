@@ -14,12 +14,20 @@ namespace Repo.Repository
 
         protected override IngredientsRecips MapFromReader(SqlDataReader reader)
         {
+            bool activeFromDb = true;
+            if (HasColumn(reader, "IsActive"))
+            {
+                activeFromDb = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+            }
+
             var item = new IngredientsRecips(
                 id: reader.GetInt32(reader.GetOrdinal("IngredientsRecipsId")),
                 recipesId: reader.GetInt32(reader.GetOrdinal("RecipesId")),
                 ingredientsId: reader.GetInt32(reader.GetOrdinal("IngredientsId")),
                 quantityValue: reader.GetDecimal(reader.GetOrdinal("QuantityValue")),
                 unit: reader.GetString(reader.GetOrdinal("Unit"))
+                detail: reader.IsDBNull(reader.GetOrdinal("Detail")) ? null : reader.GetString(reader.GetOrdinal("Detail")),
+                isActive: activeFromDb
             );
 
             var detailOrdinal = reader.GetOrdinal("Detail");
@@ -35,12 +43,7 @@ namespace Repo.Repository
                     ingredientName: reader.GetString(reader.GetOrdinal("IngredientName")),
                     ingredientsTypeId: 0 // Valor dummy
                 ));
-            }
-
-            if (HasColumn(reader, "IsActive"))
-            {                
-                if (!reader.GetBoolean(reader.GetOrdinal("IsActive"))) item.Deactivate();
-            }
+            }          
 
             return item;
         }
