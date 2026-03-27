@@ -126,6 +126,7 @@ CREATE TABLE IngredientsRecips(
 	Unit NVARCHAR(50) NOT NULL,
 	Detail NVARCHAR(255) NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	IsDeleted BIT NOT NULL DEFAULT 0,
 	CONSTRAINT UQ_IngredientsRecips UNIQUE (RecipesId, IngredientsId),
 	CONSTRAINT FK_IngRecips_Recipes FOREIGN KEY (RecipesId) References Recipes(RecipesId),
 	CONSTRAINT FK_IngRecips_Ingredients FOREIGN KEY (IngredientsId) References Ingredients(IngredientsId)
@@ -214,33 +215,12 @@ VALUES
     (2, 2, 2, 'Arroz de Pato Tradicional', 'Coze o pato e leva ao forno com arroz.', 30, 90, '4 pessoas', 'arroz-de-pato.jpg', 1),
     (1, 1, 1, 'Sopa de Legumes Caseira', 'Tritura os legumes cozidos.', 15, 35, '6 pessoas', 'sopa.jpg', 1),
     (1, 3, 2, 'Bacalhau à Brás', 'Refoga bacalhau com batata palha e ovos.', 20, 25, '4 pessoas', 'bacalhau.jpg', 1),
-    (2, 5, 3, 'Bolo de Chocolate Vegan', 'Mistura farinha, cacau e leite vegetal.', 15, 35, '10 fatias', 'bolo-de-chocolate-vegan.jpg', 1);
+    (2, 5, 3, 'Bolo de Chocolate Vegan', 'Mistura farinha, cacau e leite vegetal.', 15, 35, '10 fatias', 'bolo-de-chocolate-vegan.jpg', 0);
 GO
 
 UPDATE Recipes SET IsApproved = 0 WHERE RecipesId = 5;
 
 PRINT '=== TODOS OS DADOS INICIAIS INSERIDOS COM SUCESSO ===';
-
-SELECT 'Utilizadores' AS Tabela, UserId, UserName, Email, UsersRoleId FROM Users ORDER BY UserId;
-SELECT 'Contas' AS Tabela, * FROM Account;
-SELECT 'Categorias' AS Tabela, * FROM Category ORDER BY CategoriesId;
-SELECT 'Receitas' AS Tabela, RecipesId, Title, UserId, IsApproved FROM Recipes ORDER BY RecipesId;
-GO
-
-UPDATE Recipes SET CategoriesId = 4 WHERE Title LIKE '%Arroz Doce%'
-
-UPDATE Recipes 
-SET CategoriesId = 5 
-WHERE Title = 'Bolo de Chocolate Vegan';
-
-
-UPDATE Recipes 
-SET CategoriesId = 5 
-WHERE Title = 'Bolo de Chocolate Vegan';
-
-UPDATE Recipes 
-SET CategoriesId = 4 
-WHERE Title = 'Arroz Doce Cremoso';
 
 SELECT Title, CategoriesId FROM Recipes WHERE Title IN ('Bolo de Chocolate Vegan', 'Arroz Doce Cremoso');
 
@@ -281,12 +261,6 @@ SELECT * FROM IngredientsType;
 SELECT * FROM IngredientsRecips;
 
 Select * FROM Recipes
-
-SELECT RecipesId, PrepTimeMinutes, CookTimeMinutes FROM Recipes WHERE RecipesId;
-SELECT ir.*, i.IngredientName 
-FROM IngredientsRecips ir
-INNER JOIN Ingredients i ON ir.IngredientsId = i.IngredientsId
-WHERE ir.RecipesId;
 
 SELECT * FROM Recipes 
 WHERE IsActive = 1 

@@ -30,12 +30,16 @@ namespace Repo.Repository
 
             if (HasColumn(reader, "IngredientName"))
             {
-                // Criamos um objeto Ingredient "fake" apenas com o nome para mostrar na UI
                 item.SetIngredient(new Ingredients(
                     id: item.IngredientsId,
                     ingredientName: reader.GetString(reader.GetOrdinal("IngredientName")),
                     ingredientsTypeId: 0 // Valor dummy
                 ));
+            }
+
+            if (HasColumn(reader, "IsActive"))
+            {                
+                if (!reader.GetBoolean(reader.GetOrdinal("IsActive"))) item.Deactivate();
             }
 
             return item;
@@ -92,12 +96,11 @@ namespace Repo.Repository
         public async Task<List<IngredientsRecips>> GetByRecipesIdAsync(int recipeId)
         {
             string sql = $@"SELECT IngredientsRecipsId, RecipesId, IngredientsId, QuantityValue, Unit, Detail
-                            FROM {_tableName}
-                            WHERE RecipesId = @RecipesId
-                            ORDER BY IngredientsId";
+                    FROM {_tableName}
+                    WHERE RecipesId = @RecipesId AND IsActive = 1
+                    ORDER BY IngredientsId";
 
             var parameters = new SqlParameter[] { new SqlParameter("@RecipesId", recipeId) };
-
             var result = await ExecuteListAsync(sql, parameters);
             return result.ToList();
         }
@@ -133,10 +136,10 @@ namespace Repo.Repository
         public async Task<List<IngredientsRecips>> GetByRecipesIdWithNamesAsync(int recipeId)
         {
             string sql = $@"
-                    SELECT ir.*, i.IngredientName
-                    FROM IngredientsRecips ir
-                    INNER JOIN Ingredients i on ir.IngredientsId = i.IngredientsId
-                    WHERE ir.RecipesId = @RecipesId";
+                SELECT ir.*, i.IngredientName
+                FROM IngredientsRecips ir
+                INNER JOIN Ingredients i on ir.IngredientsId = i.IngredientsId
+                WHERE ir.RecipesId = @RecipesId AND ir.IsActive = 1";
 
             var parameters = new SqlParameter[] { new SqlParameter("@RecipesId", recipeId) };
 
@@ -145,8 +148,8 @@ namespace Repo.Repository
         }
 
         public async Task DeleteByRecipeIdAsync(int recipeId)
-        {            
-            string sql = $"DELETE FROM {_tableName} WHERE RecipesId = @RecipesId";
+        {
+            string sql = $"UPDATE {_tableName} SET IsActive = 0 WHERE RecipesId = @RecipesId";
 
             var parameters = new SqlParameter[]
             {

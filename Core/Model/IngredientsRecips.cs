@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Core.Model
 {
-    public class IngredientsRecips : IEntity
+    public class IngredientsRecips : IEntity, ISoftDeletable
     {
         public int IngredientsRecipsId { get; private set; }       
 
@@ -17,6 +17,7 @@ namespace Core.Model
         public decimal QuantityValue { get; protected set; }
         public string Unit { get; protected set; } = string.Empty;
         public string Detail { get; protected set; } = string.Empty;
+        public bool IsActive { get; protected set; } = true;
 
         public virtual Ingredients? Ingredient { get; protected set; }
 
@@ -104,7 +105,12 @@ namespace Core.Model
             {
                 throw new ArgumentException("A Unidade contém caracteres inválidos.", nameof(unit));
             }
-        }        
+        }
+
+        public void Deactivate()
+        {
+            IsActive = false;
+        }
 
         public int GetId() => IngredientsRecipsId;
 

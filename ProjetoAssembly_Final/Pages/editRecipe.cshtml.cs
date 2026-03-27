@@ -5,23 +5,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using ProjetoAssembly_Final.Pages.Base;
+using Service.Services;
 using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
 {
     [Authorize]
-    public class editRecipeModel : PageModel
-    {
-        private readonly IRecipesService _recipesService;
+    public class editRecipeModel : BaseRecipesPageModel
+    {        
         private readonly IUsersService _usersService;
         private readonly IIngredientsService _ingredientsService;
         private readonly ICloudService _cloudService;
         private readonly ILogger<editRecipeModel> _logger;
 
         public editRecipeModel(IRecipesService recipesService, IUsersService usersService, IIngredientsService ingredientsService, ICloudService cloudService,
-            ILogger<editRecipeModel> logger)
-        {
-            _recipesService = recipesService;
+            ILogger<editRecipeModel> logger, ITokenService tokenService) : base(recipesService, tokenService)
+        {            
             _usersService = usersService;
             _ingredientsService = ingredientsService;
             _cloudService = cloudService;
@@ -60,6 +60,7 @@ namespace ProjetoAssembly_Final.Pages
             if (ingredients.IsSuccessful && ingredients.Value != null)
             {
                 recipe.LoadIngredients(ingredients.Value);
+                _logger.LogInformation("Carregados {Count} ingredientes para a receita {Id}", ingredients.Value.Count, id);
             }
 
             var authCheck = await CheckUserPermissions(recipe.UserId);
@@ -73,6 +74,11 @@ namespace ProjetoAssembly_Final.Pages
         public async Task<IActionResult> OnPostAsync(int id)
         {
             _logger.LogInformation("Iniciando OnPostAsync para a receita ID: {Id}", id);
+
+            var quantities = Request.Form["QuantityValue"].ToList();
+            var units = Request.Form["Unit"].ToList();
+            var names = Request.Form["IngredientName"].ToList();
+            var details = Request.Form["ingredientDetail"].ToList();
 
             ValidateBusinessRules();
             if (!ModelState.IsValid)
@@ -142,12 +148,7 @@ namespace ProjetoAssembly_Final.Pages
                     ProcessServiceErrors(updateRecipeResult);
                     _logger.LogError("Falha no UpdateRecipeAsync: {Msg}", updateRecipeResult.Message);
                     return Page();
-                }
-
-                var quantities = Request.Form["QuantityValue"].ToList();
-                var units = Request.Form["Unit"].ToList();
-                var names = Request.Form["IngredientName"].ToList();
-                var details = Request.Form["ingredientDetail"].ToList();
+                }           
 
 
                 var quantitiesParsed = quantities.Select(q =>

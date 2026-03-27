@@ -5,24 +5,24 @@ using Core.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ProjetoAssembly_Final.Pages.Base;
 using Repo.Repository;
 using System.Security.Claims;
 
 namespace ProjetoAssembly_Final.Pages
 {
     [Authorize]
-    public class create_recipeModel : PageModel
-    {
-        private readonly IRecipesService _recipesService;
+    public class create_recipeModel : BaseRecipesPageModel
+    {        
         private readonly IIngredientsService _ingredientsService;
         private readonly IUsersService _usersService;
         private readonly ICloudService _cloudService;
         private readonly ILogger<create_recipeModel> _logger;
 
         public create_recipeModel(IRecipesService recipesService, IIngredientsService ingredientsService, 
-            IUsersService usersService, ICloudService cloudService, ILogger<create_recipeModel> logger)
+            IUsersService usersService, ICloudService cloudService, ILogger<create_recipeModel> logger, 
+            ITokenService tokenService) : base(recipesService, tokenService)
         {
-            _recipesService = recipesService;
             _ingredientsService = ingredientsService;
             _usersService = usersService;
             _cloudService = cloudService;
